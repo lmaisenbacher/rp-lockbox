@@ -428,7 +428,7 @@ logic [  8-1: 0] exp_p_in , exp_n_in ;
 logic [  8-1: 0] exp_p_out, exp_n_out;
 logic [  8-1: 0] exp_p_dir, exp_n_dir;
 // Set all positive GPIO as output
-assign exp_p_dir = 8'b11111111;
+assign exp_p_dir = 8'b00000011;
 
 red_pitaya_hk i_hk (
   // system signals
@@ -533,21 +533,23 @@ red_pitaya_asg i_asg (
 ////////////////////////////////////////////////////////////////////////////////
 
 red_pitaya_pid i_pid (
-   // signals
-  .clk_i           (adc_clk   ),   // clock
-  .rstn_i          (adc_rstn  ),   // reset - active low
-  .dat_a_i         (adc_dat[0]),   // in 1
-  .dat_b_i         (adc_dat[1]),   // in 2
-  .dat_a_o         (pid_dat[0]),   // out 1
-  .dat_b_o         (pid_dat[1]),   // out 2
+   // Input signals
+  .clk_i           (adc_clk     ), // clock
+  .rstn_i          (adc_rstn    ), // reset - active low
+  .dat_a_i         (adc_dat[0]  ), // in 1
+  .dat_b_i         (adc_dat[1]  ), // in 2
   .railed_a_i      (dac_a_railed), // out 1 railed
   .railed_b_i      (dac_b_railed), // out 2 railed
-  .relock_a_i      (xadc_a_dat),
-  .relock_b_i      (xadc_b_dat),
-  .relock_c_i      (xadc_c_dat),
-  .relock_d_i      (xadc_d_dat),
-  .out_a_center_i  (dac_a_center),
-  .out_b_center_i  (dac_b_center),
+  .relock_a_i      (xadc_a_dat  ), // auxiliary ADC A
+  .relock_b_i      (xadc_b_dat  ), // auxiliary ADC B
+  .relock_c_i      (xadc_c_dat  ), // auxiliary ADC C
+  .relock_d_i      (xadc_d_dat  ), // auxiliary ADC D
+  .out_a_center_i  (dac_a_center), // center of out 1 range
+  .out_b_center_i  (dac_b_center), // center of out 2 range
+   // Output signals  
+  .dat_a_o         (pid_dat[0]  ), // out 1
+  .dat_b_o         (pid_dat[1]  ), // out 2   
+  .do_lock_state_a (exp_p_out[1]), // digital output lock state A
   // System bus
   .sys_addr        (sys[3].addr ),
   .sys_wdata       (sys[3].wdata),
@@ -563,17 +565,18 @@ red_pitaya_pid i_pid (
 ////////////////////////////////////////////////////////////////////////////////
 
 red_pitaya_limit i_limit (
-  // signals
+  // Input signals
   .clk_i          (adc_clk     ), // clock
-  .rstn_i         (adc_rstn  ),  // reset - active low
+  .rstn_i         (adc_rstn    ), // reset - active low
   .dat_a_i        (dac_a_lim_i ), // in 1
   .dat_b_i        (dac_b_lim_i ), // in 2
+  // Output signals  
   .dat_a_o        (dac_a       ), // out 1
   .dat_b_o        (dac_b       ), // out 2
-  .dat_a_railed_o (dac_a_railed),
-  .dat_b_railed_o (dac_b_railed),
-  .center_a_o     (dac_a_center),
-  .center_b_o     (dac_b_center),
+  .dat_a_railed_o (dac_a_railed), // out 1 railed
+  .dat_b_railed_o (dac_b_railed), // out 2 railed
+  .center_a_o     (dac_a_center), // center of out 1 range
+  .center_b_o     (dac_b_center), // center of out 2 range
   // System bus
   .sys_addr        (sys[6].addr ),
   .sys_wdata       (sys[6].wdata),
@@ -583,19 +586,5 @@ red_pitaya_limit i_limit (
   .sys_err         (sys[6].err  ),
   .sys_ack         (sys[6].ack  )
 );
-
-reg [27:0]counter = 28'd0;
-reg led = 1'b0;
-always @ (posedge adc_clk) begin
-    counter = counter+1;
-    if (counter == 28'd256000000) begin // 256e6 periods of clock of 128 MHz
-        led = ~led; // led will blink with a period of 2 sec
-        counter = 28'd0; // start again
-    end
-end
-// Assign the register to the LED output
-assign led_o[0] = led;
-// Assign LED output to GPIO positive output
-assign exp_p_out = led_o;
 
 endmodule: red_pitaya_top

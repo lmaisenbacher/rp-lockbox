@@ -27,6 +27,7 @@ module pid_relock #(
                                                  // bit: upper rail
     input  wire                        hold_i,
     output wire                        hold_o,
+    output wire                        locked_o,  // lock state
     output reg                         clear_o,
     output wire signed [14-1:0]        signal_o
 );
@@ -50,6 +51,8 @@ always @(posedge clk_i) begin
 end
 
 assign hold_o = (on_i && (!locked_f));
+assign locked_o = (on_i && (!locked_f));
+// assign locked_o = 1'b1;
 
 // State machine definitions
 localparam ZERO      = 2'b00;

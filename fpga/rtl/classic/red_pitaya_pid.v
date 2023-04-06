@@ -58,15 +58,16 @@ module red_pitaya_pid (
    input        [ 14-1: 0] dat_a_i         ,  //!< input data CHA
    input        [ 14-1: 0] dat_b_i         ,  //!< input data CHB
    input        [    1: 0] railed_a_i      ,  //!< input CHA railed
-   input        [    1: 0] railed_b_i      ,  //!< input CHA railed
-   input        [ 12-1: 0] relock_a_i      ,
-   input        [ 12-1: 0] relock_b_i      ,
-   input        [ 12-1: 0] relock_c_i      ,
-   input        [ 12-1: 0] relock_d_i      ,
-   input signed [ 14-1: 0] out_a_center_i  ,
-   input signed [ 14-1: 0] out_b_center_i  ,
+   input        [    1: 0] railed_b_i      ,  //!< input CHB railed
+   input        [ 12-1: 0] relock_a_i      ,  // auxiliary ADC A
+   input        [ 12-1: 0] relock_b_i      ,  // auxiliary ADC B
+   input        [ 12-1: 0] relock_c_i      ,  // auxiliary ADC C
+   input        [ 12-1: 0] relock_d_i      ,  // auxiliary ADC D
+   input signed [ 14-1: 0] out_a_center_i  ,  // center of out 1 range
+   input signed [ 14-1: 0] out_b_center_i  ,  // center of out 2 range
    output       [ 14-1: 0] dat_a_o         ,  //!< output data CHA
    output       [ 14-1: 0] dat_b_o         ,  //!< output data CHB
+   output                  do_lock_state_a ,  // digital output lock state A   
   
    // system bus
    input      [ 32-1: 0] sys_addr        ,  //!< bus address
@@ -75,7 +76,7 @@ module red_pitaya_pid (
    input                 sys_ren         ,  //!< bus read enable
    output reg [ 32-1: 0] sys_rdata       ,  //!< bus read data
    output reg            sys_err         ,  //!< bus error indicator
-   output reg            sys_ack            //!< bus acknowledge signal
+   output reg            sys_ack            //!< bus acknowledge signal   
 );
 
 localparam  PSR = 12         ;              // p gain = Kp >> PSR
@@ -117,6 +118,7 @@ wire signed [14-1:0]               relock_signal_o  [3:0];
 wire                               relock_hold_o    [3:0];
 wire        [12-1:0]               relock_signal_i  [3:0];
 wire                               relock_hold_i    [3:0];
+wire                               relock_locked_o  [3:0];
 
 wire        [12-1:0]               relock_i         [3:0];
 assign relock_i[0] = relock_a_i;
@@ -174,6 +176,7 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
         .railed_i(pid_railed_i[pid_index]),
         .hold_i(relock_hold_i[pid_index]),
         .hold_o(relock_hold_o[pid_index]),
+        .locked_o(relock_locked_o[pid_index]),        
         .clear_o(relock_clear_o[pid_index]),
         .signal_o(relock_signal_o[pid_index])
     );
@@ -210,6 +213,9 @@ assign relock_hold_i[1] = set_hold[1];
 assign relock_hold_i[2] = set_hold[2];
 assign relock_hold_i[3] = set_hold[3];
 
+// Digital output of lock status
+assign do_lock_state_a = relock_locked_o[0];
+
 //---------------------------------------------------------------------------------
 //  Sum and saturation
 
@@ -218,7 +224,7 @@ reg  [ 14-1: 0] out_1_sat   ;
 wire [ 15-1: 0] out_2_sum   ;
 reg  [ 14-1: 0] out_2_sat   ;
 
-assign out_1_sum = $signed(pid_sat[0]) + $signed(pid_sat[1]);
+assign out_1_sum = $signed(pid_sat[0]) + $signed(pid_sat[1]) + 14'h11FF;
 assign out_2_sum = $signed(pid_sat[3]) + $signed(pid_sat[2]);
 
 always @(posedge clk_i) begin
