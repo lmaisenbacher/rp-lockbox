@@ -112,7 +112,7 @@ module red_pitaya_top #(
   input  logic [ 2-1:0] daisy_p_i  ,  // line 1 is clock capable
   input  logic [ 2-1:0] daisy_n_i  ,
   // LED
-  inout  logic [ 8-1:0] led_o
+  output  logic [ 8-1:0] led_o
 );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -194,7 +194,7 @@ logic                    digital_loop;
 sys_bus_if   ps_sys      (.clk (adc_clk), .rstn (adc_rstn));
 sys_bus_if   sys [8-1:0] (.clk (adc_clk), .rstn (adc_rstn));
 
-// GPIO interface
+// GPIO interface with 24 bit data width 
 gpio_if #(.DW (24)) gpio ();
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -427,22 +427,24 @@ ODDR oddr_dac_dat [14-1:0] (.Q(dac_dat_o), .D1(dac_dat_b), .D2(dac_dat_a), .C(da
 logic [  8-1: 0] exp_p_in , exp_n_in ;
 logic [  8-1: 0] exp_p_out, exp_n_out;
 logic [  8-1: 0] exp_p_dir, exp_n_dir;
+// Set all positive GPIO as output
+assign exp_p_dir = 8'b11111111;
 
 red_pitaya_hk i_hk (
   // system signals
   .clk_i           (adc_clk ),  // clock
   .rstn_i          (adc_rstn),  // reset - active low
   // LED
-  .led_o           (  led_o                      ),  // LED output
+  // .led_o           (  led_o                      ),  // LED output
   // global configuration
   .digital_loop    (digital_loop),
   // Expansion connector
-  .exp_p_dat_i     (exp_p_in ),  // input data
-  .exp_p_dat_o     (exp_p_out),  // output data
-  .exp_p_dir_o     (exp_p_dir),  // 1-output enable
-  .exp_n_dat_i     (exp_n_in ),
-  .exp_n_dat_o     (exp_n_out),
-  .exp_n_dir_o     (exp_n_dir),
+  // .exp_p_dat_i     (exp_p_in ),  // input data
+  // .exp_p_dat_o     (exp_p_out),  // output data
+  // .exp_p_dir_o     (exp_p_dir),  // 1-output enable
+  // .exp_n_dat_i     (exp_n_in ),
+  // .exp_n_dat_o     (exp_n_out),
+  // .exp_n_dir_o     (exp_n_dir),
    // System bus
   .sys_addr        (sys[0].addr ),
   .sys_wdata       (sys[0].wdata),
@@ -581,5 +583,19 @@ red_pitaya_limit i_limit (
   .sys_err         (sys[6].err  ),
   .sys_ack         (sys[6].ack  )
 );
+
+reg [27:0]counter = 28'd0;
+reg led = 1'b0;
+always @ (posedge adc_clk) begin
+    counter = counter+1;
+    if (counter == 28'd256000000) begin // 256e6 periods of clock of 128 MHz
+        led = ~led; // led will blink with a period of 2 sec
+        counter = 28'd0; // start again
+    end
+end
+// Assign the register to the LED output
+assign led_o[0] = led;
+// Assign LED output to GPIO positive output
+assign exp_p_out = led_o;
 
 endmodule: red_pitaya_top
