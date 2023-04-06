@@ -65,6 +65,7 @@ module red_pitaya_pid (
    input        [ 12-1: 0] relock_d_i      ,  // auxiliary ADC D
    input signed [ 14-1: 0] out_a_center_i  ,  // center of out 1 range
    input signed [ 14-1: 0] out_b_center_i  ,  // center of out 2 range
+   input        [ 14-1: 0] asg_offset_a_i  ,  // ASG offset for out 1
    output       [ 14-1: 0] dat_a_o         ,  //!< output data CHA
    output       [ 14-1: 0] dat_b_o         ,  //!< output data CHB
    output                  do_lock_state_a ,  // digital output lock state A   
@@ -97,8 +98,8 @@ reg         [14-1:0]      set_kd               [3:0];
 reg         [3:0]         pid_inverted              ;
 reg         [3:0]         set_irst                  ;
 reg         [3:0]         set_irst_when_railed      ;
-reg         [3:0]         set_hold                 ;
-wire        [3:0]             pid_irst             ;
+reg         [3:0]         set_hold                  ;
+wire        [3:0]         pid_irst                  ;
 wire        [3:0]         pid_ctr_rst               ;
 wire signed [14-1:0]      pid_ctr_val          [3:0];
 wire                      pid_hold             [3:0];
@@ -224,7 +225,7 @@ reg  [ 14-1: 0] out_1_sat   ;
 wire [ 15-1: 0] out_2_sum   ;
 reg  [ 14-1: 0] out_2_sat   ;
 
-assign out_1_sum = $signed(pid_sat[0]) + $signed(pid_sat[1]) + 14'h11FF;
+assign out_1_sum = $signed(pid_sat[0]) + $signed(pid_sat[1]) + $signed(asg_offset_a_i);
 assign out_2_sum = $signed(pid_sat[3]) + $signed(pid_sat[2]);
 
 always @(posedge clk_i) begin
