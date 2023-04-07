@@ -67,7 +67,7 @@ module red_pitaya_pid (
    input signed [ 14-1: 0] out_b_center_i  ,  // center of out 2 range
    output       [ 14-1: 0] dat_a_o         ,  //!< output data CHA
    output       [ 14-1: 0] dat_b_o         ,  //!< output data CHB
-   output                  do_lock_state_a ,  // digital output lock state A   
+   output       [  4-1: 0] lock_state_o    ,  // lock state
   
    // system bus
    input      [ 32-1: 0] sys_addr        ,  //!< bus address
@@ -213,8 +213,11 @@ assign relock_hold_i[1] = set_hold[1];
 assign relock_hold_i[2] = set_hold[2];
 assign relock_hold_i[3] = set_hold[3];
 
-// Digital output of lock status
-assign do_lock_state_a = relock_locked_o[0];
+// Output of lock state
+assign lock_state_o[0] = relock_locked_o[0];
+assign lock_state_o[1] = relock_locked_o[1];
+assign lock_state_o[2] = relock_locked_o[2];
+assign lock_state_o[3] = relock_locked_o[3];
 
 //---------------------------------------------------------------------------------
 //  Sum and saturation

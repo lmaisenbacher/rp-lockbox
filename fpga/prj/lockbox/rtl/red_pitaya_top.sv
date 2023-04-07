@@ -178,7 +178,7 @@ logic        [14-1:0] dac_dat_a, dac_dat_b;        // this is sent to the DAC ch
 logic        [14-1:0] dac_a    , dac_b    ;        // data after saturation
 logic signed [15-1:0] dac_a_sum, dac_b_sum;        // sum of ASG and PID before saturation
 logic signed [14-1:0] dac_a_lim_i, dac_b_lim_i;    // input to the dac limiters
-logic [1:0]           dac_a_railed, dac_b_railed;  // limiter status for integrator reset
+logic        [   1:0] dac_a_railed, dac_b_railed;  // limiter status for integrator reset
 logic signed [14-1:0] dac_a_center, dac_b_center;  // center of the output ranges
 
 // ASG
@@ -428,7 +428,7 @@ logic [  8-1: 0] exp_p_in , exp_n_in ;
 logic [  8-1: 0] exp_p_out, exp_n_out;
 logic [  8-1: 0] exp_p_dir, exp_n_dir;
 // Set all positive GPIO as output
-assign exp_p_dir = 8'b00000011;
+assign exp_p_dir = 8'b00001111;
 
 red_pitaya_hk i_hk (
   // system signals
@@ -532,6 +532,9 @@ red_pitaya_asg i_asg (
 //  MIMO PID controller
 ////////////////////////////////////////////////////////////////////////////////
 
+logic [  4-1: 0] pid_lock_state;
+assign exp_p_out[4-1:0] = pid_lock_state;
+
 red_pitaya_pid i_pid (
    // Input signals
   .clk_i           (adc_clk     ), // clock
@@ -549,7 +552,7 @@ red_pitaya_pid i_pid (
    // Output signals  
   .dat_a_o         (pid_dat[0]  ), // out 1
   .dat_b_o         (pid_dat[1]  ), // out 2   
-  .do_lock_state_a (exp_p_out[1]), // digital output lock state A
+  .lock_state_o    (pid_lock_state), // lock state
   // System bus
   .sys_addr        (sys[3].addr ),
   .sys_wdata       (sys[3].wdata),
