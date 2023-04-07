@@ -408,24 +408,24 @@ def set_sg_enabled():
         if retval != 0:
             LOG.error("Failed to disable signal generator. Error code: %s", ERROR_CODES[retval])
 
-@route("/_set_sg_poffset_enabled", method="POST")
-def set_sg_poffset_enabled():
-    """Handle POST request for enabling permanent offset of the signal generator.
+# @route("/_set_sg_poffset_enabled", method="POST")
+# def set_sg_poffset_enabled():
+#     """Handle POST request for enabling permanent offset of the signal generator.
 
-    Accepted POST parameters:
-    :output: the output channel to adjust
-    :offset_enabled: true if permanent offset of signal generator enabled, false if not
-    """
-    offset_enabled = request.params.get("offset_enabled", 0) == "true"
-    output = request.params.get("output", 1, type=int)
-    if offset_enabled:
-        retval = RP_LIB.rp_GenPOffsetEnable(output)
-        if retval != 0:
-            LOG.error("Failed to enable permanent offset of signal generator. Error code: %s", ERROR_CODES[retval])
-    else:
-        retval = RP_LIB.rp_GenPOffsetDisable(output)
-        if retval != 0:
-            LOG.error("Failed to disable permanent offset of signal generator. Error code: %s", ERROR_CODES[retval])            
+#     Accepted POST parameters:
+#     :output: the output channel to adjust
+#     :offset_enabled: true if permanent offset of signal generator enabled, false if not
+#     """
+#     offset_enabled = request.params.get("offset_enabled", 0) == "true"
+#     output = request.params.get("output", 1, type=int)
+#     if offset_enabled:
+#         retval = RP_LIB.rp_GenPOffsetEnable(output)
+#         if retval != 0:
+#             LOG.error("Failed to enable permanent offset of signal generator. Error code: %s", ERROR_CODES[retval])
+#     else:
+#         retval = RP_LIB.rp_GenPOffsetDisable(output)
+#         if retval != 0:
+#             LOG.error("Failed to disable permanent offset of signal generator. Error code: %s", ERROR_CODES[retval])            
 
 @route("/_save_parameters", method="POST")
 def save_parameters():
@@ -644,16 +644,16 @@ def get_parameters():
         LOG.error("Failed to get if signal generator is enabled. Error code: %s",
                   ERROR_CODES[retval])
         
-    sg_1_poffset_enabled = ctypes.c_bool()
-    retval = RP_LIB.rp_GenPOffsetIsEnabled(0, ctypes.byref(sg_1_poffset_enabled))
-    if retval != 0:
-        LOG.error("Failed to get if signal generator permanent offset is enabled. Error code: %s",
-                  ERROR_CODES[retval])
-    sg_2_poffset_enabled = ctypes.c_bool()
-    retval = RP_LIB.rp_GenPOffsetIsEnabled(1, ctypes.byref(sg_2_poffset_enabled))
-    if retval != 0:
-        LOG.error("Failed to get if signal generator permanent offset is enabled. Error code: %s",
-                  ERROR_CODES[retval])        
+    # sg_1_poffset_enabled = ctypes.c_bool()
+    # retval = RP_LIB.rp_GenPOffsetIsEnabled(0, ctypes.byref(sg_1_poffset_enabled))
+    # if retval != 0:
+    #     LOG.error("Failed to get if signal generator permanent offset is enabled. Error code: %s",
+    #               ERROR_CODES[retval])
+    # sg_2_poffset_enabled = ctypes.c_bool()
+    # retval = RP_LIB.rp_GenPOffsetIsEnabled(1, ctypes.byref(sg_2_poffset_enabled))
+    # if retval != 0:
+    #     LOG.error("Failed to get if signal generator permanent offset is enabled. Error code: %s",
+    #               ERROR_CODES[retval])        
 
     parameters = {
         "pid_11_setpoint": setpoint[0].value,
@@ -720,8 +720,8 @@ def get_parameters():
         "sg_2_waveform": sg_2_waveform.value,
         "sg_1_enabled": sg_1_enabled.value,
         "sg_2_enabled": sg_2_enabled.value,
-        "sg_1_poffset_enabled": sg_1_poffset_enabled.value,
-        "sg_2_poffset_enabled": sg_2_poffset_enabled.value,
+        # "sg_1_poffset_enabled": sg_1_poffset_enabled.value,
+        # "sg_2_poffset_enabled": sg_2_poffset_enabled.value,
         "sg_1_amp": sg_1_amp.value,
         "sg_2_amp": sg_2_amp.value,
         "sg_1_freq": sg_1_freq.value,
