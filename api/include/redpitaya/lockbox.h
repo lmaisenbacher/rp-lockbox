@@ -281,6 +281,7 @@ typedef struct {
     bool pid_reset_when_railed[4];
     bool pid_hold[4];
     bool pid_relock_enabled[4];
+    bool pid_enabled[4];
     float pid_relock_stepsize[4];
     float pid_relock_minimum[4];
     float pid_relock_maximum[4];
@@ -288,6 +289,7 @@ typedef struct {
     float limit_min[2];
     float limit_max[2];
     bool gen_enabled[2];
+    bool gen_poffset_enabled[2];    
     float gen_amp[2];
     float gen_offset[2];
     float gen_freq[2];
