@@ -69,12 +69,12 @@ int generate_getOutputEnabled(rp_channel_t channel, bool *enabled) {
     return RP_OK;
 }
 
-int generate_setOffsetDisable(rp_channel_t channel, bool disable) {
+int generate_setPOffsetEnable(rp_channel_t channel, bool enable) {
     if (channel == RP_CH_1) {
-        generate->AsetOffsetTo0 = disable ? 1 : 0;
+        generate->AsetOffsetTo0 = enable ? 1 : 0;
     }
     else if (channel == RP_CH_2) {
-        generate->BsetOffsetTo0 = disable ? 1 : 0;
+        generate->BsetOffsetTo0 = enable ? 1 : 0;
     }
     else {
         return RP_EPN;
@@ -82,12 +82,12 @@ int generate_setOffsetDisable(rp_channel_t channel, bool disable) {
     return RP_OK;
 }
 
-int generate_getOffsetEnabled(rp_channel_t channel, bool *enabled) {
+int generate_getPOffsetEnabled(rp_channel_t channel, bool *enabled) {
     uint32_t value;
     CHANNEL_ACTION(channel,
             value = generate->AsetOffsetTo0,
             value = generate->BsetOffsetTo0)
-    *enabled = value == 1 ? false : true;
+    *enabled = value == 1 ? true : false;
     return RP_OK;
 }
 

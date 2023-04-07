@@ -419,11 +419,11 @@ def set_sg_poffset_enabled():
     offset_enabled = request.params.get("offset_enabled", 0) == "true"
     output = request.params.get("output", 1, type=int)
     if offset_enabled:
-        retval = RP_LIB.rp_GenOffsetEnable(output)
+        retval = RP_LIB.rp_GenPOffsetEnable(output)
         if retval != 0:
             LOG.error("Failed to enable permanent offset of signal generator. Error code: %s", ERROR_CODES[retval])
     else:
-        retval = RP_LIB.rp_GenOffsetDisable(output)
+        retval = RP_LIB.rp_GenPOffsetDisable(output)
         if retval != 0:
             LOG.error("Failed to disable permanent offset of signal generator. Error code: %s", ERROR_CODES[retval])            
 
@@ -645,12 +645,12 @@ def get_parameters():
                   ERROR_CODES[retval])
         
     sg_1_poffset_enabled = ctypes.c_bool()
-    retval = RP_LIB.rp_GenOffsetIsEnabled(0, ctypes.byref(sg_1_poffset_enabled))
+    retval = RP_LIB.rp_GenPOffsetIsEnabled(0, ctypes.byref(sg_1_poffset_enabled))
     if retval != 0:
         LOG.error("Failed to get if signal generator permanent offset is enabled. Error code: %s",
                   ERROR_CODES[retval])
     sg_2_poffset_enabled = ctypes.c_bool()
-    retval = RP_LIB.rp_GenOffsetIsEnabled(1, ctypes.byref(sg_2_poffset_enabled))
+    retval = RP_LIB.rp_GenPOffsetIsEnabled(1, ctypes.byref(sg_2_poffset_enabled))
     if retval != 0:
         LOG.error("Failed to get if signal generator permanent offset is enabled. Error code: %s",
                   ERROR_CODES[retval])        

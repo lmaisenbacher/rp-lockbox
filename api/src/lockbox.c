@@ -711,16 +711,16 @@ int rp_GenOutIsEnabled(rp_channel_t channel, bool *value) {
     return gen_IsEnable(channel, value);
 }
 
-int rp_GenOffsetDisable(rp_channel_t channel) {
+int rp_GenPOffsetDisable(rp_channel_t channel) {
     return gen_OffsetDisable(channel);
 }
 
-int rp_GenOffsetEnable(rp_channel_t channel) {
+int rp_GenPOffsetEnable(rp_channel_t channel) {
     return gen_OffsetEnable(channel);
 }
 
-int rp_GenOffsetIsEnabled(rp_channel_t channel, bool *value) {
-    return gen_OffsetIsEnable(channel, value);
+int rp_GenPOffsetIsEnabled(rp_channel_t channel, bool *value) {
+    return gen_POffsetIsEnable(channel, value);
 }
 
 int rp_GenAmp(rp_channel_t channel, float amplitude) {

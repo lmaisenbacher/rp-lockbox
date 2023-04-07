@@ -38,8 +38,8 @@ float chB_arbitraryData[BUFFER_LENGTH];
 int gen_SetDefaultValues() {
     gen_Disable(RP_CH_1);
     gen_Disable(RP_CH_2);
-    gen_OffsetDisable(RP_CH_1);
-    gen_OffsetDisable(RP_CH_2);    
+    gen_POffsetDisable(RP_CH_1);
+    gen_POffsetDisable(RP_CH_2);    
     gen_setFrequency(RP_CH_1, 1000);
     gen_setFrequency(RP_CH_2, 1000);
     gen_setBurstRepetitions(RP_CH_1, 1);
@@ -79,16 +79,16 @@ int gen_IsEnable(rp_channel_t channel, bool *value) {
     return generate_getOutputEnabled(channel, value);
 }
 
-int gen_OffsetDisable(rp_channel_t channel) {
-    return generate_setOffsetDisable(channel, true);
+int gen_POffsetDisable(rp_channel_t channel) {
+    return generate_setPOffsetEnable(channel, false);
 }
 
-int gen_OffsetEnable(rp_channel_t channel) {
-    return generate_setOffsetDisable(channel, false);
+int gen_POffsetEnable(rp_channel_t channel) {
+    return generate_setPOffsetEnable(channel, true);
 }
 
-int gen_OffsetIsEnable(rp_channel_t channel, bool *value) {
-    return generate_getOffsetEnabled(channel, value);
+int gen_POffsetIsEnable(rp_channel_t channel, bool *value) {
+    return generate_getPOffsetEnabled(channel, value);
 }
 
 int gen_checkAmplitudeAndOffset(float amplitude, float offset) {
