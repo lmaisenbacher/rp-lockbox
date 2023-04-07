@@ -65,7 +65,6 @@ module red_pitaya_pid (
    input        [ 12-1: 0] relock_d_i      ,  // auxiliary ADC D
    input signed [ 14-1: 0] out_a_center_i  ,  // center of out 1 range
    input signed [ 14-1: 0] out_b_center_i  ,  // center of out 2 range
-   input        [ 14-1: 0] asg_offset_a_i  ,  // ASG offset for out 1
    output       [ 14-1: 0] dat_a_o         ,  //!< output data CHA
    output       [ 14-1: 0] dat_b_o         ,  //!< output data CHB
    output                  do_lock_state_a ,  // digital output lock state A   

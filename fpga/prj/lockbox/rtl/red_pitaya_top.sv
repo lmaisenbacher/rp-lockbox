@@ -180,7 +180,6 @@ logic signed [15-1:0] dac_a_sum, dac_b_sum;        // sum of ASG and PID before 
 logic signed [14-1:0] dac_a_lim_i, dac_b_lim_i;    // input to the dac limiters
 logic [1:0]           dac_a_railed, dac_b_railed;  // limiter status for integrator reset
 logic signed [14-1:0] dac_a_center, dac_b_center;  // center of the output ranges
-logic        [14-1:0] asg_offset_a;                // ASG offset for out 1
 
 // ASG
 SBG_T [2-1:0]            asg_dat;
@@ -519,7 +518,6 @@ red_pitaya_asg i_asg (
   .trig_a_i        (gpio.i[8]   ),
   .trig_b_i        (gpio.i[8]   ),
   .trig_out_o      (trig_asg_out),
-  .set_a_dc        (asg_offset_a),  // ASG offset for out 1
   // System bus
   .sys_addr        (sys[2].addr ),
   .sys_wdata       (sys[2].wdata),
@@ -548,7 +546,6 @@ red_pitaya_pid i_pid (
   .relock_d_i      (xadc_d_dat  ), // auxiliary ADC D
   .out_a_center_i  (dac_a_center), // center of out 1 range
   .out_b_center_i  (dac_b_center), // center of out 2 range
-  .asg_offset_a_i  (asg_offset_a), // ASG offset for out 1
    // Output signals  
   .dat_a_o         (pid_dat[0]  ), // out 1
   .dat_b_o         (pid_dat[1]  ), // out 2   

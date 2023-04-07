@@ -57,7 +57,6 @@ module red_pitaya_asg (
   input                 trig_a_i  ,  // starting trigger CHA
   input                 trig_b_i  ,  // starting trigger CHB
   output                trig_out_o,  // notification trigger
-  output      [14-1: 0] set_a_dc,
   // System bus
   input      [ 32-1: 0] sys_addr  ,  // bus address
   input      [ 32-1: 0] sys_wdata ,  // bus write data
