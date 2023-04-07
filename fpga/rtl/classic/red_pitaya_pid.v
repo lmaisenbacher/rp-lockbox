@@ -237,21 +237,21 @@ always @(posedge clk_i) begin
    end
    else begin
       // Add signal of enabled PID lockboxes for out 1
-      if (pid_inverted[0] && (!pid_inverted[1]))
+      if (enabled[0] && (!enabled[1]))
          out_1_sum <= $signed(pid_sat[0]);
-      else if (pid_inverted[1] && (!pid_inverted[0]))
+      else if (enabled[1] && (!enabled[0]))
          out_1_sum <= $signed(pid_sat[1]);
-      else if (pid_inverted[0] && pid_inverted[1])
+      else if (enabled[0] && enabled[1])
          out_1_sum <= $signed(pid_sat[0]) + $signed(pid_sat[1]);
       else
          out_1_sum <= 14'h0;
 
       // Add signal of enabled PID lockboxes for out 2
-      if (pid_inverted[2] && (!pid_inverted[3]))
+      if (enabled[2] && (!enabled[3]))
          out_2_sum <= $signed(pid_sat[2]);
-      else if (pid_inverted[3] && (!pid_inverted[2]))
+      else if (enabled[3] && (!enabled[2]))
          out_2_sum <= $signed(pid_sat[3]);
-      else if (pid_inverted[2] && pid_inverted[3])
+      else if (enabled[2] && enabled[3])
          out_2_sum <= $signed(pid_sat[2]) + $signed(pid_sat[3]);
       else
          out_2_sum <= 14'h0;
