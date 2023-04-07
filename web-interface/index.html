@@ -120,6 +120,7 @@
         var checkbox_pid_hold_name = ["#checkbox_pid_11_hold", "#checkbox_pid_21_hold", "#checkbox_pid_12_hold", "#checkbox_pid_22_hold"];
         var checkbox_pid_int_res_name = ["#checkbox_pid_11_int_res", "#checkbox_pid_21_int_res", "#checkbox_pid_12_int_res", "#checkbox_pid_22_int_res"];
         var checkbox_pid_int_auto_reset_name = ["#checkbox_pid_11_int_auto_reset", "#checkbox_pid_21_int_auto_reset", "#checkbox_pid_12_int_auto_reset", "#checkbox_pid_22_int_auto_reset"];
+        var checkbox_pid_enabled_name = ["#checkbox_pid_11_enabled", "#checkbox_pid_21_enabled", "#checkbox_pid_12_enabled", "#checkbox_pid_22_enabled"];
         var spinner_relock_min_name = ["#spinner_relock_11_min", "#spinner_relock_21_min", "#spinner_relock_12_min", "#spinner_relock_22_min"];
         var spinner_relock_max_name = ["#spinner_relock_11_max", "#spinner_relock_21_max", "#spinner_relock_12_max", "#spinner_relock_22_max"];
         var spinner_relock_slew_rate_name = ["#spinner_relock_11_slew_rate", "#spinner_relock_21_slew_rate", "#spinner_relock_12_slew_rate", "#spinner_relock_22_slew_rate"];
@@ -792,6 +793,7 @@
                 var hold_values = [data.pid_11_hold, data.pid_21_hold, data.pid_12_hold, data.pid_22_hold];               
                 var int_res_values = [data.pid_11_int_res, data.pid_21_int_res, data.pid_12_int_res, data.pid_22_int_res];               
                 var int_auto_reset_values = [data.pid_11_int_auto_reset, data.pid_21_int_auto_reset, data.pid_12_int_auto_reset, data.pid_22_int_auto_reset];               
+                var enabled_values = [data.pid_11_enabled, data.pid_21_enabled, data.pid_12_enabled, data.pid_22_enabled];                               
                 var relock_min_values = [data.pid_11_relock_min, data.pid_21_relock_min, data.pid_12_relock_min, data.pid_22_relock_min];               
                 var relock_max_values = [data.pid_11_relock_max, data.pid_21_relock_max, data.pid_12_relock_max, data.pid_22_relock_max];             
                 var relock_slew_rate_values = [data.pid_11_relock_slew_rate, data.pid_21_relock_slew_rate, data.pid_12_relock_slew_rate, data.pid_22_relock_slew_rate];               
@@ -809,6 +811,7 @@
                     $(checkbox_pid_hold_name[i]).not(":focus").prop("checked", hold_values[i]);
                     $(checkbox_pid_int_res_name[i]).not(":focus").prop("checked", int_res_values[i]);
                     $(checkbox_pid_int_auto_reset_name[i]).not(":focus").prop("checked", int_auto_reset_values[i]);
+                    $(checkbox_pid_enabled_name[i]).not(":focus").prop("checked", enabled_values[i]);                    
                     $(spinner_relock_min_name[i]).not(":focus").val(relock_min_values[i].toFixed(3));
                     $(spinner_relock_max_name[i]).not(":focus").val(relock_max_values[i].toFixed(3));
                     $(spinner_relock_slew_rate_name[i]).not(":focus").val(relock_slew_rate_values[i].toFixed(2));
