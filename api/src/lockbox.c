@@ -971,7 +971,7 @@ int rp_LoadLockboxConfig() {
 
     if (configfile == NULL)
         return RP_EOCF;
-    fread(&config, sizeof(rp_lockbox_params_t), 1, configfile);
+    (void)fread(&config, sizeof(rp_lockbox_params_t), 1, configfile);
     fclose(configfile);
 
     if (config.config_version != LOCKBOX_CONFIG_VERSION)
