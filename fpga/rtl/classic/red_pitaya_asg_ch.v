@@ -85,6 +85,8 @@ wire              dac_npnt_sub_neg;
 reg   [  28-1: 0] dac_mult  ;
 reg   [  15-1: 0] dac_sum   ;
 
+reg set_offset_i; // output offset even if off
+
 // read
 always @(posedge dac_clk_i)
 begin
@@ -105,12 +107,18 @@ buf_rdata_o <= dac_buf[buf_addr_i] ;
 // scale and offset
 always @(posedge dac_clk_i)
 begin
+   set_offset_i <= 1'b1;
    dac_mult <= $signed(dac_rdat) * $signed({1'b0,set_amp_i}) ;
-   dac_sum  <= $signed(dac_mult[28-1:13]) + $signed(set_dc_i) ;
+   if (set_zero_i && set_offset_i)
+      dac_sum  <= $signed(set_dc_i) ;
+   else
+      dac_sum  <= $signed(dac_mult[28-1:13]) + $signed(set_dc_i) ;   
 
    // saturation
-   if (set_zero_i)  dac_o <= 14'h0;
-   else             dac_o <= ^dac_sum[15-1:15-2] ? {dac_sum[15-1], {13{~dac_sum[15-1]}}} : dac_sum[13:0];
+   if (set_zero_i && (!set_offset_i))
+      dac_o <= 14'h0;
+   else
+      dac_o <= ^dac_sum[15-1:15-2] ? {dac_sum[15-1], {13{~dac_sum[15-1]}}} : dac_sum[13:0];
 end
 
 //---------------------------------------------------------------------------------

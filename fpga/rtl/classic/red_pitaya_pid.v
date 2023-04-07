@@ -99,6 +99,7 @@ reg         [3:0]         pid_inverted              ;
 reg         [3:0]         set_irst                  ;
 reg         [3:0]         set_irst_when_railed      ;
 reg         [3:0]         set_hold                  ;
+reg         [3:0]         enabled                   ;
 wire        [3:0]         pid_irst                  ;
 wire        [3:0]         pid_ctr_rst               ;
 wire signed [14-1:0]      pid_ctr_val          [3:0];
@@ -107,7 +108,6 @@ wire        [1:0]         pid_railed_i         [3:0];
 
 wire signed [15-1:0]      pid_sum              [3:0];
 wire signed [14-1:0]      pid_sat              [3:0];
-
 
 reg         [3:0]                  relock_enabled;
 reg         [12-1:0]               relock_minval    [3:0];
@@ -220,13 +220,15 @@ assign do_lock_state_a = relock_locked_o[0];
 //---------------------------------------------------------------------------------
 //  Sum and saturation
 
-wire [ 15-1: 0] out_1_sum   ;
+// wire [ 15-1: 0] out_1_sum   ;
+reg  [ 15-1: 0] out_1_sum   ;
 reg  [ 14-1: 0] out_1_sat   ;
-wire [ 15-1: 0] out_2_sum   ;
+// wire [ 15-1: 0] out_2_sum   ;
+reg  [ 15-1: 0] out_2_sum   ;
 reg  [ 14-1: 0] out_2_sat   ;
 
-assign out_1_sum = $signed(pid_sat[0]) + $signed(pid_sat[1]) + $signed(asg_offset_a_i);
-assign out_2_sum = $signed(pid_sat[3]) + $signed(pid_sat[2]);
+// assign out_1_sum = $signed(pid_sat[0]) + $signed(pid_sat[1]);
+// assign out_2_sum = $signed(pid_sat[3]) + $signed(pid_sat[2]);
 
 always @(posedge clk_i) begin
    if (rstn_i == 1'b0) begin
@@ -234,14 +236,34 @@ always @(posedge clk_i) begin
       out_2_sat <= 14'd0 ;
    end
    else begin
-      if (out_1_sum[15-1:15-2]==2'b01) // postitive sat
+      // Add signal of enabled PID lockboxes for out 1
+      if (pid_inverted[0] && (!pid_inverted[1]))
+         out_1_sum <= $signed(pid_sat[0]);
+      else if (pid_inverted[1] && (!pid_inverted[0]))
+         out_1_sum <= $signed(pid_sat[1]);
+      else if (pid_inverted[0] && pid_inverted[1])
+         out_1_sum <= $signed(pid_sat[0]) + $signed(pid_sat[1]);
+      else
+         out_1_sum <= 14'h0;
+
+      // Add signal of enabled PID lockboxes for out 2
+      if (pid_inverted[2] && (!pid_inverted[3]))
+         out_2_sum <= $signed(pid_sat[2]);
+      else if (pid_inverted[3] && (!pid_inverted[2]))
+         out_2_sum <= $signed(pid_sat[3]);
+      else if (pid_inverted[2] && pid_inverted[3])
+         out_2_sum <= $signed(pid_sat[2]) + $signed(pid_sat[3]);
+      else
+         out_2_sum <= 14'h0;
+
+      if (out_1_sum[15-1:15-2]==2'b01) // positive sat
          out_1_sat <= 14'h1FFF ;
       else if (out_1_sum[15-1:15-2]==2'b10) // negative sat
          out_1_sat <= 14'h2000 ;
       else
          out_1_sat <= out_1_sum[14-1:0] ;
 
-      if (out_2_sum[15-1:15-2]==2'b01) // postitive sat
+      if (out_2_sum[15-1:15-2]==2'b01) // positive sat
          out_2_sat <= 14'h1FFF ;
       else if (out_2_sum[15-1:15-2]==2'b10) // negative sat
          out_2_sat <= 14'h2000 ;
@@ -297,19 +319,22 @@ endgenerate
 // Flags write
 always @(posedge clk_i) begin
     if (rstn_i == 1'b0) begin
-          relock_enabled <=  4'b0   ;
-          set_hold       <=  4'b0   ;
-          pid_inverted   <=  4'b0   ;
-          set_irst       <=  4'b1111;
+          enabled                <=  4'b1111;      
+          relock_enabled         <=  4'b0   ;
+          set_hold               <=  4'b0   ;
+          set_irst_when_railed   <=  4'b0   ;          
+          pid_inverted           <=  4'b0   ;
+          set_irst               <=  4'b1111;
     end
     else begin
         if (rstn_i & sys_wen & sys_addr[19:0]==16'h0)
-            {relock_enabled,
+            {enabled,
+             relock_enabled,
              set_hold,
              set_irst_when_railed,
              pid_inverted,
              set_irst}
-            <= sys_wdata[20-1:0]; 
+            <= sys_wdata[24-1:0];
     end
 end
 
@@ -326,7 +351,7 @@ end else begin
    casez (sys_addr[19:0])
        20'h00: begin
           sys_ack <= sys_en;
-          sys_rdata <= {{32-20{1'b0}}, relock_enabled, set_hold, set_irst_when_railed,
+          sys_rdata <= {{32-24{1'b0}}, enabled, relock_enabled, set_hold, set_irst_when_railed,
                         pid_inverted, set_irst};
       end 
 
