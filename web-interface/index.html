@@ -277,8 +277,8 @@
 			});
         };
 
-		function set_sg_perm_offset_enabled(output, offset_enabled) {
-			$.post("_set_sg_perm_offset_enabled", {
+		function set_sg_poffset_enabled(output, offset_enabled) {
+			$.post("_set_sg_poffset_enabled", {
 			output: output,
 			offset_enabled: offset_enabled,
 			});
@@ -736,19 +736,19 @@
             set_sg_enabled(output, $(event.target).prop("checked"));
         }
 
-		function sg_perm_offset_enabled_changed(event, ui) {
+		function sg_poffset_enabled_changed(event, ui) {
             var output;
             switch(event.target.id) {
-                case "checkbox_sg_1_perm_offset_enabled":
+                case "checkbox_sg_1_poffset_enabled":
                     output = 0;
                     break;
-                case "checkbox_sg_2_perm_offset_enabled":
+                case "checkbox_sg_2_poffset_enabled":
                     output = 1;
                     break;
                 default:
                     output = 0;
             }
-            set_sg_perm_offset_enabled(output, $(event.target).prop("checked"));
+            set_sg_poffset_enabled(output, $(event.target).prop("checked"));
         }        
 
         function op_mode_changed(event, ui){
@@ -849,8 +849,8 @@
 				$("#sg_2_waveform").not(":focus").val(data.sg_2_waveform);
 				$("#checkbox_sg_1_enabled").not(":focus").prop("checked", data.sg_1_enabled);
 				$("#checkbox_sg_2_enabled").not(":focus").prop("checked", data.sg_2_enabled);
-				$("#checkbox_sg_1_perm_offset_enabled").not(":focus").prop("checked", data.sg_1_perm_offset_enabled);
-				$("#checkbox_sg_2_perm_offset_enabled").not(":focus").prop("checked", data.sg_2_perm_offset_enabled);
+				$("#checkbox_sg_1_poffset_enabled").not(":focus").prop("checked", data.sg_1_poffset_enabled);
+				$("#checkbox_sg_2_poffset_enabled").not(":focus").prop("checked", data.sg_2_poffset_enabled);
 
             });
             setTimeout(update_parameters, update_interval);
@@ -972,6 +972,7 @@
 		$( "#spinner_limit_2_max").on("spinstop", limit_max_changed);
 		
 		$( ".sg_enabled_checkbox").on("change", sg_enabled_changed);
+		$( ".sg_poffset_enabled_checkbox").on("change", sg_poffset_enabled_changed);
 		$( ".freq_spinner" ).on("spinstop", sg_freq_changed);
         $( "#spinner_sg_1_amp" ).on("spinstop", sg_amp_changed);
 		$( "#spinner_sg_2_amp" ).on("spinstop", sg_amp_changed);
@@ -1415,7 +1416,7 @@
                     </tr>
                     <tr>
                         <label class="checkbox-container">Output offset when disabled
-                            <input type="checkbox" id="checkbox_sg_1_perm_offset_enabled" class="sg_enabled_checkbox">
+                            <input type="checkbox" id="checkbox_sg_1_poffset_enabled" class="sg_poffset_enabled_checkbox">
                             <span class="checkmark"></span>
                         </label>
                     </tr>                    
@@ -1457,7 +1458,7 @@
                     </tr>
                     <tr>
                         <label class="checkbox-container">Output offset when disabled
-                            <input type="checkbox" id="checkbox_sg_2_perm_offset_enabled" class="sg_enabled_checkbox">
+                            <input type="checkbox" id="checkbox_sg_2_poffset_enabled" class="sg_poffset_enabled_checkbox">
                             <span class="checkmark"></span>
                         </label>
                     </tr>                                        
