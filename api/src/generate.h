@@ -68,7 +68,8 @@ typedef struct generate_control_s {
     unsigned int ASM_reset          :1;
     unsigned int AsetOutputTo0      :1;
     unsigned int AgatedBursts       :1;
-    unsigned int                    :7;
+    unsigned int AsetOffsetTo0      :1;
+    unsigned int                    :6;
 
     unsigned int BtriggerSelector   :4;
     unsigned int BSM_WrapPointer    :1;
@@ -76,7 +77,8 @@ typedef struct generate_control_s {
     unsigned int BSM_reset          :1;
     unsigned int BsetOutputTo0      :1;
     unsigned int BgatedBursts       :1;
-    unsigned int                    :7;
+    unsigned int BsetOffsetTo0      :1;
+    unsigned int                    :6;
 
     ch_properties_t properties_chA;
     ch_properties_t properties_chB;

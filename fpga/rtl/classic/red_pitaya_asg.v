@@ -82,6 +82,7 @@ reg               set_a_wrap   , set_b_wrap   ;
 reg   [  14-1: 0] set_a_amp    , set_b_amp    ;
 reg   [  14-1: 0] set_a_dc     , set_b_dc     ;
 reg               set_a_zero   , set_b_zero   ;
+reg               set_a_offset , set_b_offset ;
 reg   [  16-1: 0] set_a_ncyc   , set_b_ncyc   ;
 reg   [  16-1: 0] set_a_rnum   , set_b_rnum   ;
 reg   [  32-1: 0] set_a_rdly   , set_b_rdly   ;
@@ -121,6 +122,7 @@ red_pitaya_asg_ch  #(.RSZ (RSZ)) ch [1:0] (
   .set_amp_i       ({set_b_amp        , set_a_amp        }),  // set amplitude scale
   .set_dc_i        ({set_b_dc         , set_a_dc         }),  // set output offset
   .set_zero_i      ({set_b_zero       , set_a_zero       }),  // set output to zero
+  .set_offset_i    ({set_b_offset     , set_a_offset     }),  // set output offset even when output set to zero
   .set_ncyc_i      ({set_b_ncyc       , set_a_ncyc       }),  // set number of cycle
   .set_rnum_i      ({set_b_rnum       , set_a_rnum       }),  // set number of repetitions
   .set_rdly_i      ({set_b_rdly       , set_a_rdly       }),  // set delay between repetitions
@@ -151,6 +153,7 @@ if (dac_rstn_i == 1'b0) begin
    set_a_amp   <= 14'h2000 ;
    set_a_dc    <= 14'h0    ;
    set_a_zero  <=  1'b0    ;
+   set_a_offset<=  1'b0    ;
    set_a_rst   <=  1'b0    ;
    set_a_once  <=  1'b0    ;
    set_a_wrap  <=  1'b0    ;
@@ -166,6 +169,7 @@ if (dac_rstn_i == 1'b0) begin
    set_b_amp   <= 14'h2000 ;
    set_b_dc    <= 14'h0    ;
    set_b_zero  <=  1'b0    ;
+   set_b_offset<=  1'b0    ; 
    set_b_rst   <=  1'b0    ;
    set_b_once  <=  1'b0    ;
    set_b_wrap  <=  1'b0    ;
@@ -188,8 +192,8 @@ end else begin
       trig_b_src <= sys_wdata[19:16] ;
 
    if (sys_wen) begin
-      if (sys_addr[19:0]==20'h0)   {set_a_rgate, set_a_zero, set_a_rst, set_a_once, set_a_wrap} <= sys_wdata[ 8: 4] ;
-      if (sys_addr[19:0]==20'h0)   {set_b_rgate, set_b_zero, set_b_rst, set_b_once, set_b_wrap} <= sys_wdata[24:20] ;
+      if (sys_addr[19:0]==20'h0)   {set_a_offset, set_a_rgate, set_a_zero, set_a_rst, set_a_once, set_a_wrap} <= sys_wdata[ 9: 4] ;
+      if (sys_addr[19:0]==20'h0)   {set_b_offset, set_b_rgate, set_b_zero, set_b_rst, set_b_once, set_b_wrap} <= sys_wdata[25:20] ;
 
       if (sys_addr[19:0]==20'h4)   set_a_amp  <= sys_wdata[  0+13: 0] ;
       if (sys_addr[19:0]==20'h4)   set_a_dc   <= sys_wdata[ 16+13:16] ;
@@ -219,8 +223,8 @@ end else begin
    ack_dly <=  ren_dly[3-1] || sys_wen ;
 end
 
-wire [32-1: 0] r0_rd = {7'h0,set_b_rgate, set_b_zero,set_b_rst,set_b_once,set_b_wrap, 1'b0,trig_b_src,
-                        7'h0,set_a_rgate, set_a_zero,set_a_rst,set_a_once,set_a_wrap, 1'b0,trig_a_src };
+wire [32-1: 0] r0_rd = {6'h0, set_b_offset, set_b_rgate, set_b_zero, set_b_rst, set_b_once, set_b_wrap, 1'b0, trig_b_src,
+                        6'h0, set_a_offset, set_a_rgate, set_a_zero, set_a_rst, set_a_once, set_a_wrap, 1'b0, trig_a_src };
 
 wire sys_en;
 assign sys_en = sys_wen | sys_ren;

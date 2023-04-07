@@ -69,6 +69,28 @@ int generate_getOutputEnabled(rp_channel_t channel, bool *enabled) {
     return RP_OK;
 }
 
+int generate_setOffsetDisable(rp_channel_t channel, bool disable) {
+    if (channel == RP_CH_1) {
+        generate->AsetOffsetTo0 = disable ? 1 : 0;
+    }
+    else if (channel == RP_CH_2) {
+        generate->BsetOffsetTo0 = disable ? 1 : 0;
+    }
+    else {
+        return RP_EPN;
+    }
+    return RP_OK;
+}
+
+int generate_getOffsetEnabled(rp_channel_t channel, bool *enabled) {
+    uint32_t value;
+    CHANNEL_ACTION(channel,
+            value = generate->AsetOffsetTo0,
+            value = generate->BsetOffsetTo0)
+    *enabled = value == 1 ? false : true;
+    return RP_OK;
+}
+
 int generate_setAmplitude(rp_channel_t channel, float amplitude) {
     volatile ch_properties_t *ch_properties;
 

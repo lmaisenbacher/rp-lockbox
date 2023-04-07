@@ -62,6 +62,7 @@ module red_pitaya_asg_ch #(
    input     [  14-1: 0] set_amp_i       ,  //!< set amplitude scale
    input     [  14-1: 0] set_dc_i        ,  //!< set output offset
    input                 set_zero_i      ,  //!< set output to zero
+   input                 set_offset_i    ,  //!< set output offset even when output set to zero
    input     [  16-1: 0] set_ncyc_i      ,  //!< set number of cycle
    input     [  16-1: 0] set_rnum_i      ,  //!< set number of repetitions
    input     [  32-1: 0] set_rdly_i      ,  //!< set delay between repetitions
@@ -85,8 +86,6 @@ wire              dac_npnt_sub_neg;
 reg   [  28-1: 0] dac_mult  ;
 reg   [  15-1: 0] dac_sum   ;
 
-reg set_offset_i; // output offset even if off
-
 // read
 always @(posedge dac_clk_i)
 begin
@@ -107,7 +106,6 @@ buf_rdata_o <= dac_buf[buf_addr_i] ;
 // scale and offset
 always @(posedge dac_clk_i)
 begin
-   set_offset_i <= 1'b1;
    dac_mult <= $signed(dac_rdat) * $signed({1'b0,set_amp_i}) ;
    if (set_zero_i && set_offset_i)
       dac_sum  <= $signed(set_dc_i) ;
