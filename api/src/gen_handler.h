@@ -19,11 +19,11 @@
 #include "redpitaya/lockbox.h"
 
 int gen_SetDefaultValues();
-int gen_Disable(rp_channel_t chanel);
-int gen_Enable(rp_channel_t chanel);
+int gen_Disable(rp_channel_t channel);
+int gen_Enable(rp_channel_t channel);
 int gen_IsEnable(rp_channel_t channel, bool *value);
-int gen_POffsetDisable(rp_channel_t chanel);
-int gen_POffsetEnable(rp_channel_t chanel);
+int gen_POffsetDisable(rp_channel_t channel);
+int gen_POffsetEnable(rp_channel_t channel);
 int gen_POffsetIsEnable(rp_channel_t channel, bool *value);
 int gen_setAmplitude(rp_channel_t channel, float amplitude);
 int gen_getAmplitude(rp_channel_t channel, float *amplitude);
@@ -47,8 +47,8 @@ int gen_setBurstRepetitions(rp_channel_t channel, int repetitions);
 int gen_getBurstRepetitions(rp_channel_t channel, int *repetitions);
 int gen_setBurstPeriod(rp_channel_t channel, uint32_t period);
 int gen_getBurstPeriod(rp_channel_t channel, uint32_t *period);
-int gen_setTriggerSource(rp_channel_t chanel, rp_trig_src_t src);
-int gen_getTriggerSource(rp_channel_t chanel, rp_trig_src_t *src);
+int gen_setTriggerSource(rp_channel_t channel, rp_trig_src_t src);
+int gen_getTriggerSource(rp_channel_t channel, rp_trig_src_t *src);
 int gen_Trigger(uint32_t channel);
 int gen_Synchronise();
 int triggerIfInternal(rp_channel_t channel);
