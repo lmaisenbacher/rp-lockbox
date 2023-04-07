@@ -879,13 +879,13 @@ int rp_PIDGetRelock(rp_pid_t pid, bool *enabled) {
     return pid_GetPIDRelock(pid, enabled);
 }
 
-// int rp_PIDSetEnable(rp_pid_t pid, bool enable) {
-//     return pid_SetPIDEnable(pid, enable);
-// }
+int rp_PIDSetEnable(rp_pid_t pid, bool enable) {
+    return pid_SetPIDEnable(pid, enable);
+}
 
-// int rp_PIDGetEnable(rp_pid_t pid, bool *enabled) {
-//     return pid_GetPIDEnable(pid, enabled);
-// }
+int rp_PIDGetEnable(rp_pid_t pid, bool *enabled) {
+    return pid_GetPIDEnable(pid, enabled);
+}
 
 int rp_PIDSetRelockStepsize(rp_pid_t pid, float stepsize) {
     return pid_SetRelockStepsize(pid, stepsize);
