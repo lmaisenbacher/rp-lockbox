@@ -1518,6 +1518,26 @@ int rp_PIDSetRelock(rp_pid_t pid, bool enable);
 int rp_PIDGetRelock(rp_pid_t pid, bool *enabled);
 
 /*
+ * Get the analog input used for relocking the specified PID.
+ * @param pid The PID to use (see rp_pid_t documentation for details).
+ * @param pin Pointer where the selected analog pin will be returned.
+ * @return If the function is successful, the return value is RP_OK.
+ * If the function is unsuccessful, the return value is any of RP_E* values that
+ * indicate an error.
+ */
+int rp_PIDSetEnable(rp_pid_t pid, bool *enabled);
+
+/*
+ * Get the analog input used for relocking the specified PID.
+ * @param pid The PID to use (see rp_pid_t documentation for details).
+ * @param pin Pointer where the selected analog pin will be returned.
+ * @return If the function is successful, the return value is RP_OK.
+ * If the function is unsuccessful, the return value is any of RP_E* values that
+ * indicate an error.
+ */
+int rp_PIDGetEnable(rp_pid_t pid, bool *enabled);
+
+/*
  * Set the relock stepsize of the specified PID using the ADC calibration values
  * stored in EEPROM.
  * @param pid The PID to use (see rp_pid_t documentation for details).
@@ -1603,26 +1623,6 @@ int rp_PIDSetRelockInput(rp_pid_t pid, rp_apin_t pin);
  * indicate an error.
  */
 int rp_PIDGetRelockInput(rp_pid_t pid, rp_apin_t *pin);
-
-/*
- * Get the analog input used for relocking the specified PID.
- * @param pid The PID to use (see rp_pid_t documentation for details).
- * @param pin Pointer where the selected analog pin will be returned.
- * @return If the function is successful, the return value is RP_OK.
- * If the function is unsuccessful, the return value is any of RP_E* values that
- * indicate an error.
- */
-int rp_PIDSetEnable(rp_pid_t pid, rp_apin_t *pin);
-
-/*
- * Get the analog input used for relocking the specified PID.
- * @param pid The PID to use (see rp_pid_t documentation for details).
- * @param pin Pointer where the selected analog pin will be returned.
- * @return If the function is successful, the return value is RP_OK.
- * If the function is unsuccessful, the return value is any of RP_E* values that
- * indicate an error.
- */
-int rp_PIDGetEnable(rp_pid_t pid, rp_apin_t *pin);
 
 /*
  * Set the minimum DAC output voltage of the specified channel using the
