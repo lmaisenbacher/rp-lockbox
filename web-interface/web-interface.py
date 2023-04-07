@@ -472,6 +472,7 @@ def get_parameters():
     hold = [False, False, False, False]
     int_reset = [False, False, False, False]
     int_auto = [False, False, False, False]
+    enabled = [False, False, False, False]
     relock_min = [0., 0., 0., 0.]
     relock_max = [0., 0., 0., 0.]
     relock_slew_rate = [0., 0., 0., 0.]
@@ -520,6 +521,12 @@ def get_parameters():
         if retval != 0:
             LOG.error("Failed to get state of PID automatical integrator reset. Error code: %s",
                       ERROR_CODES[retval])
+            
+        enabled[i] = ctypes.c_bool()
+        retval = RP_LIB.rp_PIDGetEnable(i, ctypes.byref(enabled[i]))
+        if retval != 0:
+            LOG.error("Failed to get state of PID enable. Error code: %s",
+                      ERROR_CODES[retval])            
 
         relock_min[i] = ctypes.c_float()
         retval = RP_LIB.rp_PIDGetRelockMinimum(i, ctypes.byref(relock_min[i]))
@@ -651,6 +658,10 @@ def get_parameters():
         "pid_12_int_auto_reset": int_auto[1].value,
         "pid_21_int_auto_reset": int_auto[2].value,
         "pid_22_int_auto_reset": int_auto[3].value,
+        "pid_11_enabled": enabled[0].value,
+        "pid_12_enabled": enabled[1].value,
+        "pid_21_enabled": enabled[2].value,
+        "pid_22_enabled": enabled[3].value,        
         "pid_11_relock_min": relock_min[0].value,
         "pid_12_relock_min": relock_min[1].value,
         "pid_21_relock_min": relock_min[2].value,
