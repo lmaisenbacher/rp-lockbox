@@ -276,6 +276,13 @@
 			sg_enabled: sg_enabled,
 			});
         };
+
+		function set_sg_perm_offset_enabled(output, sg_enabled) {
+			$.post("_set_sg_perm_offset_enabled", {
+			output: output,
+			sg_enabled: sg_enabled,
+			});
+        };        
     
         function save_parameters() {
             $.post("_save_parameters", {});
@@ -729,6 +736,21 @@
             set_sg_enabled(output, $(event.target).prop("checked"));
         }
 
+		function sg_perm_offset_enabled_changed(event, ui) {
+            var output;
+            switch(event.target.id) {
+                case "checkbox_sg_1_perm_offset_enabled":
+                    output = 0;
+                    break;
+                case "checkbox_sg_2_perm_offset_enabled":
+                    output = 1;
+                    break;
+                default:
+                    output = 0;
+            }
+            set_sg_perm_offset_enabled(output, $(event.target).prop("checked"));
+        }        
+
         function op_mode_changed(event, ui){
             switch(event.target.value){
                 case "0":
@@ -827,6 +849,8 @@
 				$("#sg_2_waveform").not(":focus").val(data.sg_2_waveform);
 				$("#checkbox_sg_1_enabled").not(":focus").prop("checked", data.sg_1_enabled);
 				$("#checkbox_sg_2_enabled").not(":focus").prop("checked", data.sg_2_enabled);
+				$("#checkbox_sg_1_perm_offset_enabled").not(":focus").prop("checked", data.sg_1_perm_offset_enabled);
+				$("#checkbox_sg_2_perm_offset_enabled").not(":focus").prop("checked", data.sg_2_perm_offset_enabled);
 
             });
             setTimeout(update_parameters, update_interval);
@@ -1390,6 +1414,12 @@
                         </label>
                     </tr>
                     <tr>
+                        <label class="checkbox-container">Output offset when disabled
+                            <input type="checkbox" id="checkbox_sg_1_perm_offset_enabled" class="sg_enabled_checkbox">
+                            <span class="checkmark"></span>
+                        </label>
+                    </tr>                    
+                    <tr>
                         <td><label for="spinner_sg_1_freq">Frequency (Hz)</label></td>
                         <td><input id="spinner_sg_1_freq" class="freq_spinner"></td>
                     </tr>
@@ -1425,6 +1455,12 @@
                             <span class="checkmark"></span>
                         </label>
                     </tr>
+                    <tr>
+                        <label class="checkbox-container">Output offset when disabled
+                            <input type="checkbox" id="checkbox_sg_2_perm_offset_enabled" class="sg_enabled_checkbox">
+                            <span class="checkmark"></span>
+                        </label>
+                    </tr>                                        
                     <tr>
                         <td><label for="spinner_sg_2_freq">Frequency (Hz)</label></td>
                         <td><input id="spinner_sg_2_freq" class="freq_spinner"></td>
