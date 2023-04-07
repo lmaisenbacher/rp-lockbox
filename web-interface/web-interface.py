@@ -212,7 +212,7 @@ def set_int_auto():
                   ERROR_CODES[retval])
 
 @route("/_set_pid_enabled", method="POST")
-def set_relock_enabled():
+def set_pid_enabled():
     """Handle POST request for enabling the PID output.
 
     Accepted POST parameters:

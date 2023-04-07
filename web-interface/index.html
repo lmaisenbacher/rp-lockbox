@@ -516,7 +516,7 @@
                     pid = 0;
             }
             set_pid_enabled(pid, $(event.target).prop("checked"));
-        }        
+        }
 
 		function relock_min_changed(event, ui) {
             var pid;
@@ -1121,6 +1121,10 @@
                             <input type="checkbox" id="checkbox_pid_21_int_auto_reset" class="int_auto_reset_checkbox">
                             <span class="checkmark"></span>
                         </label>
+                        <label class="checkbox-container">Output enabled
+                            <input type="checkbox" id="checkbox_pid_21_enabled" class="pid_enabled_checkbox">
+                            <span class="checkmark"></span>
+                        </label>                        
                         <button id="button_toggle_21" class="button">Toggle Lock/Scan</button>
                     </div>
 
@@ -1222,6 +1226,10 @@
                             <input type="checkbox" id="checkbox_pid_12_int_auto_reset" class="int_auto_reset_checkbox">
                             <span class="checkmark"></span>
                         </label>
+                        <label class="checkbox-container">Output enabled
+                            <input type="checkbox" id="checkbox_pid_12_enabled" class="pid_enabled_checkbox">
+                            <span class="checkmark"></span>
+                        </label>                        
                         <button id="button_toggle_12" class="button">Toggle Lock/Scan</button>
                     </div>
 
@@ -1314,6 +1322,10 @@
                             <input type="checkbox" id="checkbox_pid_22_int_auto_reset" class="int_auto_reset_checkbox">
                             <span class="checkmark"></span>
                         </label>
+                        <label class="checkbox-container">Output enabled
+                            <input type="checkbox" id="checkbox_pid_22_enabled" class="pid_enabled_checkbox">
+                            <span class="checkmark"></span>
+                        </label>                        
                         <button id="button_toggle_22" class="button">Toggle Lock/Scan</button>
                     </div>
 
