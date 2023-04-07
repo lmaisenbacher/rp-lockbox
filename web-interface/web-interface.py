@@ -408,6 +408,25 @@ def set_sg_enabled():
         if retval != 0:
             LOG.error("Failed to disable signal generator. Error code: %s", ERROR_CODES[retval])
 
+@route("/_set_sg_perm_offset_enabled", method="POST")
+def set_sg_perm_offset_enabled():
+    """Handle POST request for enabling permanent offset of the signal generator.
+
+    Accepted POST parameters:
+    :output: the output channel to adjust
+    :offset_enabled: true if permanent offset of signal generator enabled, false if not
+    """
+    offset_enabled = request.params.get("offset_enabled", 0) == "true"
+    output = request.params.get("output", 1, type=int)
+    if offset_enabled:
+        retval = RP_LIB.rp_GenOffsetEnable(output)
+        if retval != 0:
+            LOG.error("Failed to enable permanent offset of signal generator. Error code: %s", ERROR_CODES[retval])
+    else:
+        retval = RP_LIB.rp_GenOffsetDisable(output)
+        if retval != 0:
+            LOG.error("Failed to disable permanent offset of signal generator. Error code: %s", ERROR_CODES[retval])            
+
 @route("/_save_parameters", method="POST")
 def save_parameters():
     """Handle POST request for saving parameters to SD card."""

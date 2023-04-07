@@ -277,12 +277,12 @@
 			});
         };
 
-		function set_sg_perm_offset_enabled(output, sg_enabled) {
+		function set_sg_perm_offset_enabled(output, offset_enabled) {
 			$.post("_set_sg_perm_offset_enabled", {
 			output: output,
-			sg_enabled: sg_enabled,
+			offset_enabled: offset_enabled,
 			});
-        };        
+        };
     
         function save_parameters() {
             $.post("_save_parameters", {});
