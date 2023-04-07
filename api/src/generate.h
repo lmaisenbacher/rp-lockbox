@@ -89,6 +89,8 @@ int generate_Release();
 
 int generate_setOutputDisable(rp_channel_t channel, bool disable);
 int generate_getOutputEnabled(rp_channel_t channel, bool *disabled);
+int generate_setOffsetDisable(rp_channel_t channel, bool disable);
+int generate_getOffsetEnabled(rp_channel_t channel, bool *disabled);
 int generate_setAmplitude(rp_channel_t channel, float amplitude);
 int generate_getAmplitude(rp_channel_t channel, float *amplitude);
 int generate_setDCOffset(rp_channel_t channel, float offset);
