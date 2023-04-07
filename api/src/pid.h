@@ -69,7 +69,7 @@ typedef struct pid_control_s {
     uint32_t relock22_input;
 } pid_control_t;
 
-static const uint32_t PID_CONF_MASK = 0xFFFFF; // (20 bits)
+static const uint32_t PID_CONF_MASK = 0xFFFFFF; // (20 bits)
 static const uint32_t PID_SETPOINT_MASK = 0x3FFF; // (14 bits)
 static const uint32_t PID_KP_MASK = 0xFFFFFF; // (24 bits)
 static const uint32_t PID_KI_MASK = 0xFFFFFF; // (24 bits)
