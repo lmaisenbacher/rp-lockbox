@@ -211,6 +211,20 @@ def set_int_auto():
         LOG.error("Failed to set PID automatical integrator reset. Error code: %s",
                   ERROR_CODES[retval])
 
+@route("/_set_pid_enabled", method="POST")
+def set_relock_enabled():
+    """Handle POST request for enabling the PID output.
+
+    Accepted POST parameters:
+    :pid: the PID to adjust
+    :pid_enabled: If true, the PID output is enabled.
+    """
+    pid_enabled = request.params.get("pid_enabled", 0) == "true"
+    pid = request.params.get("pid", 1, type=int)
+    retval = RP_LIB.rp_PIDSetEnable(pid, pid_enabled)
+    if retval != 0:
+        LOG.error("Failed to set PID enabled. Error code: %s", ERROR_CODES[retval])
+
 @route("/_set_relock_min", method="POST")
 def set_relock_min():
     """Handle POST request for setting the minimum input voltage for which the PID is considered

@@ -184,6 +184,13 @@
 				int_auto: int_auto,
 			});
 		};
+
+		function set_pid_enabled(pid, pid_enabled) {
+			$.post("_set_pid_enabled", {
+				pid: pid,
+				pid_enabled: pid_enabled,
+			});
+		};        
 		
 		function set_relock_min(pid, relock_min) {
 			$.post("_set_relock_min", {
@@ -489,6 +496,27 @@
             }
             set_int_auto(pid, $(event.target).prop("checked"));
         }
+
+        function pid_enabled_changed(event, ui) {
+            var pid;
+            switch(event.target.id) {
+                case "checkbox_pid_11_enabled":
+                    pid = 0;
+                    break;
+                case "checkbox_pid_12_enabled":
+                    pid = 1;
+                    break;
+                case "checkbox_pid_21_enabled":
+                    pid = 2;
+                    break;
+                case "checkbox_pid_22_enabled":
+                    pid = 3;
+                    break;
+                default:
+                    pid = 0;
+            }
+            set_pid_enabled(pid, $(event.target).prop("checked"));
+        }        
 
 		function relock_min_changed(event, ui) {
             var pid;
@@ -903,6 +931,7 @@
         $( ".hold_checkbox" ).on("change", hold_changed);
         $( ".int_res_checkbox" ).on("change", int_reset_changed);
         $( ".int_auto_reset_checkbox" ).on("change", int_auto_changed);
+		$( ".pid_enabled_checkbox").on("change", pid_enabled_changed);        
 		
 		$( ".relock_enabled_checkbox").on("change", relock_enabled_changed);
         $( ".relock_limit_min_spinner").on("spinstop", relock_min_changed);
@@ -994,6 +1023,10 @@
                         <label class="checkbox-container">Automatic integrator reset
                                 <input type="checkbox" id="checkbox_pid_11_int_auto_reset" class="int_auto_reset_checkbox">
                                 <span class="checkmark"></span>
+                        </label>
+                        <label class="checkbox-container">Output enabled
+                            <input type="checkbox" id="checkbox_pid_11_enabled" class="pid_enabled_checkbox">
+                            <span class="checkmark"></span>
                         </label>
                         <button id="button_toggle_11" class="button">Toggle Lock/Scan</button>
                     </div>
