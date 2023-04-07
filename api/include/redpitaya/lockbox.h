@@ -1525,7 +1525,7 @@ int rp_PIDGetRelock(rp_pid_t pid, bool *enabled);
  * If the function is unsuccessful, the return value is any of RP_E* values that
  * indicate an error.
  */
-int rp_PIDSetEnable(rp_pid_t pid, bool *enabled);
+int rp_PIDSetEnable(rp_pid_t pid, bool enable);
 
 /*
  * Get the analog input used for relocking the specified PID.
