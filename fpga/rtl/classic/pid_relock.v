@@ -32,6 +32,18 @@ module pid_relock #(
     output wire signed [14-1:0]        signal_o
 );
 
+// Is there auxiliary signal within the desired range,
+// indiciating we are close to a resonance?
+reg near_resonance;
+always @(posedge clk_i) begin
+    if ((min_val_i < signal_i) && (signal_i < max_val_i)) begin
+        near_resonance <= 1'b1;
+    end else begin
+        near_resonance <= 1'b0;
+    end
+end
+assign locked_o = near_resonance;
+
 // Are we locked?
 reg locked_f;
 always @(posedge clk_i) begin
@@ -51,8 +63,6 @@ always @(posedge clk_i) begin
 end
 
 assign hold_o = (on_i && (!locked_f));
-assign locked_o = (on_i && (!locked_f));
-// assign locked_o = 1'b1;
 
 // State machine definitions
 localparam ZERO      = 2'b00;
