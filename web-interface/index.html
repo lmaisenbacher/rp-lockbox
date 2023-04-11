@@ -1004,7 +1004,7 @@
             <legend><h1>Lockbox (Input 1)</h1></legend>
 
             <div>
-                <a>Input Voltage (V)</a>
+                <a>Input voltage (V)</a>
                 <output id="fast_input_1_voltage">0</output>
             </div>
 			
@@ -1018,7 +1018,7 @@
                     </label>
                 </div>
 
-				<a>Output Voltage (V)</a>
+				<a>Output voltage (V)</a>
                 <output id="fast_output_11_voltage">0</output>
 
                 <fieldset>
@@ -1098,7 +1098,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td><a>Input Voltage (V)</a></td>
+                            <td><a>Input voltage (V)</a></td>
                             <td><output id="ain_voltage_11">0</output></td>
                         </tr>
                     </table>
@@ -1110,7 +1110,14 @@
             <fieldset class="output-group" id="output_group_21">
                 <legend><h2>Output 2</h2></legend>
 
-				<a>Output Voltage (V)</a>
+                <div class="controlgroup-vertical">
+                    <label class="checkbox-container">Output enabled
+                        <input type="checkbox" id="checkbox_pid_21_enabled" class="pid_enabled_checkbox">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+
+				<a>Output voltage (V)</a>
                 <output id="fast_output_21_voltage">0</output>
 
                 <fieldset>
@@ -1151,11 +1158,7 @@
                         <label class="checkbox-container">Automatic integrator reset
                             <input type="checkbox" id="checkbox_pid_21_int_auto_reset" class="int_auto_reset_checkbox">
                             <span class="checkmark"></span>
-                        </label>
-                        <label class="checkbox-container">Output enabled
-                            <input type="checkbox" id="checkbox_pid_21_enabled" class="pid_enabled_checkbox">
-                            <span class="checkmark"></span>
-                        </label>                        
+                        </label>                    
                         <button id="button_toggle_21" class="button">Toggle Lock/Scan</button>
                     </div>
 
@@ -1195,7 +1198,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td><a>Input Voltage (V)</a></td>
+                            <td><a>Input voltage (V)</a></td>
                             <td><output id="ain_voltage_21">0</output></td>
                         </tr>
                     </table>
@@ -1209,14 +1212,21 @@
             <legend><h1>Lockbox (Input 2)</h1></legend>
 
             <div>
-                <a>Input Voltage (V)</a>
+                <a>Input voltage (V)</a>
                 <output id="fast_input_2_voltage">0</output>
             </div>
 			
             <fieldset class="output-group" id="output_group_12">
                 <legend><h2>Output 1</h2></legend>
 
-                <a>Output Voltage (V)</a>
+                <div class="controlgroup-vertical">
+                    <label class="checkbox-container">Output enabled
+                        <input type="checkbox" id="checkbox_pid_12_enabled" class="pid_enabled_checkbox">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>                
+
+                <a>Output voltage (V)</a>
                 <output id="fast_output_12_voltage">0</output>
 				
                 <fieldset>
@@ -1255,10 +1265,6 @@
                         </label>
                         <label class="checkbox-container">Automatic integrator reset
                             <input type="checkbox" id="checkbox_pid_12_int_auto_reset" class="int_auto_reset_checkbox">
-                            <span class="checkmark"></span>
-                        </label>
-                        <label class="checkbox-container">Output enabled
-                            <input type="checkbox" id="checkbox_pid_12_enabled" class="pid_enabled_checkbox">
                             <span class="checkmark"></span>
                         </label>
                         <button id="button_toggle_12" class="button">Toggle Lock/Scan</button>
@@ -1300,7 +1306,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td><a>Input Voltage (V)</a></td>
+                            <td><a>Input voltage (V)</a></td>
                             <td><output id="ain_voltage_12">0</output></td>
                         </tr>
                     </table>	
@@ -1311,7 +1317,14 @@
             <fieldset class="output-group" id="output_group_22">
                 <legend><h2>Output 2</h2></legend>
 
-                <a>Output Voltage (V)</a>
+                <div class="controlgroup-vertical">
+                    <label class="checkbox-container">Output enabled
+                        <input type="checkbox" id="checkbox_pid_22_enabled" class="pid_enabled_checkbox">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+
+                <a>Output voltage (V)</a>
                 <output id="fast_output_22_voltage">0</output>
 				
                 <fieldset>
@@ -1352,11 +1365,7 @@
                         <label class="checkbox-container">Automatic integrator reset
                             <input type="checkbox" id="checkbox_pid_22_int_auto_reset" class="int_auto_reset_checkbox">
                             <span class="checkmark"></span>
-                        </label>
-                        <label class="checkbox-container">Output enabled
-                            <input type="checkbox" id="checkbox_pid_22_enabled" class="pid_enabled_checkbox">
-                            <span class="checkmark"></span>
-                        </label>                        
+                        </label>                      
                         <button id="button_toggle_22" class="button">Toggle Lock/Scan</button>
                     </div>
 
@@ -1396,7 +1405,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td><a>Input Voltage (V)</a></td>
+                            <td><a>Input voltage (V)</a></td>
                             <td><output id="ain_voltage_22">0</output></td>
                         </tr>
                     </table>	
