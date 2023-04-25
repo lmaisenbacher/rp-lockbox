@@ -4,7 +4,8 @@
 **/.Xil/
 *.log
 **/.srcs/
-**/out/
+**/out/*
+!**/out/red_pitaya.bit
 usage_statistics_webtalk.*
 synReport.txt*
 scpi-server/lockbox-server
