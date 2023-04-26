@@ -31,7 +31,7 @@ PLLE2_ADV #(
    .BANDWIDTH            ("OPTIMIZED"),
    .COMPENSATION         ("ZHOLD"    ),
    .DIVCLK_DIVIDE        ( 1         ),
-   .CLKFBOUT_MULT        ( 8         ),
+   .CLKFBOUT_MULT        ( 50        ),
    .CLKFBOUT_PHASE       ( 0.000     ),
    .CLKOUT0_DIVIDE       ( 8         ),
    .CLKOUT0_PHASE        ( 0.000     ),
@@ -51,7 +51,7 @@ PLLE2_ADV #(
    .CLKOUT5_DIVIDE       ( 4         ),
    .CLKOUT5_PHASE        ( 0.000     ),
    .CLKOUT5_DUTY_CYCLE   ( 0.5       ),
-   .CLKIN1_PERIOD        ( 8.000     ),
+   .CLKIN1_PERIOD        ( 50.000    ),
    .REF_JITTER1          ( 0.010     )
 ) pll (
    // Output clocks

@@ -202,7 +202,7 @@ gpio_if #(.DW (24)) gpio ();
 ////////////////////////////////////////////////////////////////////////////////
 
 // diferential clock input
-IBUFDS i_clk (.I (adc_clk_i[1]), .IB (adc_clk_i[0]), .O (adc_clk_in));  // differential clock input
+IBUFDS i_clk (.I (daisy_p_i[1]), .IB (daisy_n_i[1]), .O (adc_clk_in));  // differential clock input
 
 red_pitaya_pll pll (
   // inputs
@@ -371,9 +371,9 @@ assign daisy_n_o = 1'bz;
 ////////////////////////////////////////////////////////////////////////////////
 
 // generating ADC clock is disabled
-assign adc_clk_o = 2'b10;
-//ODDR i_adc_clk_p ( .Q(adc_clk_o[0]), .D1(1'b1), .D2(1'b0), .C(fclk[0]), .CE(1'b1), .R(1'b0), .S(1'b0));
-//ODDR i_adc_clk_n ( .Q(adc_clk_o[1]), .D1(1'b0), .D2(1'b1), .C(fclk[0]), .CE(1'b1), .R(1'b0), .S(1'b0));
+// assign adc_clk_o = 2'b10;
+ODDR i_adc_clk_p ( .Q(adc_clk_o[0]), .D1(1'b1), .D2(1'b0), .C(adc_clk), .CE(1'b1), .R(1'b0), .S(1'b0));
+ODDR i_adc_clk_n ( .Q(adc_clk_o[1]), .D1(1'b0), .D2(1'b1), .C(adc_clk), .CE(1'b1), .R(1'b0), .S(1'b0));
 
 // ADC clock duty cycle stabilizer is enabled
 assign adc_cdcs_o = 1'b1 ;
