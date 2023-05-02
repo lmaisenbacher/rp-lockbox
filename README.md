@@ -72,28 +72,45 @@ A python module and example GUI application for controlling the lockbox can be f
 The FPGA implements four PID controllers that connect the two inputs of the Red Pitaya with the two
 outputs in all possible combinations.
 
-### Input and output configuration
+### Lock monitoring and status
+Each of the PID controllers monitors the voltage on one of the Red Pitaya auxiliary analog inputs
+(which input to use is user-configurable).
+If the voltage leaves a user-defined window, the PID is considered unlocked, otherwise it is
+considered locked. This lock status is output on digital output pins (see below) and used as input
+for the relock feature (see below).
+Note that the lock status is always monitored, independent of whether the relock feature is enabled
+or not.
+The voltage can, e.g., the signal from a photodetector monitoring the transmission of a cavity
+to whose resonance a laser is locked (or vice versa).
 
-| (Fast analog) Input  | (Fast analog) Output | Analog input for relock | Digital output for lock status |
-| ------------- | ------------- | ------------- | ------------- |
-| 1  | 2  | AIN0-3 (user-selectable)  | DIO0_P  |
-| 2  | 1  | AIN0-3 (user-selectable)  | DIO1_P  |
-| 1  | 2  | AIN0-3 (user-selectable)  | DIO2_P  |
-| 2  | 2  | AIN0-3 (user-selectable)  | DIO3_P  |
+### Relock
+Each of the PID controllers contains an automatic relock feature. When the feature is enabled and
+the lock status is asserted as not locked by the lock monitoring feature, the
+internal state of the PID controller is frozen and a triangular voltage sweep with user-defined slew
+rate and increasing amplitude is generated on the output. Once the lock status is asserted as
+locked, the PID controller is engaged again.
+
+### Input and output configuration
+The table below shows the input and output configuration for each of the four PID controllers:
+
+| (Fast analog) Input  | (Fast analog) Output | Relock AI | Lock status DO | Lock status DO (inverted) |
+| ------------- | ------------- | ------------- | ------------- | ------------- |
+| 1  | 2  | AIN0-3 (user-selectable)  | DIO1_P  | DIO1_N  |
+| 2  | 1  | AIN0-3 (user-selectable)  | DIO2_P  | DIO2_N  |
+| 1  | 2  | AIN0-3 (user-selectable)  | DIO3_P  | DIO3_N  |
+| 2  | 2  | AIN0-3 (user-selectable)  | DIO4_P  | DIO4_N  |
+
+The lock statuses of the four PID controllers as determined from lock monitoring are output as
+digital logic signals for each of the four controllers.
+The GPIO pins of extension connector E1 are used.
+The output pin "Lock status DO" is high when the lock status  is asserted as not locked,
+and low otherwise. The output pin "Lock status DO (inverted)" carries the inverted signal of that.
 
 ### Output limiting
 Global limits can be defined for both outputs of the Red Pitaya. When an output is at its limit, the
 integrators of the corresponding PID controllers are frozen in order to avoid integrator windup. If
 automatic integrator reset of the PID is enabled, the integrator register is reset to the center of
 the output limit range.
-
-### Relock
-Each of the PID controllers contains an automatic relock feature. When the feature is enabled, it
-monitors the voltage on one of the Red Pitaya auxiliary analog inputs.
-If the voltage leaves a user-defined window, the PID is considered unlocked. In this case the
-internal state of the PID controller is frozen and a triangular voltage sweep with user-defined slew
-rate and increasing amplitude is generated on the output. Once the monitored signal re-enters the
-specified window, the PID is engaged again.
 
 ## How to build
 ### Architecture
