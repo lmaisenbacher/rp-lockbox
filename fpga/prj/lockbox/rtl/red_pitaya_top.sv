@@ -427,9 +427,9 @@ ODDR oddr_dac_dat [14-1:0] (.Q(dac_dat_o), .D1(dac_dat_b), .D2(dac_dat_a), .C(da
 logic [  8-1: 0] exp_p_in , exp_n_in ;
 logic [  8-1: 0] exp_p_out, exp_n_out;
 logic [  8-1: 0] exp_p_dir, exp_n_dir;
-// Set first four negative and positive GPIO as output
-assign exp_n_dir = 8'b00001111;
-assign exp_p_dir = 8'b00001111;
+// Set four negative and positive GPIO (DIO1_N-DIO3_N, DIO1_P-DIO3_P) as output
+assign exp_n_dir = 8'b00011110;
+assign exp_p_dir = 8'b00011110;
 
 red_pitaya_hk i_hk (
   // system signals
@@ -534,8 +534,8 @@ red_pitaya_asg i_asg (
 ////////////////////////////////////////////////////////////////////////////////
 
 logic [4-1: 0] pid_lock_state;
-assign exp_n_out[4-1:0] = pid_lock_state;
-assign exp_p_out[4-1:0] = ~pid_lock_state;
+assign exp_n_out[4:1] = pid_lock_state;
+assign exp_p_out[4:1] = ~pid_lock_state;
 
 red_pitaya_pid i_pid (
    // Input signals
