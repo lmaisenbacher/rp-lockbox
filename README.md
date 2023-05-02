@@ -2,12 +2,15 @@
 rp-lockbox is a firmware for the [Red Pitaya](https://www.redpitaya.com/) FPGA board which turns it
 into a feedback controller (lockbox) optimized for optics experiments.
 
+The original project by Fabian Schmid can be found [here](https://github.com/schmidf/rp-lockbox).
+
 ## Features
 * Multiple-Input, Multiple-Output PID controller
 * Web interface for configuration
-* Automatic relock (e.g. using the transmission signal of a cavity)
+* Automatic relock (e.g., using the transmission signal of a cavity)
 * Remote control via Ethernet using SCPI commands
 * Autonomous operation (connection to a PC is only required for configuration)
+* Support for cascaded controllers through lock status output on digital pins
 
 ## Installation
 Build the software and FPGA configuration from source (see below) or download a binary archive
@@ -103,6 +106,9 @@ so make sure to install exactly this version.
 
 #### API and SCPI server:
 
+The easiest way is to compile directly on the Red Pitaya, in which case no additional packages are necessary.
+
+If compiling on another platform:
 * The ARMv7 (armhf) cross compiler toolchain (gcc-arm-linux-gnueabihf in Debian)
 
 ### Build process
