@@ -72,6 +72,15 @@ A python module and example GUI application for controlling the lockbox can be f
 The FPGA implements four PID controllers that connect the two inputs of the Red Pitaya with the two
 outputs in all possible combinations.
 
+### Input and output configuration
+
+| (Fast analog) Input  | (Fast analog) Output | Analog input for relock | Digital output for lock status |
+| ------------- | ------------- | ------------- | ------------- |
+| 1  | 2  | AIN0-3 (user-selectable)  | DIO0_P  |
+| 2  | 1  | AIN0-3 (user-selectable)  | DIO1_P  |
+| 1  | 2  | AIN0-3 (user-selectable)  | DIO2_P  |
+| 2  | 2  | AIN0-3 (user-selectable)  | DIO3_P  |
+
 ### Output limiting
 Global limits can be defined for both outputs of the Red Pitaya. When an output is at its limit, the
 integrators of the corresponding PID controllers are frozen in order to avoid integrator windup. If
