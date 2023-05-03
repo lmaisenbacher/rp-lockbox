@@ -93,12 +93,12 @@ locked, the PID controller is engaged again.
 ### Input and output configuration
 The table below shows the input and output configuration for each of the four PID controllers:
 
-| (Fast analog) Input  | (Fast analog) Output | Relock AI | Lock status DO | Lock status DO (inverted) |
-| ------------- | ------------- | ------------- | ------------- | ------------- |
-| 1  | 2  | AIN0-3 (user-selectable)  | DIO1_P  | DIO1_N  |
-| 2  | 1  | AIN0-3 (user-selectable)  | DIO2_P  | DIO2_N  |
-| 1  | 2  | AIN0-3 (user-selectable)  | DIO3_P  | DIO3_N  |
-| 2  | 2  | AIN0-3 (user-selectable)  | DIO4_P  | DIO4_N  |
+| Name  | (Fast analog) Output  | (Fast analog) Input  | Relock AI  | Lock status DO  | Lock status DO (inverted)  |
+| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+| PID11  | 1  | 1  | AIN0-3 (user-selectable)  | DIO1_P  | DIO1_N  |
+| PID12  | 1  | 2  | AIN0-3 (user-selectable)  | DIO2_P  | DIO2_N  |
+| PID21  | 2  | 1  | AIN0-3 (user-selectable)  | DIO3_P  | DIO3_N  |
+| PID22  | 2  | 2  | AIN0-3 (user-selectable)  | DIO4_P  | DIO4_N  |
 
 The lock statuses of the four PID controllers as determined from lock monitoring are output as
 digital logic signals for each of the four controllers.
