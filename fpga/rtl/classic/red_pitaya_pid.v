@@ -108,6 +108,7 @@ wire        [1:0]         pid_railed_i         [3:0];
 wire signed [15-1:0]      pid_sum              [3:0];
 wire signed [14-1:0]      pid_sat              [3:0];
 
+reg         [3:0]                  relock_lock_state;
 reg         [3:0]                  relock_enabled;
 reg         [12-1:0]               relock_minval    [3:0];
 reg         [12-1:0]               relock_maxval    [3:0];
@@ -118,7 +119,7 @@ wire signed [14-1:0]               relock_signal_o  [3:0];
 wire                               relock_hold_o    [3:0];
 wire        [12-1:0]               relock_signal_i  [3:0];
 wire                               relock_hold_i    [3:0];
-wire                               relock_locked_o  [3:0];
+// wire                               relock_locked_o  [3:0];
 
 wire        [12-1:0]               relock_i         [3:0];
 assign relock_i[0] = relock_a_i;
@@ -176,7 +177,7 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
         .railed_i(pid_railed_i[pid_index]),
         .hold_i(relock_hold_i[pid_index]),
         .hold_o(relock_hold_o[pid_index]),
-        .locked_o(relock_locked_o[pid_index]),        
+        .locked_o(relock_lock_state[pid_index]),
         .clear_o(relock_clear_o[pid_index]),
         .signal_o(relock_signal_o[pid_index])
     );
@@ -214,10 +215,10 @@ assign relock_hold_i[2] = set_hold[2];
 assign relock_hold_i[3] = set_hold[3];
 
 // Output of lock state
-assign lock_state_o[0] = relock_locked_o[0];
-assign lock_state_o[1] = relock_locked_o[1];
-assign lock_state_o[2] = relock_locked_o[2];
-assign lock_state_o[3] = relock_locked_o[3];
+assign lock_state_o = relock_lock_state;
+// assign lock_state_o[1] = relock_lock_state[1];
+// assign lock_state_o[2] = relock_lock_state[2];
+// assign lock_state_o[3] = relock_lock_state[3];
 
 //---------------------------------------------------------------------------------
 //  Sum and saturation
