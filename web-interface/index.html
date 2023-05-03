@@ -129,6 +129,7 @@
         var spinner_limit_name = ["#spinner_limit_1_min", "#spinner_limit_2_min", "#spinner_limit_1_max", "#spinner_limit_2_max"];
         var spinner_sg_amp_offset_name = ["#spinner_sg_1_amp", "#spinner_sg_2_amp", "#spinner_sg_1_offset", "#spinner_sg_2_offset"];
         var ain_voltage_name = ["#ain_voltage_11", "#ain_voltage_21", "#ain_voltage_12", "#ain_voltage_22"];
+        var lock_status_name = ["#lock_status_11", "#lock_status_21", "#lock_status_12", "#lock_status_22"];        
 
         function set_setpoint(pid, setpoint) {
             $.post("_set_setpoint", {
@@ -816,7 +817,6 @@
                 var int_res_values = [data.pid_11_int_res, data.pid_21_int_res, data.pid_12_int_res, data.pid_22_int_res];               
                 var int_auto_reset_values = [data.pid_11_int_auto_reset, data.pid_21_int_auto_reset, data.pid_12_int_auto_reset, data.pid_22_int_auto_reset];               
                 var enabled_values = [data.pid_11_enabled, data.pid_21_enabled, data.pid_12_enabled, data.pid_22_enabled];                               
-                var lock_status_values = [data.pid_11_lock_status, data.pid_21_lock_status, data.pid_12_lock_status, data.pid_22_lock_status];
                 var relock_min_values = [data.pid_11_relock_min, data.pid_21_relock_min, data.pid_12_relock_min, data.pid_22_relock_min];               
                 var relock_max_values = [data.pid_11_relock_max, data.pid_21_relock_max, data.pid_12_relock_max, data.pid_22_relock_max];             
                 var relock_slew_rate_values = [data.pid_11_relock_slew_rate, data.pid_21_relock_slew_rate, data.pid_12_relock_slew_rate, data.pid_22_relock_slew_rate];               
@@ -856,15 +856,16 @@
             });
             setTimeout(update_parameters, update_interval);
         };
-
        
         function update_values() {
             var relock_input_value = [0, 0, 0, 0];
             $.getJSON("_get_values").done(function(data){ 
                 var data_values = [data.ain0_voltage, data.ain1_voltage, data.ain2_voltage, data.ain3_voltage];
+                var lock_status_values = [data.pid_11_lock_status, data.pid_21_lock_status, data.pid_12_lock_status, data.pid_22_lock_status];                
                 for(i=0; i<4; i++){
                     relock_input_value[i] = $(relock_input_name[i]).val();
                     $(ain_voltage_name[i]).val(data_values[relock_input_value[i]-4].toFixed(3));
+                    $(lock_status_name[i]).val(lock_status_values[i].toString());
                 }
                 $("#fast_input_1_voltage").val(data.in_1_voltage.toFixed(3));
                 $("#fast_input_2_voltage").val(data.in_2_voltage.toFixed(3));
@@ -872,7 +873,6 @@
                 $("#fast_output_21_voltage").val(data.out_2_voltage.toFixed(3));
                 $("#fast_output_12_voltage").val(data.out_1_voltage.toFixed(3));
                 $("#fast_output_22_voltage").val(data.out_2_voltage.toFixed(3));
-                $("#lock_status_11").val(data.pid_11_lock_status.toString());
             });
             
             setTimeout(update_values, update_interval_values);
@@ -1207,6 +1207,10 @@
                             <td><a>Input voltage (V)</a></td>
                             <td><output id="ain_voltage_21">0</output></td>
                         </tr>
+                        <tr>
+                            <td><a>Lock status</a></td>
+                            <td><output id="lock_status_">0</output></td>
+                        </tr>                             
                     </table>
 					  
                 </fieldset>
@@ -1315,6 +1319,10 @@
                             <td><a>Input voltage (V)</a></td>
                             <td><output id="ain_voltage_12">0</output></td>
                         </tr>
+                        <tr>
+                            <td><a>Lock status</a></td>
+                            <td><output id="lock_status_12">0</output></td>
+                        </tr>                             
                     </table>	
                     
                 </fieldset>
@@ -1414,6 +1422,10 @@
                             <td><a>Input voltage (V)</a></td>
                             <td><output id="ain_voltage_22">0</output></td>
                         </tr>
+                        <tr>
+                            <td><a>Lock status</a></td>
+                            <td><output id="lock_status_22">0</output></td>
+                        </tr>                             
                     </table>	
                     
                 </fieldset>
