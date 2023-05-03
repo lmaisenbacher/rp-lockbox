@@ -872,7 +872,7 @@
                 $("#fast_output_21_voltage").val(data.out_2_voltage.toFixed(3));
                 $("#fast_output_12_voltage").val(data.out_1_voltage.toFixed(3));
                 $("#fast_output_22_voltage").val(data.out_2_voltage.toFixed(3));
-                $("#lock_status_11").val(data.pid_11_lock_status);
+                $("#lock_status_11").val(data.pid_11_lock_status.toString());
             });
             
             setTimeout(update_values, update_interval_values);
