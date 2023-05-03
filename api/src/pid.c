@@ -397,6 +397,16 @@ int pid_GetPIDEnable(rp_pid_t pid, bool *enabled) {
     }
 }
 
+int pid_GetPIDLockStatus(rp_pid_t pid, bool *lock_status) {
+    switch(pid) {
+        case RP_PID_11: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 24, PID_CONF_MASK, lock_status);
+        case RP_PID_12: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 25, PID_CONF_MASK, lock_status);
+        case RP_PID_21: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 26, PID_CONF_MASK, lock_status);
+        case RP_PID_22: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 27, PID_CONF_MASK, lock_status);
+        default: return RP_EPN;
+    }
+}
+
 int pid_SetRelockStepsize(rp_pid_t pid, float stepsize) {
     uint32_t stepsize_integer;
 

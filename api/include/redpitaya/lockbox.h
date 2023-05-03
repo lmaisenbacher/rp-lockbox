@@ -1545,7 +1545,7 @@ int rp_PIDSetRelock(rp_pid_t pid, bool enable);
 int rp_PIDGetRelock(rp_pid_t pid, bool *enabled);
 
 /*
- * Get the analog input used for relocking the specified PID.
+ * Set the output enabled status of the specified PID.
  * @param pid The PID to use (see rp_pid_t documentation for details).
  * @param pin Pointer where the selected analog pin will be returned.
  * @return If the function is successful, the return value is RP_OK.
@@ -1555,7 +1555,7 @@ int rp_PIDGetRelock(rp_pid_t pid, bool *enabled);
 int rp_PIDSetEnable(rp_pid_t pid, bool enable);
 
 /*
- * Get the analog input used for relocking the specified PID.
+ * Get the output enabled status of the specified PID.
  * @param pid The PID to use (see rp_pid_t documentation for details).
  * @param pin Pointer where the selected analog pin will be returned.
  * @return If the function is successful, the return value is RP_OK.
@@ -1563,6 +1563,16 @@ int rp_PIDSetEnable(rp_pid_t pid, bool enable);
  * indicate an error.
  */
 int rp_PIDGetEnable(rp_pid_t pid, bool *enabled);
+
+/*
+ * Get the lock status of the specified PID.
+ * @param pid The PID to use (see rp_pid_t documentation for details).
+ * @param pin Pointer where the selected analog pin will be returned.
+ * @return If the function is successful, the return value is RP_OK.
+ * If the function is unsuccessful, the return value is any of RP_E* values that
+ * indicate an error.
+ */
+int rp_PIDGetLockStatus(rp_pid_t pid, bool *lock_status);
 
 /*
  * Set the relock stepsize of the specified PID using the ADC calibration values

@@ -69,7 +69,7 @@ typedef struct pid_control_s {
     uint32_t relock22_input;
 } pid_control_t;
 
-static const uint32_t PID_CONF_MASK = 0xFFFFFF; // (20 bits)
+static const uint32_t PID_CONF_MASK = 0xFFFFFFF; // (28 bits)
 static const uint32_t PID_SETPOINT_MASK = 0x3FFF; // (14 bits)
 static const uint32_t PID_KP_MASK = 0xFFFFFF; // (24 bits)
 static const uint32_t PID_KI_MASK = 0xFFFFFF; // (24 bits)
@@ -108,6 +108,7 @@ int pid_SetPIDRelock(rp_pid_t pid, bool enable);
 int pid_GetPIDRelock(rp_pid_t pid, bool *enabled);
 int pid_SetPIDEnable(rp_pid_t pid, bool enable);
 int pid_GetPIDEnable(rp_pid_t pid, bool *enabled);
+int pid_GetPIDLockStatus(rp_pid_t pid, bool *lock_status);
 int pid_SetRelockStepsize(rp_pid_t pid, float stepsize);
 int pid_GetRelockStepsize(rp_pid_t pid, float *stepsize);
 int pid_SetRelockMinimum(rp_pid_t pid, float minimum);
