@@ -67,7 +67,7 @@ module red_pitaya_pid (
    input signed [ 14-1: 0] out_b_center_i  ,  // center of out 2 range
    output       [ 14-1: 0] dat_a_o         ,  //!< output data CHA
    output       [ 14-1: 0] dat_b_o         ,  //!< output data CHB
-   output       [  4-1: 0] lock_state_o    ,  // lock state
+   output       [  4-1: 0] lock_status_o    ,  // lock status
   
    // system bus
    input      [ 32-1: 0] sys_addr        ,  //!< bus address
@@ -108,7 +108,7 @@ wire        [1:0]         pid_railed_i         [3:0];
 wire signed [15-1:0]      pid_sum              [3:0];
 wire signed [14-1:0]      pid_sat              [3:0];
 
-reg         [3:0]                  relock_lock_state;
+reg         [3:0]                  relock_lock_status;
 reg         [3:0]                  relock_enabled;
 reg         [12-1:0]               relock_minval    [3:0];
 reg         [12-1:0]               relock_maxval    [3:0];
@@ -214,19 +214,21 @@ assign relock_hold_i[1] = set_hold[1];
 assign relock_hold_i[2] = set_hold[2];
 assign relock_hold_i[3] = set_hold[3];
 
-// Output of lock state to top module, where it is written to digital output
-assign lock_state_o[0] = relock_locked_o[0];
-assign lock_state_o[1] = relock_locked_o[1];
-assign lock_state_o[2] = relock_locked_o[2];
-assign lock_state_o[3] = relock_locked_o[3];
+// Output of lock status to top module, where it is written to digital output
+// `assign lock_status_o = relock_locked_o;` leads to error "cannot access memory relock_locked_o directly"
+assign lock_status_o[0] = relock_locked_o[0];
+assign lock_status_o[1] = relock_locked_o[1];
+assign lock_status_o[2] = relock_locked_o[2];
+assign lock_status_o[3] = relock_locked_o[3];
 
+// Update register holding lock status, which is then written to memory (but not read from it)
 always @(posedge clk_i) begin
-   // relock_lock_state <= relock_locked_o; leads to error "Cannot access memory directly"
-   relock_lock_state[0] <= relock_locked_o[0];
-   relock_lock_state[1] <= relock_locked_o[1];
-   relock_lock_state[2] <= relock_locked_o[2];
-   relock_lock_state[3] <= relock_locked_o[3];
-end   
+   // `relock_lock_status <= relock_locked_o;` leads to error "Cannot access memory directly"
+   relock_lock_status[0] <= relock_locked_o[0];
+   relock_lock_status[1] <= relock_locked_o[1];
+   relock_lock_status[2] <= relock_locked_o[2];
+   relock_lock_status[3] <= relock_locked_o[3];
+end
 
 //---------------------------------------------------------------------------------
 //  Sum and saturation
@@ -362,7 +364,7 @@ end else begin
    casez (sys_addr[19:0])
        20'h00: begin
           sys_ack <= sys_en;
-          sys_rdata <= {{32-28{1'b0}}, relock_lock_state, enabled, relock_enabled, set_hold, set_irst_when_railed,
+          sys_rdata <= {{32-28{1'b0}}, relock_lock_status, enabled, relock_enabled, set_hold, set_irst_when_railed,
                         pid_inverted, set_irst};
       end 
 

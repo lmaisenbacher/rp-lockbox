@@ -533,9 +533,9 @@ red_pitaya_asg i_asg (
 //  MIMO PID controller
 ////////////////////////////////////////////////////////////////////////////////
 
-logic [4-1: 0] pid_lock_state;
-assign exp_n_out[4:1] = pid_lock_state;
-assign exp_p_out[4:1] = ~pid_lock_state;
+logic [4-1: 0] pid_lock_status;
+assign exp_n_out[4:1] = pid_lock_status;
+assign exp_p_out[4:1] = ~pid_lock_status;
 
 red_pitaya_pid i_pid (
    // Input signals
@@ -554,7 +554,7 @@ red_pitaya_pid i_pid (
    // Output signals  
   .dat_a_o         (pid_dat[0]  ), // out 1
   .dat_b_o         (pid_dat[1]  ), // out 2   
-  .lock_state_o    (pid_lock_state), // lock state
+  .lock_status_o   (pid_lock_status), // lock state
   // System bus
   .sys_addr        (sys[3].addr ),
   .sys_wdata       (sys[3].wdata),
