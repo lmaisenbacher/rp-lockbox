@@ -108,6 +108,7 @@ wire        [1:0]         pid_railed_i         [3:0];
 wire signed [15-1:0]      pid_sum              [3:0];
 wire signed [14-1:0]      pid_sat              [3:0];
 
+reg         [3:0]                  relock_lock_state;
 reg         [3:0]                  relock_enabled;
 reg         [12-1:0]               relock_minval    [3:0];
 reg         [12-1:0]               relock_maxval    [3:0];
@@ -218,6 +219,14 @@ assign lock_state_o[0] = relock_locked_o[0];
 assign lock_state_o[1] = relock_locked_o[1];
 assign lock_state_o[2] = relock_locked_o[2];
 assign lock_state_o[3] = relock_locked_o[3];
+
+always @(posedge clk_i) begin
+   // relock_lock_state <= relock_locked_o; leads to error "Cannot access memory directly"
+   relock_lock_state[0] <= relock_locked_o[0];
+   relock_lock_state[1] <= relock_locked_o[1];
+   relock_lock_state[2] <= relock_locked_o[2];
+   relock_lock_state[3] <= relock_locked_o[3];
+end   
 
 //---------------------------------------------------------------------------------
 //  Sum and saturation
@@ -343,20 +352,12 @@ end
 wire sys_en;
 assign sys_en = sys_wen | sys_ren;
 
-reg         [3:0]                  relock_lock_state;
-
 always @(posedge clk_i)
 if (rstn_i == 1'b0) begin
    sys_err <= 1'b0 ;
    sys_ack <= 1'b0 ;
 end else begin
    sys_err <= 1'b0 ;
-
-   // relock_lock_state <= relock_locked_o; leads to error "Cannot access memory directly"
-   relock_lock_state[0] <= relock_locked_o[0];
-   relock_lock_state[1] <= relock_locked_o[1];
-   relock_lock_state[2] <= relock_locked_o[2];
-   relock_lock_state[3] <= relock_locked_o[3];   
 
    casez (sys_addr[19:0])
        20'h00: begin

@@ -492,6 +492,7 @@ def get_parameters():
     int_reset = [False, False, False, False]
     int_auto = [False, False, False, False]
     enabled = [False, False, False, False]
+    lock_status = [False, False, False, False]    
     relock_min = [0., 0., 0., 0.]
     relock_max = [0., 0., 0., 0.]
     relock_slew_rate = [0., 0., 0., 0.]
@@ -545,7 +546,13 @@ def get_parameters():
         retval = RP_LIB.rp_PIDGetEnable(i, ctypes.byref(enabled[i]))
         if retval != 0:
             LOG.error("Failed to get state of PID enable. Error code: %s",
-                      ERROR_CODES[retval])            
+                      ERROR_CODES[retval])      
+            
+        lock_status[i] = ctypes.c_bool()
+        retval = RP_LIB.rp_PIDGetLockStatus(i, ctypes.byref(lock_status[i]))
+        if retval != 0:
+            LOG.error("Failed to get lock status of PID. Error code: %s",
+                      ERROR_CODES[retval])                  
 
         relock_min[i] = ctypes.c_float()
         retval = RP_LIB.rp_PIDGetRelockMinimum(i, ctypes.byref(relock_min[i]))
@@ -691,7 +698,11 @@ def get_parameters():
         "pid_11_enabled": enabled[0].value,
         "pid_12_enabled": enabled[1].value,
         "pid_21_enabled": enabled[2].value,
-        "pid_22_enabled": enabled[3].value,        
+        "pid_22_enabled": enabled[3].value,    
+        "pid_11_lock_status": lock_status[0].value,
+        "pid_12_lock_status": lock_status[1].value,
+        "pid_21_lock_status": lock_status[2].value,
+        "pid_22_lock_status": lock_status[3].value,        
         "pid_11_relock_min": relock_min[0].value,
         "pid_12_relock_min": relock_min[1].value,
         "pid_21_relock_min": relock_min[2].value,
