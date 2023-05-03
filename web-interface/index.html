@@ -860,7 +860,7 @@
        
         function update_values() {
             var relock_input_value = [0, 0, 0, 0];
-            $.getJSON("_get_input_voltage").done(function(data){ 
+            $.getJSON("_get_values").done(function(data){ 
                 var data_values = [data.ain0_voltage, data.ain1_voltage, data.ain2_voltage, data.ain3_voltage];
                 for(i=0; i<4; i++){
                     relock_input_value[i] = $(relock_input_name[i]).val();

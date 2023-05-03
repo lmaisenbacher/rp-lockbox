@@ -443,8 +443,8 @@ def load_parameters():
     if retval != 0:
         LOG.error("Failed to load parameters. Error code: %s", ERROR_CODES[retval])
 
-@route("/_get_input_voltage")
-def get_input_voltage():
+@route("/_get_values")
+def get_values():
     ain_voltage = [0., 0., 0., 0.]
     for i in range(4, 8):
         ain_voltage[i-4] = ctypes.c_float()
@@ -466,6 +466,14 @@ def get_input_voltage():
         if retval != 0:
             LOG.error("Failed to get fast output voltage. Error code: %s", ERROR_CODES[retval])
 
+    lock_status = [False, False, False, False]    
+    for i in range(4):    
+        lock_status[i] = ctypes.c_bool()
+        retval = RP_LIB.rp_PIDGetLockStatus(i, ctypes.byref(lock_status[i]))
+        if retval != 0:
+            LOG.error("Failed to get lock status of PID. Error code: %s",
+                      ERROR_CODES[retval])                          
+
     ain_voltage_values = {
         "ain0_voltage": ain_voltage[0].value,
         "ain1_voltage": ain_voltage[1].value,
@@ -474,7 +482,11 @@ def get_input_voltage():
         "in_1_voltage": fast_input_voltage[0].value,
         "in_2_voltage": fast_input_voltage[1].value,
         "out_1_voltage": fast_output_voltage[0].value,
-        "out_2_voltage": fast_output_voltage[1].value
+        "out_2_voltage": fast_output_voltage[1].value,
+        "pid_11_lock_status": lock_status[0].value,
+        "pid_12_lock_status": lock_status[1].value,
+        "pid_21_lock_status": lock_status[2].value,
+        "pid_22_lock_status": lock_status[3].value        
     }
     return json.dumps(ain_voltage_values)
 
@@ -492,7 +504,6 @@ def get_parameters():
     int_reset = [False, False, False, False]
     int_auto = [False, False, False, False]
     enabled = [False, False, False, False]
-    lock_status = [False, False, False, False]    
     relock_min = [0., 0., 0., 0.]
     relock_max = [0., 0., 0., 0.]
     relock_slew_rate = [0., 0., 0., 0.]
@@ -546,13 +557,7 @@ def get_parameters():
         retval = RP_LIB.rp_PIDGetEnable(i, ctypes.byref(enabled[i]))
         if retval != 0:
             LOG.error("Failed to get state of PID enable. Error code: %s",
-                      ERROR_CODES[retval])      
-            
-        lock_status[i] = ctypes.c_bool()
-        retval = RP_LIB.rp_PIDGetLockStatus(i, ctypes.byref(lock_status[i]))
-        if retval != 0:
-            LOG.error("Failed to get lock status of PID. Error code: %s",
-                      ERROR_CODES[retval])                  
+                      ERROR_CODES[retval])     
 
         relock_min[i] = ctypes.c_float()
         retval = RP_LIB.rp_PIDGetRelockMinimum(i, ctypes.byref(relock_min[i]))
@@ -699,10 +704,6 @@ def get_parameters():
         "pid_12_enabled": enabled[1].value,
         "pid_21_enabled": enabled[2].value,
         "pid_22_enabled": enabled[3].value,    
-        "pid_11_lock_status": lock_status[0].value,
-        "pid_12_lock_status": lock_status[1].value,
-        "pid_21_lock_status": lock_status[2].value,
-        "pid_22_lock_status": lock_status[3].value,        
         "pid_11_relock_min": relock_min[0].value,
         "pid_12_relock_min": relock_min[1].value,
         "pid_21_relock_min": relock_min[2].value,
