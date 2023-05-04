@@ -214,21 +214,17 @@ assign relock_hold_i[1] = set_hold[1];
 assign relock_hold_i[2] = set_hold[2];
 assign relock_hold_i[3] = set_hold[3];
 
-// Output of lock status to top module, where it is written to digital output
-// `assign lock_status_o = relock_locked_o;` leads to error "cannot access memory relock_locked_o directly"
-assign lock_status_o[0] = relock_locked_o[0];
-assign lock_status_o[1] = relock_locked_o[1];
-assign lock_status_o[2] = relock_locked_o[2];
-assign lock_status_o[3] = relock_locked_o[3];
-
-// Update register holding lock status, which is then written to memory (but not read from it)
+// Update register holding lock status
+// This register is then written to memory (but not read back from memory)
 always @(posedge clk_i) begin
-   // `relock_lock_status <= relock_locked_o;` leads to error "Cannot access memory directly"
+   // `relock_lock_status <= relock_locked_o;` leads to error "Cannot access memory relock_locked_o directly"
    relock_lock_status[0] <= relock_locked_o[0];
    relock_lock_status[1] <= relock_locked_o[1];
    relock_lock_status[2] <= relock_locked_o[2];
    relock_lock_status[3] <= relock_locked_o[3];
 end
+// Output of lock status to top module, where it is written to digital output
+assign lock_status_o = relock_lock_status;
 
 //---------------------------------------------------------------------------------
 //  Sum and saturation
