@@ -229,15 +229,10 @@ assign lock_status_o = relock_lock_status;
 //---------------------------------------------------------------------------------
 //  Sum and saturation
 
-// wire [ 15-1: 0] out_1_sum   ;
 reg  [ 15-1: 0] out_1_sum   ;
 reg  [ 14-1: 0] out_1_sat   ;
-// wire [ 15-1: 0] out_2_sum   ;
 reg  [ 15-1: 0] out_2_sum   ;
 reg  [ 14-1: 0] out_2_sat   ;
-
-// assign out_1_sum = $signed(pid_sat[0]) + $signed(pid_sat[1]);
-// assign out_2_sum = $signed(pid_sat[3]) + $signed(pid_sat[2]);
 
 always @(posedge clk_i) begin
    if (rstn_i == 1'b0) begin
