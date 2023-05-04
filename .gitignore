@@ -12,3 +12,4 @@ scpi-server/lockbox-server
 *.swp
 **/prj/**/sdk
 build/
+__pycache__/
