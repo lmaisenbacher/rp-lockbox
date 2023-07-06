@@ -2,7 +2,7 @@
 rp-lockbox is a gateware and software package for the [Red Pitaya STEMlab 125-14](https://www.redpitaya.com/) FPGA boards, turning it
 into a feedback controller (lockbox) optimized for optics experiments.
 
-Note that only the versions of the STEMlab 125-14 using the Xilinx Zynq 7010 SoC are currently supported. The FPGA gateware will not run on variants using the Xilinx Zynq 7020 SoC, with some adjustments necessary to the gateware (contact me for details). Use of the STEMlab 125-14 Low Noise is highly recommended over the standard STEMlab 125-14.
+Note that only the versions of the STEMlab 125-14 using the Xilinx Zynq 7010 SoC are currently supported. Use of the STEMlab 125-14 Low Noise is highly recommended over the standard STEMlab 125-14. The FPGA gateware will not run on variants using the Xilinx Zynq 7020 SoC, with some adjustments necessary to the gateware (contact me for details).
 
 The original project by Fabian Schmid can be found [here](https://github.com/schmidf/rp-lockbox).
 
