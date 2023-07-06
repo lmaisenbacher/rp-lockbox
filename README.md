@@ -12,7 +12,7 @@ The original project by Fabian Schmid can be found [here](https://github.com/sch
 * Automatic relock (e.g., using the transmission signal of a cavity)
 * Remote control via Ethernet using SCPI commands
 * Autonomous operation (connection to a PC is only required for configuration)
-* Support for cascaded controllers through lock status output on digital pins
+* Output of lock status on digital pins (allowing cascaded control schemes)
 
 ## Installation
 Build the software and FPGA configuration from source (see below) or download a binary archive
