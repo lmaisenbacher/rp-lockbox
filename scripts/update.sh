@@ -9,5 +9,6 @@ cp -r web-interface /opt/redpitaya/
 cp systemd/lockbox.service /etc/systemd/system/
 cp systemd/lockbox-web-interface.service /etc/systemd/system/
 ro
+systemctl daemon-reload
 systemctl start lockbox
 systemctl start lockbox-web-interface
