@@ -13,28 +13,32 @@ The original project by Fabian Schmid can be found [here](https://github.com/sch
 * Support for cascaded controllers through lock status output on digital pins
 
 ## Installation
-Build the software and FPGA configuration from source (see below) or download a binary archive
-(rp-lockbox.tar.gz) [here](https://github.com/schmidf/rp-lockbox/releases).
-
 Set up the Red Pitaya following the [official manual](https://redpitaya.readthedocs.io/en/latest/index.html).
-
-Copy the firmware tarball to the Red Pitaya using a [SCP](https://en.wikipedia.org/wiki/Secure_copy)
-client:
-```
-scp rp-lockbox.tar.gz root@$RPHOSTNAME:/root/
-```
 
 Connect to the Linux system running on the Red Pitaya using [SSH](https://redpitaya.readthedocs.io/en/latest/developerGuide/os/ssh/ssh.html).
 
-(On the Red Pitaya) unpack the tarball and run the install script:
+(On the Red Pitaya), clone this repository and navigate to the root directory of the repository.
+
+Check out the `scpi-parser`` submodule:
 ```
-tar xf rp-lockbox.tar.gz
-cd rp-lockbox
-./install.sh
+git submodule update --init
 ```
 
-Then start the lockbox SCPI command server and the web interface (this stops the default web server):
+Then, compile the API library (subdirectory `api`) and the SCPI server (subdirectory `scip-server`) by running the commands:
 ```
+make api
+make scpi
+```
+To force the `make` command (e.g., after updating the source code), use the flag `-B`, e.g., `make -B api`.
+
+Next, the compiled API library, the SCPI server, and the FPGA bitfile need to be copied to their respective subdirectories in the Red Pitaya directory (`/opt/redpitaya`), and the Linux daemons (services) need to be set up. This is done by running the script `scripts/install_make.sh` (from the root account, as otherwise the Red Pitaya directories are not writeable) with (again from the repository root directory):
+```
+. scripts/install_make.sh
+```
+
+Then, to stop the default Red Pitaya web server and instead start the lockbox SCPI command server and the web interface, run:
+```
+systemctl stop redpitaya_nginx
 systemctl start lockbox
 systemctl start lockbox-web-interface
 ```
@@ -56,7 +60,7 @@ systemctl enable redpitaya_nginx
 
 ## Usage
 The lockbox can be configured using the included web interface which runs on the default HTTP port
-(80).
+(80). Just navigate with your browser to the address of the Red Pitaya.
 
 It is also possible to remote control the lockbox by sending SCPI commands via a TCP/IP connection
 on port 5000.
@@ -65,7 +69,7 @@ for examples how to do this in various programming languages.
 
 The available SCPI commands are documented [here](doc/SCPI_commands.rst).
 
-A python module and example GUI application for controlling the lockbox can be found in the
+A Python module and example GUI application for controlling the lockbox can be found in the
 [examples/python](examples/python) folder.
 
 ### PIDs
@@ -139,7 +143,7 @@ If compiling on another platform:
 
 ### Build process
 
-Set up required environment variables:
+Set up required environment variables (this assumes Vivado is installed in `/opt/Xilinx/Vivado/2017.2`):
 ```
 source settings.sh
 ```
@@ -160,10 +164,3 @@ Or all at once:
 ```
 make all
 ```
-
-Finally run
-```
-make install
-make tarball
-```
-to copy the generated files to the `build` subdirectory and generate a compressed archive.
