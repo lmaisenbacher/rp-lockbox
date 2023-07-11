@@ -23,8 +23,9 @@ Set up the Red Pitaya following the [official manual](https://redpitaya.readthed
 Copy the firmware tarball to the Red Pitaya using a [SCP](https://en.wikipedia.org/wiki/Secure_copy)
 client:
 ```
-scp rp-lockbox.tar.gz root@$RPHOSTNAME:/root/
+scp rp-lockbox.tar.gz root@<RPHOSTNAME>:/root/
 ```
+where `<RPHOSTNAME>` is the host name (or IP) of the Red Pitaya.
 
 Connect to the Linux system running on the Red Pitaya using [SSH](https://redpitaya.readthedocs.io/en/latest/developerGuide/os/ssh/ssh.html).
 
@@ -59,7 +60,7 @@ systemctl enable redpitaya_nginx
 
 ## Usage
 The lockbox can be configured using the included web interface which runs on the default HTTP port
-(80). Just navigate with your browser to the address of the Red Pitaya.
+(80). Just navigate with your browser to the host name or IP address of the Red Pitaya.
 
 It is also possible to remote control the lockbox by sending SCPI commands via a TCP/IP connection
 on port 5000.
@@ -96,24 +97,28 @@ locked, the PID controller is engaged again.
 ### Input and output configuration
 The table below shows the input and output configuration for each of the four PID controllers:
 
-| Name  | (Fast analog) Output  | (Fast analog) Input  | Relock AI  | Lock status DO  | Lock status DO (inverted)  |
+| Name  | (Fast analog) Output  | (Fast analog) Input  | Relock AI  | Lock status DO  | Inverted lock status DO  |
 | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
-| PID11  | 1  | 1  | AIN0-3 (user-selectable)  | DIO1_P  | DIO1_N  |
-| PID12  | 1  | 2  | AIN0-3 (user-selectable)  | DIO2_P  | DIO2_N  |
-| PID21  | 2  | 1  | AIN0-3 (user-selectable)  | DIO3_P  | DIO3_N  |
-| PID22  | 2  | 2  | AIN0-3 (user-selectable)  | DIO4_P  | DIO4_N  |
+| PID11  | 1  | 1  | AIN0-3 (user-selectable)  | DIO1_N  | DIO1_P  |
+| PID12  | 1  | 2  | AIN0-3 (user-selectable)  | DIO2_N  | DIO2_P  |
+| PID21  | 2  | 1  | AIN0-3 (user-selectable)  | DIO3_N  | DIO3_P  |
+| PID22  | 2  | 2  | AIN0-3 (user-selectable)  | DIO4_N  | DIO4_P  |
 
 The lock statuses of the four PID controllers as determined from lock monitoring are output as
 digital logic signals for each of the four controllers.
 The GPIO pins of extension connector E1 are used.
-The output pin "Lock status DO" is high when the lock status  is asserted as not locked,
-and low otherwise. The output pin "Lock status DO (inverted)" carries the inverted signal of that.
+The output pin "Lock status DO" is high when the lock status is asserted as locked,
+and low otherwise. The output pin "Inverted lock status DO" carries the inverted signal of that.
 
 ### Output limiting
 Global limits can be defined for both outputs of the Red Pitaya. When an output is at its limit, the
 integrators of the corresponding PID controllers are frozen in order to avoid integrator windup. If
 automatic integrator reset of the PID is enabled, the integrator register is reset to the center of
 the output limit range.
+
+### Saving and restoring the configuration
+
+The current configuration can be saved to and restored from the SD card of the Red Pitaya through the API, SCPI commands, or the web interface. The configuration is stored in the file `/home/redpitaya/pid_settings.conf` (to change this path, change `CONFIG_FILE_PATH` in [`lockbox.h`](api/include/redpitaya/lockbox.h)).
 
 ## How to build
 ### Architecture
@@ -146,10 +151,11 @@ If compiling on another platform:
 
 This process happens on a desktop PC with Xilinx Vivado 2017.2 installed.
 
-Set up required environment variables (this assumes Vivado is installed in `/opt/Xilinx/Vivado/2017.2`):
+Set up required environment variables for Vivado with
 ```
-source settings.sh
+source <VIVADO_PATH>/settings64.sh
 ```
+where `<VIVDA_PATH>` is the path were Vivado is installed, typically `/opt/Xilinx/Vivado/2017.2` or `/tools/Xilinx/Vivado/2017.2`.
 
 Build the FPGA gateware
 ```
