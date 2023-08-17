@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #
 # Copyright (c) 2019, Malte Bieringer, Fabian Schmid
+# Copyright (c) 2023, Lothar Maisenbacher
 #
 # All rights reserved.
 """Server-side module for the Red Pitaya lockbox web interface. Uses the bottle micro

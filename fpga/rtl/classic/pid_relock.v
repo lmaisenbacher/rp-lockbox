@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2018 Fabian Schmid
+ * Copyright (c) 2018, Fabian Schmid
+ * Copyright (c) 2023, Lothar Maisenbacher 
  *
  * All rights reserved.
  *
