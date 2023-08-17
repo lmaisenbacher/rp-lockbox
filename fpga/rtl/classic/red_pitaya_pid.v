@@ -66,6 +66,7 @@ module red_pitaya_pid (
    input        [ 12-1: 0] relock_d_i      ,  // auxiliary ADC D
    input signed [ 14-1: 0] out_a_center_i  ,  // center of out 1 range
    input signed [ 14-1: 0] out_b_center_i  ,  // center of out 2 range
+   input                   reset_a_i       ,  // PID11 loop reset digital input
    output       [ 14-1: 0] dat_a_o         ,  //!< output data CHA
    output       [ 14-1: 0] dat_b_o         ,  //!< output data CHB
    output       [  4-1: 0] lock_status_o    ,  // lock status
@@ -100,6 +101,7 @@ reg         [3:0]         set_irst                  ;
 reg         [3:0]         set_irst_when_railed      ;
 reg         [3:0]         set_hold                  ;
 reg         [3:0]         enabled                   ;
+reg         [3:0]         reset_enabled             ;
 wire        [3:0]         pid_irst                  ;
 wire        [3:0]         pid_ctr_rst               ;
 wire signed [14-1:0]      pid_ctr_val          [3:0];
@@ -128,10 +130,17 @@ assign relock_i[1] = relock_b_i;
 assign relock_i[2] = relock_c_i;
 assign relock_i[3] = relock_d_i;
 
+// External (through digital input) loop reset
+wire        [3:0]                  reset_i          [3:0];
+assign reset_i[0] = reset_a_i && reset_enabled[0];
+assign reset_i[1] = reset_enabled[1];
+assign reset_i[2] = reset_enabled[2];
+assign reset_i[3] = reset_enabled[3];
+
 genvar pid_index;
 
 generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
-    assign pid_hold[pid_index] = relock_hold_o[pid_index] || set_hold[pid_index];
+    assign pid_hold[pid_index] = relock_hold_o[pid_index] || set_hold[pid_index] || reset_i[pid_index];
     assign pid_sum[pid_index] = pid_out[pid_index] + relock_signal_o[pid_index];
     assign pid_sat[pid_index] = (^pid_sum[pid_index][15-1:15-2]) ?
                                 {pid_sum[pid_index][15-1], {13{~pid_sum[pid_index][15-1]}}} :
@@ -190,7 +199,7 @@ assign pid_in[1] = dat_b_i;
 assign pid_in[2] = dat_a_i;
 assign pid_in[3] = dat_b_i;
 
-assign pid_irst[0] = set_irst[0];
+assign pid_irst[0] = set_irst[0] || reset_i[0];
 assign pid_irst[1] = set_irst[1];
 assign pid_irst[2] = set_irst[2];
 assign pid_irst[3] = set_irst[3];
@@ -210,7 +219,7 @@ assign pid_railed_i[1] = railed_a_i;
 assign pid_railed_i[2] = railed_b_i;
 assign pid_railed_i[3] = railed_b_i;
 
-assign relock_hold_i[0] = set_hold[0];
+assign relock_hold_i[0] = set_hold[0] || reset_i[0];
 assign relock_hold_i[1] = set_hold[1];
 assign relock_hold_i[2] = set_hold[2];
 assign relock_hold_i[3] = set_hold[3];
@@ -324,6 +333,7 @@ endgenerate
 // Flags write
 always @(posedge clk_i) begin
     if (rstn_i == 1'b0) begin
+          reset_enabled          <=  4'b0001;
           enabled                <=  4'b1111;
           relock_enabled         <=  4'b0   ;
           set_hold               <=  4'b0   ;
