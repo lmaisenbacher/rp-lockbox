@@ -66,7 +66,8 @@ module red_pitaya_pid (
    input        [ 12-1: 0] relock_d_i      ,  // auxiliary ADC D
    input signed [ 14-1: 0] out_a_center_i  ,  // center of out 1 range
    input signed [ 14-1: 0] out_b_center_i  ,  // center of out 2 range
-   input                   reset_a_i       ,  // PID11 loop reset digital input
+   input                   reset_a_i       ,  // PID11 loop reset
+   input                   reset_d_i       ,  // PID22 loop reset
    output       [ 14-1: 0] dat_a_o         ,  //!< output data CHA
    output       [ 14-1: 0] dat_b_o         ,  //!< output data CHB
    output       [  4-1: 0] lock_status_o    ,  // lock status
@@ -100,13 +101,14 @@ reg         [3:0]         pid_inverted              ;
 reg         [3:0]         set_irst                  ;
 reg         [3:0]         set_irst_when_railed      ;
 reg         [3:0]         set_hold                  ;
-reg         [3:0]         enabled                   ;
-reg         [3:0]         reset_enabled             ;
+reg         [3:0]         set_output_enabled        ;
+reg         [3:0]         set_reset_enabled         ;
 wire        [3:0]         pid_irst                  ;
 wire        [3:0]         pid_ctr_rst               ;
 wire signed [14-1:0]      pid_ctr_val          [3:0];
 wire                      pid_hold             [3:0];
 wire        [1:0]         pid_railed_i         [3:0];
+wire        [1:0]         output_enabled       [3:0];
 
 wire signed [15-1:0]      pid_sum              [3:0];
 wire signed [14-1:0]      pid_sat              [3:0];
@@ -124,7 +126,7 @@ wire        [12-1:0]               relock_signal_i  [3:0];
 wire                               relock_hold_i    [3:0];
 wire                               relock_locked_o  [3:0];
 
-wire        [12-1:0]               relock_i         [3:0];
+wire        [12-1:0]                relock_i         [3:0];
 assign relock_i[0] = relock_a_i;
 assign relock_i[1] = relock_b_i;
 assign relock_i[2] = relock_c_i;
@@ -132,10 +134,10 @@ assign relock_i[3] = relock_d_i;
 
 // External (through digital input) loop reset
 wire        [3:0]                  reset_i          [3:0];
-assign reset_i[0] = reset_a_i && reset_enabled[0];
-assign reset_i[1] = reset_enabled[1];
-assign reset_i[2] = reset_enabled[2];
-assign reset_i[3] = reset_enabled[3];
+assign reset_i[0] = reset_a_i && set_reset_enabled[0];
+assign reset_i[1] = set_reset_enabled[1];
+assign reset_i[2] = set_reset_enabled[2];
+assign reset_i[3] = reset_d_i && set_reset_enabled[3];
 
 genvar pid_index;
 
@@ -200,9 +202,9 @@ assign pid_in[2] = dat_a_i;
 assign pid_in[3] = dat_b_i;
 
 assign pid_irst[0] = set_irst[0] || reset_i[0];
-assign pid_irst[1] = set_irst[1];
-assign pid_irst[2] = set_irst[2];
-assign pid_irst[3] = set_irst[3];
+assign pid_irst[1] = set_irst[1] || reset_i[1];
+assign pid_irst[2] = set_irst[2] || reset_i[2];
+assign pid_irst[3] = set_irst[3] || reset_i[3];
 
 assign pid_ctr_rst[0] = (set_irst_when_railed[0] && (railed_a_i[0] || railed_a_i[1])) || relock_clear_o[0];
 assign pid_ctr_rst[1] = (set_irst_when_railed[1] && (railed_a_i[0] || railed_a_i[1])) || relock_clear_o[1];
@@ -220,9 +222,15 @@ assign pid_railed_i[2] = railed_b_i;
 assign pid_railed_i[3] = railed_b_i;
 
 assign relock_hold_i[0] = set_hold[0] || reset_i[0];
-assign relock_hold_i[1] = set_hold[1];
-assign relock_hold_i[2] = set_hold[2];
-assign relock_hold_i[3] = set_hold[3];
+assign relock_hold_i[1] = set_hold[1] || reset_i[1];
+assign relock_hold_i[2] = set_hold[2] || reset_i[2];
+assign relock_hold_i[3] = set_hold[3] || reset_i[3];
+
+// Determine whether outputs of PIDs are enabled
+assign output_enabled[0] = set_output_enabled[0] && !reset_i[0];
+assign output_enabled[1] = set_output_enabled[1] && !reset_i[1];
+assign output_enabled[2] = set_output_enabled[2] && !reset_i[2];
+assign output_enabled[3] = set_output_enabled[3] && !reset_i[3];
 
 // Update register holding lock status
 // This register is then written to memory (but not read back from memory)
@@ -251,21 +259,21 @@ always @(posedge clk_i) begin
    end
    else begin
       // Add signal of enabled PID lockboxes for out 1
-      if (enabled[0] && (!enabled[1]))
+      if (output_enabled[0] && (!output_enabled[1]))
          out_1_sum <= $signed(pid_sat[0]);
-      else if (enabled[1] && (!enabled[0]))
+      else if (output_enabled[1] && (!output_enabled[0]))
          out_1_sum <= $signed(pid_sat[1]);
-      else if (enabled[0] && enabled[1])
+      else if (output_enabled[0] && output_enabled[1])
          out_1_sum <= $signed(pid_sat[0]) + $signed(pid_sat[1]);
       else
          out_1_sum <= 14'h0;
 
       // Add signal of enabled PID lockboxes for out 2
-      if (enabled[2] && (!enabled[3]))
+      if (output_enabled[2] && (!output_enabled[3]))
          out_2_sum <= $signed(pid_sat[2]);
-      else if (enabled[3] && (!enabled[2]))
+      else if (output_enabled[3] && (!output_enabled[2]))
          out_2_sum <= $signed(pid_sat[3]);
-      else if (enabled[2] && enabled[3])
+      else if (output_enabled[2] && output_enabled[3])
          out_2_sum <= $signed(pid_sat[2]) + $signed(pid_sat[3]);
       else
          out_2_sum <= 14'h0;
@@ -333,8 +341,8 @@ endgenerate
 // Flags write
 always @(posedge clk_i) begin
     if (rstn_i == 1'b0) begin
-          reset_enabled          <=  4'b0001;
-          enabled                <=  4'b1111;
+          set_reset_enabled      <=  4'b1000;
+          set_output_enabled     <=  4'b1111;
           relock_enabled         <=  4'b0   ;
           set_hold               <=  4'b0   ;
           set_irst_when_railed   <=  4'b0   ;          
@@ -343,7 +351,7 @@ always @(posedge clk_i) begin
     end
     else begin
         if (rstn_i & sys_wen & sys_addr[19:0]==16'h0)
-            {enabled,
+            {set_output_enabled,
              relock_enabled,
              set_hold,
              set_irst_when_railed,
@@ -366,7 +374,7 @@ end else begin
    casez (sys_addr[19:0])
        20'h00: begin
           sys_ack <= sys_en;
-          sys_rdata <= {{32-28{1'b0}}, relock_lock_status, enabled, relock_enabled, set_hold, set_irst_when_railed,
+          sys_rdata <= {{32-28{1'b0}}, relock_lock_status, set_output_enabled, relock_enabled, set_hold, set_irst_when_railed,
                         pid_inverted, set_irst};
       end 
 

@@ -552,7 +552,8 @@ red_pitaya_pid i_pid (
   .relock_d_i      (xadc_d_dat  ), // auxiliary ADC D
   .out_a_center_i  (dac_a_center), // center of out 1 range
   .out_b_center_i  (dac_b_center), // center of out 2 range
-  .reset_a_i       (gpio.i[13])  , // PID11 reset and hold
+  .reset_a_i       (gpio.i[13])  , // PID11 loop reset
+  .reset_d_i       (gpio.i[14])  , // PID22 loop reset
 
    // Output signals  
   .dat_a_o         (pid_dat[0]  ), // out 1
