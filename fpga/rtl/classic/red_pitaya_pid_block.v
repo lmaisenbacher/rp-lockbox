@@ -113,10 +113,13 @@ assign kp_mult = error * kp_signed;
 
 //---------------------------------------------------------------------------------
 //  Integrator
+// LM: Register holding current error signal multiplied with integrator gain
 reg signed  [KI_BITS+1+15-1: 0] ki_mult  ;
 wire signed [15+ISR+1-1: 0]     int_sum  ;
+// LM: Internal register holding integrator value (39-bit)
 reg signed  [15+ISR-1: 0]       int_reg  ;
 wire signed [15-1: 0]           int_shr  ;  // Twice the DAC range (14 bit) should be enough
+// LM: Signed wire of (always positive) integrator gain
 wire signed [KI_BITS+1-1: 0]    ki_signed;  // Required to make signed arithmetic work
 assign ki_signed = set_ki_i              ;
 
@@ -126,6 +129,7 @@ always @(posedge clk_i) begin
       int_reg  <= {15+ISR{1'b0}};
    end
    else begin
+      // LM: Multiply current error signal value with (signed wire) integrator gain to get value to be added to integrator register
       ki_mult <= error * ki_signed;
 
       if (int_rst_i)
@@ -145,7 +149,9 @@ always @(posedge clk_i) begin
    end
 end
 
+// LM: Add error signal * integrator gain (= `ki_mult`) to internal integrator register, which is the basis of the new integrator value
 assign int_sum = ki_mult + int_reg;
+// LM: Select most-significant 15 bits from internal integrator register to be added to output
 assign int_shr = int_reg[15+ISR-1:ISR];
 
 //---------------------------------------------------------------------------------
