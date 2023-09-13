@@ -113,8 +113,10 @@ assign kp_mult = error * kp_signed;
 
 //---------------------------------------------------------------------------------
 //  Integrator
+
 // LM: Register holding current error signal multiplied with integrator gain
 reg signed  [KI_BITS+1+15-1: 0] ki_mult  ;
+// LM: Register holding new integrator value (40-bit)
 wire signed [15+ISR+1-1: 0]     int_sum  ;
 // LM: Internal register holding integrator value (39-bit)
 reg signed  [15+ISR-1: 0]       int_reg  ;
@@ -129,7 +131,8 @@ always @(posedge clk_i) begin
       int_reg  <= {15+ISR{1'b0}};
    end
    else begin
-      // LM: Multiply current error signal value with (signed wire) integrator gain to get value to be added to integrator register
+      // LM: Multiply current error signal value with (signed wire) integrator gain
+      // to get value to be added to integrator register
       ki_mult <= error * ki_signed;
 
       if (int_rst_i)
@@ -142,14 +145,18 @@ always @(posedge clk_i) begin
          int_reg <= {1'b1, {15+ISR-1{1'b0}}}; // max negative
       else if ((railed_i[0] && (ki_mult < 0)) // anti-windup lower rail
             || (railed_i[1] && (ki_mult > 0)) // anti-windup upper rail
-            || (hold_i)) 
+            || (hold_i)) // LM: integrator hold
          int_reg <= int_reg;
       else
+         // LM: Move all bits except MSB from `int_sum` into `int_reg`. Because `int_sum` is
+         // limited to (by the saturation switch above) below MSB 01 and above MSB 11, this
+         // operation will preserve the sign information.
          int_reg <= int_sum[15+ISR-1:0]; // use sum as it is
    end
 end
 
-// LM: Add error signal * integrator gain (= `ki_mult`) to internal integrator register, which is the basis of the new integrator value
+// LM: Add error signal * integrator gain (= `ki_mult`) to internal integrator register,
+// which is the basis of the new integrator value
 assign int_sum = ki_mult + int_reg;
 // LM: Select most-significant 15 bits from internal integrator register to be added to output
 assign int_shr = int_reg[15+ISR-1:ISR];
