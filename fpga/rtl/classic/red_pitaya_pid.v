@@ -314,7 +314,7 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
           set_ki[pid_index]          <= {KI_BITS{1'b0}} ;
           set_kd[pid_index]          <= 14'd0 ;
           set_kii[pid_index]         <= {KI_BITS{1'b0}} ;          
-          set_kg[pid_index]          <= {KP_BITS{1'b0}} ;          
+          set_kg[pid_index]          <= {KP_BITS{1'b0}} ;        
           relock_minval[pid_index]   <= 12'd0;
           relock_maxval[pid_index]   <= 12'd0;
           relock_stepsize[pid_index] <= {RELOCK_STEP_BITS{1'b0}};

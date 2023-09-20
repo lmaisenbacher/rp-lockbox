@@ -94,6 +94,26 @@ always @(posedge clk_i) begin
 end
 
 //---------------------------------------------------------------------------------
+//  Global gain
+reg signed   [ 15-1: 0]              kg_reg   ;  // error multiplied by global gain
+wire signed  [KP_BITS+1+15-1: 0]     kg_mult  ;
+wire signed  [KP_BITS+1-1: 0]        kg_signed;  // Required to make signed arithmetic work
+assign kg_signed = set_kg_i                   ;
+
+always @(posedge clk_i) begin
+   if (rstn_i == 1'b0) begin
+      kg_reg  <= 15'h0 ;
+   end
+   else if (hold_i)
+      kg_reg <= kg_reg;
+   else begin
+      kg_reg <= kg_mult[KP_BITS+1+2-1:PSR] ;
+   end
+end
+
+assign kg_mult = error * kg_signed;
+
+//---------------------------------------------------------------------------------
 //  Proportional part
 reg signed   [KP_BITS+1+15-PSR-1: 0] kp_reg   ;
 wire signed  [KP_BITS+1+15-1: 0]     kp_mult  ;
@@ -111,7 +131,7 @@ always @(posedge clk_i) begin
    end
 end
 
-assign kp_mult = error * kp_signed;
+assign kp_mult = kg_reg * kp_signed;
 
 //---------------------------------------------------------------------------------
 //  Integrator
@@ -135,7 +155,7 @@ always @(posedge clk_i) begin
    else begin
       // LM: Multiply current error signal value with (signed wire) integrator gain
       // to get value to be added to integrator register
-      ki_mult <= error * ki_signed;
+      ki_mult <= kg_reg * ki_signed;
 
       if (int_rst_i)
          int_reg <= {15+ISR{1'b0}}; // reset
@@ -237,7 +257,7 @@ always @(posedge clk_i) begin
    end
 end
 
-assign kd_mult = $signed(error) * $signed(set_kd_i) ;
+assign kd_mult = $signed(kg_reg) * $signed(set_kd_i) ;
 
 //---------------------------------------------------------------------------------
 //  Sum together - saturate output
