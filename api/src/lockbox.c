@@ -971,6 +971,8 @@ int rp_SaveLockboxConfig() {
         rp_PIDGetKp(i, &config.pid_kp[i]);
         rp_PIDGetKi(i, &config.pid_ki[i]);
         rp_PIDGetKd(i, &config.pid_kd[i]);
+        rp_PIDGetKii(i, &config.pid_kii[i]);
+        rp_PIDGetKg(i, &config.pid_kg[i]);   
         rp_PIDGetIntReset(i, &config.pid_int_reset[i]);
         rp_PIDGetInverted(i, &config.pid_inverted[i]);
         rp_PIDGetResetWhenRailed(i, &config.pid_reset_when_railed[i]);
@@ -1022,6 +1024,8 @@ int rp_LoadLockboxConfig() {
         rp_PIDSetKp(i, config.pid_kp[i]);
         rp_PIDSetKi(i, config.pid_ki[i]);
         rp_PIDSetKd(i, config.pid_kd[i]);
+        rp_PIDSetKii(i, config.pid_kii[i]);
+        rp_PIDSetKg(i, config.pid_kg[i]);     
         rp_PIDSetIntReset(i, config.pid_int_reset[i]);
         rp_PIDSetInverted(i, config.pid_inverted[i]);
         rp_PIDSetResetWhenRailed(i, config.pid_reset_when_railed[i]);
