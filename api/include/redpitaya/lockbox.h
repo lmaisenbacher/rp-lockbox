@@ -1436,6 +1436,11 @@ int rp_PIDGetKi(rp_pid_t pid, float *ki);
 int rp_PIDSetKd(rp_pid_t pid, uint32_t kd);
 int rp_PIDGetKd(rp_pid_t pid, uint32_t *kd);
 
+int rp_PIDSetKii(rp_pid_t pid, uint32_t kii);
+int rp_PIDGetKii(rp_pid_t pid, uint32_t *kii);
+int rp_PIDSetKg(rp_pid_t pid, uint32_t kg);
+int rp_PIDGetKg(rp_pid_t pid, uint32_t *kg);
+
 /*
  * Enable or disable the integrator reset of the specified PID.
  * @param pid The PID to use (see rp_pid_t documentation for details).

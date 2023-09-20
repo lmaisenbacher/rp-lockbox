@@ -67,8 +67,10 @@ module red_pitaya_pid_block #(
    // settings
    input signed [ 14-1: 0]      set_sp_i        ,  // set point
    input        [ KP_BITS-1: 0] set_kp_i        ,  // Kp
-   input        [ KI_BITS-1: 0] set_ki_i        ,  // Ki
-   input        [ 14-1: 0]      set_kd_i        ,  // Kd
+   input        [ KI_BITS-1: 0] set_ki_i        ,  // Ki (1/s)
+   input        [ 14-1: 0]      set_kd_i        ,  // Kd (s)
+   input        [ KI_BITS-1: 0] set_kii_i       ,  // Kii (second integrator gain) (1/s)
+   input        [ KP_BITS-1: 0] set_kg_i        ,  // Kg (global gain)
    input                        inverted_i      ,  // feedback sign
    input                        int_rst_i       ,  // integrator reset
    input                        int_ctr_rst_i   ,  // integrator reset to center of the output range
@@ -162,6 +164,56 @@ assign int_sum = ki_mult + int_reg;
 assign int_shr = int_reg[15+ISR-1:ISR];
 
 //---------------------------------------------------------------------------------
+//  Second integrator
+
+// LM: Register holding current error signal multiplied with integrator gain
+reg signed  [KI_BITS+1+15-1: 0] kii_mult  ;
+// LM: Register holding new integrator value (40-bit)
+wire signed [15+ISR+1-1: 0]     iint_sum  ;
+// LM: Internal register holding integrator value (39-bit)
+reg signed  [15+ISR-1: 0]       iint_reg  ;
+wire signed [15-1: 0]           iint_shr  ;  // Twice the DAC range (14 bit) should be enough
+// LM: Signed wire of (always positive) integrator gain
+wire signed [KI_BITS+1-1: 0]    kii_signed;  // Required to make signed arithmetic work
+assign kii_signed = set_kii_i             ;
+
+always @(posedge clk_i) begin
+   if (rstn_i == 1'b0) begin
+      kii_mult  <= {KI_BITS+1+15{1'b0}};
+      iint_reg  <= {15+ISR{1'b0}};
+   end
+   else begin
+      // LM: Multiply current error signal value with (signed wire) integrator gain
+      // to get value to be added to integrator register
+      kii_mult <= int_shr * kii_signed;
+
+      if (int_rst_i)
+         iint_reg <= {15+ISR{1'b0}}; // reset
+      else if (int_ctr_rst_i)
+         iint_reg <= {int_ctr_val_i[13], int_ctr_val_i, {ISR{1'b0}}}; // reset to center of output range
+      else if (iint_sum[15+ISR:15+ISR-1] == 2'b01) // positive saturation
+         iint_reg <= {1'b0, {15+ISR-1{1'b1}}}; // max positive
+      else if (iint_sum[15+ISR:15+ISR-1] == 2'b10) // negative saturation
+         iint_reg <= {1'b1, {15+ISR-1{1'b0}}}; // max negative
+      else if ((railed_i[0] && (kii_mult < 0)) // anti-windup lower rail
+            || (railed_i[1] && (kii_mult > 0)) // anti-windup upper rail
+            || (hold_i)) // LM: integrator hold
+         iint_reg <= iint_reg;
+      else
+         // LM: Move all bits except MSB from `int_sum` into `int_reg`. Because `int_sum` is
+         // limited to (by the saturation switch above) below MSB 01 and above MSB 11, this
+         // operation will preserve the sign information.
+         iint_reg <= iint_sum[15+ISR-1:0]; // use sum as it is
+   end
+end
+
+// LM: Add error signal * integrator gain (= `ki_mult`) to internal integrator register,
+// which is the basis of the new integrator value
+assign iint_sum = kii_mult + iint_reg;
+// LM: Select most-significant 15 bits from internal integrator register to be added to output
+assign iint_shr = iint_reg[15+ISR-1:ISR];
+
+//---------------------------------------------------------------------------------
 //  Derivative
 
 wire  [    29-1: 0] kd_mult       ;
@@ -206,7 +258,7 @@ always @(posedge clk_i) begin
    end
 end
 
-assign pid_sum = kp_reg + $signed(int_shr) + $signed(kd_reg_s) ;
+assign pid_sum = kp_reg + $signed(int_shr) + $signed(iint_shr) + $signed(kd_reg_s) ;
 
 assign dat_o = pid_out ;
 

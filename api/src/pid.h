@@ -68,6 +68,14 @@ typedef struct pid_control_s {
     uint32_t relock12_input;
     uint32_t relock21_input;
     uint32_t relock22_input;
+    uint32_t pid11_Kii;
+    uint32_t pid12_Kii;
+    uint32_t pid21_Kii;
+    uint32_t pid22_Kii;    
+    uint32_t pid11_Kg;
+    uint32_t pid12_Kg;
+    uint32_t pid21_Kg;
+    uint32_t pid22_Kg;    
 } pid_control_t;
 
 static const uint32_t PID_CONF_MASK = 0xFFFFFFF; // (28 bits)
@@ -78,6 +86,8 @@ static const uint32_t PID_KD_MASK = 0x3FFF; // (14 bits)
 static const uint32_t PID_STEPSIZE_MASK = 0xFFFFFF; // (24 bits)
 static const uint32_t PID_RELOCK_MASK = 0xFFF; // (12 bits)
 static const uint32_t PID_RELOCK_INPUT_MASK = 0x3; // (2 bits)
+static const uint32_t PID_KII_MASK = 0xFFFFFF; // (24 bits)
+static const uint32_t PID_KG_MASK = 0xFFFFFF; // (24 bits)
 
 static const float PID_TIMESTEP = 8E-9; // Inverse of the sampling rate
 static const float PID_DACCOUNT = 1.221E-4; // DAC count in V = 2V/2**14
@@ -97,6 +107,10 @@ int pid_SetPIDKi(rp_pid_t pid, float ki);
 int pid_GetPIDKi(rp_pid_t pid, float *ki);
 int pid_SetPIDKd(rp_pid_t pid, uint32_t kd);
 int pid_GetPIDKd(rp_pid_t pid, uint32_t *kd);
+int pid_SetPIDKii(rp_pid_t pid, float kii);
+int pid_GetPIDKii(rp_pid_t pid, float *kii);
+int pid_SetPIDKg(rp_pid_t pid, float kg);
+int pid_GetPIDKg(rp_pid_t pid, float *kg);
 int pid_SetPIDIntReset(rp_pid_t pid, bool enable);
 int pid_GetPIDIntReset(rp_pid_t pid, bool *enabled);
 int pid_SetPIDInverted(rp_pid_t pid, bool inverted);

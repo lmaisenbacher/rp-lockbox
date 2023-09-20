@@ -97,6 +97,8 @@ reg         [14-1: 0    ] set_sp               [3:0];
 reg         [KP_BITS-1:0] set_kp               [3:0];
 reg         [KI_BITS-1:0] set_ki               [3:0];
 reg         [14-1:0]      set_kd               [3:0];
+reg         [KI_BITS-1:0] set_kii              [3:0];
+reg         [KI_BITS-1:0] set_kg               [3:0];
 reg         [3:0]         pid_inverted              ;
 reg         [3:0]         set_irst                  ;
 reg         [3:0]         set_irst_when_railed      ;
@@ -170,6 +172,8 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
       .set_kp_i      (  set_kp[pid_index]      ),  // Kp
       .set_ki_i      (  set_ki[pid_index]      ),  // Ki
       .set_kd_i      (  set_kd[pid_index]      ),  // Kd
+      .set_kii_i     (  set_kii[pid_index]     ),  // Kii (second integrator gain)
+      .set_kg_i      (  set_kg[pid_index]      ),  // Kg (global gain)
       .inverted_i    (  pid_inverted[pid_index]),  // feedback sign
       .int_rst_i     (  pid_irst[pid_index]    ),   // integrator reset
       .int_ctr_rst_i (  pid_ctr_rst[pid_index] ),
@@ -309,6 +313,8 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
           set_kp[pid_index]          <= {KP_BITS{1'b0}} ;
           set_ki[pid_index]          <= {KI_BITS{1'b0}} ;
           set_kd[pid_index]          <= 14'd0 ;
+          set_kii[pid_index]         <= {KI_BITS{1'b0}} ;          
+          set_kg[pid_index]          <= {KP_BITS{1'b0}} ;          
           relock_minval[pid_index]   <= 12'd0;
           relock_maxval[pid_index]   <= 12'd0;
           relock_stepsize[pid_index] <= {RELOCK_STEP_BITS{1'b0}};
@@ -332,6 +338,10 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
                  relock_stepsize[pid_index]  <= sys_wdata[RELOCK_STEP_BITS-1:0] ;
              if (sys_addr[19:0]==('h80+4*pid_index))
                  relock_source[pid_index]  <= sys_wdata[2-1:0] ;
+             if (sys_addr[19:0]==('h90+4*pid_index))
+                 set_kii[pid_index] <= sys_wdata[KP_BITS-1:0];
+             if (sys_addr[19:0]==('ha0+4*pid_index))
+                 set_kg[pid_index] <= sys_wdata[KI_BITS-1:0];
           end
        end
     end
@@ -387,6 +397,8 @@ end else begin
       20'h6?: begin sys_ack <= sys_en; sys_rdata <= {{32-12{1'b0}}, relock_maxval[sys_addr[3:0] >> 2]}; end 
       20'h7?: begin sys_ack <= sys_en; sys_rdata <= {{32-RELOCK_STEP_BITS{1'b0}}, relock_stepsize[sys_addr[3:0] >> 2]}; end 
       20'h8?: begin sys_ack <= sys_en; sys_rdata <= {{32-2{1'b0}}, relock_source[sys_addr[3:0] >> 2]}; end 
+      20'h9?: begin sys_ack <= sys_en; sys_rdata <= {{32-KI_BITS{1'b0}}, set_kii[sys_addr[3:0] >> 2]}; end
+      20'ha?: begin sys_ack <= sys_en; sys_rdata <= {{32-KP_BITS{1'b0}}, set_kg[sys_addr[3:0] >> 2]}; end
 
      default: begin sys_ack <= sys_en; sys_rdata <=  32'h0; end
    endcase

@@ -214,6 +214,94 @@ int pid_GetPIDKd(rp_pid_t pid, uint32_t *kd)
     }
 }
 
+int pid_SetPIDKii(rp_pid_t pid, float kii)
+{
+    uint32_t kii_integer;
+
+    if(kii < 0) {
+        return RP_EIPV;
+    }
+
+    kii_integer = (int)round(kii * (1 << PID_ISR) * PID_TIMESTEP);
+    if(kii_integer > PID_KII_MASK) // check for integer overflow
+        kii_integer = PID_KII_MASK;
+
+    switch(pid) {
+        case RP_PID_11: return cmn_SetValue(&pid_reg->pid11_Kii, kii_integer, PID_KII_MASK);
+        case RP_PID_12: return cmn_SetValue(&pid_reg->pid12_Kii, kii_integer, PID_KII_MASK);
+        case RP_PID_21: return cmn_SetValue(&pid_reg->pid21_Kii, kii_integer, PID_KII_MASK);
+        case RP_PID_22: return cmn_SetValue(&pid_reg->pid22_Kii, kii_integer, PID_KII_MASK);
+        default: return RP_EPN;
+    }
+}
+
+int pid_GetPIDKii(rp_pid_t pid, float *kii)
+{
+    uint32_t kii_integer;
+    switch(pid) {
+        case RP_PID_11:
+            cmn_GetValue(&pid_reg->pid11_Kii, &kii_integer, PID_KII_MASK);
+            break;
+        case RP_PID_12:
+            cmn_GetValue(&pid_reg->pid12_Kii, &kii_integer, PID_KII_MASK);
+            break;
+        case RP_PID_21:
+            cmn_GetValue(&pid_reg->pid21_Kii, &kii_integer, PID_KII_MASK);
+            break;
+        case RP_PID_22:
+            cmn_GetValue(&pid_reg->pid22_Kii, &kii_integer, PID_KII_MASK);
+            break;
+        default: return RP_EPN;
+    }
+
+    *kii = (float)kii_integer/(PID_TIMESTEP * (1 << PID_ISR));
+    return RP_OK;
+}
+
+int pid_SetPIDKg(rp_pid_t pid, float kg)
+{
+    uint32_t kg_integer;
+
+    if(kg < 0) {
+        return RP_EIPV;
+    }
+    
+    kg_integer = (int)round(kg * (1 << PID_PSR));
+    if(kg_integer > PID_KG_MASK)  // check for integer overflow
+        kg_integer = PID_KG_MASK;
+
+    switch(pid) {
+        case RP_PID_11: return cmn_SetValue(&pid_reg->pid11_Kg, kg_integer, PID_KG_MASK);
+        case RP_PID_12: return cmn_SetValue(&pid_reg->pid12_Kg, kg_integer, PID_KG_MASK);
+        case RP_PID_21: return cmn_SetValue(&pid_reg->pid21_Kg, kg_integer, PID_KG_MASK);
+        case RP_PID_22: return cmn_SetValue(&pid_reg->pid22_Kg, kg_integer, PID_KG_MASK);
+        default: return RP_EPN;
+    }
+}
+
+int pid_GetPIDKg(rp_pid_t pid, float *kg)
+{
+    uint32_t kg_integer;
+    switch(pid) {
+        case RP_PID_11:
+            cmn_GetValue(&pid_reg->pid11_Kg, &kg_integer, PID_KG_MASK);
+            break;
+        case RP_PID_12:
+            cmn_GetValue(&pid_reg->pid12_Kg, &kg_integer, PID_KG_MASK);
+            break;
+        case RP_PID_21:
+            cmn_GetValue(&pid_reg->pid21_Kg, &kg_integer, PID_KG_MASK);
+            break;
+        case RP_PID_22:
+            cmn_GetValue(&pid_reg->pid22_Kg, &kg_integer, PID_KG_MASK);
+            break;
+        default: return RP_EPN;
+    }
+
+    *kg = (float)kg_integer/(1 << PID_PSR);
+    return RP_OK;
+}
+
 int pid_SetPIDIntReset(rp_pid_t pid, bool enable) {
     if(enable) {
         switch(pid) {

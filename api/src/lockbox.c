@@ -853,6 +853,19 @@ int rp_PIDGetKd(rp_pid_t pid, uint32_t *kd) {
     return pid_GetPIDKd(pid, kd);
 }
 
+int rp_PIDSetKii(rp_pid_t pid, float kii) {
+    return pid_SetPIDKii(pid, kii);
+}
+int rp_PIDGetKii(rp_pid_t pid, float *kii) {
+    return pid_GetPIDKii(pid, kii);
+}
+int rp_PIDSetKg(rp_pid_t pid, float kg) {
+    return pid_SetPIDKg(pid, kg);
+}
+int rp_PIDGetKg(rp_pid_t pid, float *kg) {
+    return pid_GetPIDKg(pid, kg);
+}
+
 int rp_PIDSetIntReset(rp_pid_t pid, bool enable) {
     return pid_SetPIDIntReset(pid, enable);
 }
