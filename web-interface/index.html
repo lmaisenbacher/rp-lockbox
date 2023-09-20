@@ -117,6 +117,8 @@
         var spinner_pid_kp_name = ["#spinner_pid_11_kp", "#spinner_pid_21_kp", "#spinner_pid_12_kp", "#spinner_pid_22_kp"];
         var spinner_pid_ki_name = ["#spinner_pid_11_ki", "#spinner_pid_21_ki", "#spinner_pid_12_ki", "#spinner_pid_22_ki"];
         var spinner_pid_kd_name = ["#spinner_pid_11_kd", "#spinner_pid_21_kd", "#spinner_pid_12_kd", "#spinner_pid_22_kd"];
+        var spinner_pid_kii_name = ["#spinner_pid_11_kii", "#spinner_pid_21_kii", "#spinner_pid_12_kii", "#spinner_pid_22_kii"];
+        var spinner_pid_kg_name = ["#spinner_pid_11_kg", "#spinner_pid_21_kg", "#spinner_pid_12_kg", "#spinner_pid_22_kg"];        
         var checkbox_pid_inv_name = ["#checkbox_pid_11_inv", "#checkbox_pid_21_inv", "#checkbox_pid_12_inv", "#checkbox_pid_22_inv"];
         var checkbox_pid_hold_name = ["#checkbox_pid_11_hold", "#checkbox_pid_21_hold", "#checkbox_pid_12_hold", "#checkbox_pid_22_hold"];
         var checkbox_pid_int_res_name = ["#checkbox_pid_11_int_res", "#checkbox_pid_21_int_res", "#checkbox_pid_12_int_res", "#checkbox_pid_22_int_res"];
@@ -159,6 +161,20 @@
                 kd: kd,
             });
         };
+
+		function set_kii(pid, kii) {
+            $.post("_set_kii", {
+                pid: pid,
+                kii: kii,
+            });
+        };        
+
+		function set_kg(pid, kg) {
+            $.post("_set_kg", {
+                pid: pid,
+                kg: kg,
+            });
+        };                
 		
         function set_inverted(pid, inverted) {
             $.post("_set_inverted", {
@@ -422,6 +438,48 @@
             }
             set_kd(pid, $(event.target).val());
         }
+
+        function kii_changed(event, ui) {
+            var pid;
+            switch(event.target.id) {
+                case "spinner_pid_11_kii":
+                    pid = 0;
+                    break;
+                case "spinner_pid_12_kii":
+                    pid = 1;
+                    break;
+                case "spinner_pid_21_kii":
+                    pid = 2;
+                    break;
+                case "spinner_pid_22_kii":
+                    pid = 3;
+                    break;
+                default:
+                    pid = 0;
+            }
+            set_kii(pid, $(event.target).val());
+        }        
+
+        function kg_changed(event, ui) {
+            var pid;
+            switch(event.target.id) {
+                case "spinner_pid_11_kg":
+                    pid = 0;
+                    break;
+                case "spinner_pid_12_kg":
+                    pid = 1;
+                    break;
+                case "spinner_pid_21_kg":
+                    pid = 2;
+                    break;
+                case "spinner_pid_22_kg":
+                    pid = 3;
+                    break;
+                default:
+                    pid = 0;
+            }
+            set_kg(pid, $(event.target).val());
+        }           
 
         function inverted_changed(event, ui) {
             var pid;
@@ -909,6 +967,18 @@
             max: 8191
             });
         $( ".kd_spinner" ).width(105);
+        $( ".kii_spinner" ).spinner({
+            step: 1.,
+            min: 0.,
+            max: 7812499.
+            });
+        $( ".kii_spinner" ).width(105);  
+        $( ".kg_spinner" ).spinner({
+            step: 0.01,
+            min: 0.,
+            max: 4095.
+            });
+        $( ".kg_spinner" ).width(105);              
 		$( ".relock_limit_min_spinner, .relock_limit_max_spinner" ).spinner({
             step: 0.001,
             min: 0.,
@@ -1043,6 +1113,14 @@
                             <td><label for="spinner_pid_11_kd">KD</label></td>
                             <td><input id="spinner_pid_11_kd" class="kd_spinner"></td>
                         </tr>
+                        <tr>
+                            <td><label for="spinner_pid_11_kii">KII (1/s)</label></td>
+                            <td><input id="spinner_pid_11_kii" class="kii_spinner"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="spinner_pid_11_kg">Global</label></td>
+                            <td><input id="spinner_pid_11_kg" class="kg_spinner"></td>
+                        </tr>                                                
                     </table>
 					
                     <div class="controlgroup-vertical">
