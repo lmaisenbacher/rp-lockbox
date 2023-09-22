@@ -82,7 +82,7 @@ static const uint32_t PID_CONF_MASK = 0xFFFFFFF; // (28 bits)
 static const uint32_t PID_SETPOINT_MASK = 0x3FFF; // (14 bits)
 static const uint32_t PID_KP_MASK = 0xFFFFFF; // (24 bits)
 static const uint32_t PID_KI_MASK = 0xFFFFFF; // (24 bits)
-static const uint32_t PID_KD_MASK = 0x3FFF; // (14 bits)
+static const uint32_t PID_KD_MASK = 0xFFFFFF; // (24 bits)
 static const uint32_t PID_STEPSIZE_MASK = 0xFFFFFF; // (24 bits)
 static const uint32_t PID_RELOCK_MASK = 0xFFF; // (12 bits)
 static const uint32_t PID_RELOCK_INPUT_MASK = 0x3; // (2 bits)
@@ -93,6 +93,7 @@ static const float PID_TIMESTEP = 8E-9; // Inverse of the sampling rate
 static const float PID_DACCOUNT = 1.221E-4; // DAC count in V = 2V/2**14
 static const uint32_t PID_PSR = 12; // P gain = Kp >> PID_PSR
 static const uint32_t PID_ISR = 28; // I gain = Ki >> PID_PSR
+static const uint32_t PID_DSR = 8; // D gain = Kp >> PID_DSR
 // Slew rate (in DAC counts/clock cycle) = stepsize >> PID_STEPSR
 static const uint32_t PID_STEPSR = 18; 
 
@@ -105,8 +106,8 @@ int pid_SetPIDKp(rp_pid_t pid, float kp);
 int pid_GetPIDKp(rp_pid_t pid, float *kp);
 int pid_SetPIDKi(rp_pid_t pid, float ki);
 int pid_GetPIDKi(rp_pid_t pid, float *ki);
-int pid_SetPIDKd(rp_pid_t pid, uint32_t kd);
-int pid_GetPIDKd(rp_pid_t pid, uint32_t *kd);
+int pid_SetPIDKd(rp_pid_t pid, float kd);
+int pid_GetPIDKd(rp_pid_t pid, float *kd);
 int pid_SetPIDKii(rp_pid_t pid, float kii);
 int pid_GetPIDKii(rp_pid_t pid, float *kii);
 int pid_SetPIDKg(rp_pid_t pid, float kg);

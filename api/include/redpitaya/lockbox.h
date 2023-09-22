@@ -1435,8 +1435,8 @@ int rp_PIDSetKi(rp_pid_t pid, float ki);
  * indicate an error.
  */
 int rp_PIDGetKi(rp_pid_t pid, float *ki);
-int rp_PIDSetKd(rp_pid_t pid, uint32_t kd);
-int rp_PIDGetKd(rp_pid_t pid, uint32_t *kd);
+int rp_PIDSetKd(rp_pid_t pid, float kd);
+int rp_PIDGetKd(rp_pid_t pid, float *kd);
 
 int rp_PIDSetKii(rp_pid_t pid, float kii);
 int rp_PIDGetKii(rp_pid_t pid, float *kii);

@@ -84,7 +84,7 @@ module red_pitaya_pid (
 
 localparam  PSR = 12         ;              // p gain = Kp >> PSR
 localparam  ISR = 28         ;              // i gain = Ki >> ISR
-localparam  DSR = 10         ;
+localparam  DSR = 8          ;              // D gain = Kd >> DSR
 localparam  KP_BITS = 24     ;
 localparam  KI_BITS = 24     ;
 localparam  KD_BITS = 24     ;
@@ -96,9 +96,9 @@ wire signed [14-1: 0    ] pid_out              [3:0];
 reg         [14-1: 0    ] set_sp               [3:0];
 reg         [KP_BITS-1:0] set_kp               [3:0];
 reg         [KI_BITS-1:0] set_ki               [3:0];
-reg         [14-1:0]      set_kd               [3:0];
+reg         [KD_BITS-1:0] set_kd               [3:0];
 reg         [KI_BITS-1:0] set_kii              [3:0];
-reg         [KI_BITS-1:0] set_kg               [3:0];
+reg         [KP_BITS-1:0] set_kg               [3:0];
 reg         [3:0]         pid_inverted              ;
 reg         [3:0]         set_irst                  ;
 reg         [3:0]         set_irst_when_railed      ;
@@ -157,7 +157,8 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
       .ISR     (  ISR   ),
       .DSR     (  DSR   ),
       .KP_BITS ( KP_BITS),
-      .KI_BITS ( KI_BITS)
+      .KI_BITS ( KI_BITS),
+      .KD_BITS ( KD_BITS)
     ) i_pid (
        // data
       .clk_i        (  clk_i                  ),  // clock
@@ -312,7 +313,7 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
           set_sp[pid_index]          <= 14'd0 ;
           set_kp[pid_index]          <= {KP_BITS{1'b0}} ;
           set_ki[pid_index]          <= {KI_BITS{1'b0}} ;
-          set_kd[pid_index]          <= 14'd0 ;
+          set_kd[pid_index]          <= {KD_BITS{1'b0}} ;
           set_kii[pid_index]         <= {KI_BITS{1'b0}} ;          
           set_kg[pid_index]          <= {KP_BITS{1'b0}} ;        
           relock_minval[pid_index]   <= 12'd0;
@@ -329,7 +330,7 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
              if (sys_addr[19:0]==('h30+4*pid_index))
                  set_ki[pid_index] <= sys_wdata[KI_BITS-1:0];
              if (sys_addr[19:0]==('h40+4*pid_index))
-                 set_kd[pid_index] <= sys_wdata[14-1:0];
+                 set_kd[pid_index] <= sys_wdata[KD_BITS-1:0];
              if (sys_addr[19:0]==('h50+4*pid_index))
                  relock_minval[pid_index]  <= sys_wdata[12-1:0] ;
              if (sys_addr[19:0]==('h60+4*pid_index))
@@ -341,7 +342,7 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
              if (sys_addr[19:0]==('h90+4*pid_index))
                  set_kii[pid_index] <= sys_wdata[KP_BITS-1:0];
              if (sys_addr[19:0]==('ha0+4*pid_index))
-                 set_kg[pid_index] <= sys_wdata[KI_BITS-1:0];
+                 set_kg[pid_index] <= sys_wdata[KP_BITS-1:0];
           end
        end
     end
@@ -391,7 +392,7 @@ end else begin
       20'h1?: begin sys_ack <= sys_en; sys_rdata <= {{32-14{1'b0}}, set_sp[sys_addr[3:0] >> 2]}; end 
       20'h2?: begin sys_ack <= sys_en; sys_rdata <= {{32-KP_BITS{1'b0}}, set_kp[sys_addr[3:0] >> 2]}; end 
       20'h3?: begin sys_ack <= sys_en; sys_rdata <= {{32-KI_BITS{1'b0}}, set_ki[sys_addr[3:0] >> 2]}; end 
-      20'h4?: begin sys_ack <= sys_en; sys_rdata <= {{32-14{1'b0}}, set_kd[sys_addr[3:0] >> 2]}; end 
+      20'h4?: begin sys_ack <= sys_en; sys_rdata <= {{32-KD_BITS{1'b0}}, set_kd[sys_addr[3:0] >> 2]}; end 
 
       20'h5?: begin sys_ack <= sys_en; sys_rdata <= {{32-12{1'b0}}, relock_minval[sys_addr[3:0] >> 2]}; end 
       20'h6?: begin sys_ack <= sys_en; sys_rdata <= {{32-12{1'b0}}, relock_maxval[sys_addr[3:0] >> 2]}; end 

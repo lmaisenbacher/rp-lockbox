@@ -192,26 +192,48 @@ int pid_GetPIDKi(rp_pid_t pid, float *ki)
     return RP_OK;
 }
 
-int pid_SetPIDKd(rp_pid_t pid, uint32_t kd)
+int pid_SetPIDKd(rp_pid_t pid, float kd)
 {
+    uint32_t kd_integer;
+
+    if(kd < 0) {
+        return RP_EIPV;
+    }
+
+    kd_integer = (int)round(kd * (1 << PID_DSR) / PID_TIMESTEP);
+    if(kd_integer > PID_KD_MASK) // check for integer overflow
+        kd_integer = PID_KD_MASK;
+
     switch(pid) {
-        case RP_PID_11: return cmn_SetValue(&pid_reg->pid11_Kd, kd, PID_KD_MASK);
-        case RP_PID_12: return cmn_SetValue(&pid_reg->pid12_Kd, kd, PID_KD_MASK);
-        case RP_PID_21: return cmn_SetValue(&pid_reg->pid21_Kd, kd, PID_KD_MASK);
-        case RP_PID_22: return cmn_SetValue(&pid_reg->pid22_Kd, kd, PID_KD_MASK);
+        case RP_PID_11: return cmn_SetValue(&pid_reg->pid11_Kd, kd_integer, PID_KD_MASK);
+        case RP_PID_12: return cmn_SetValue(&pid_reg->pid12_Kd, kd_integer, PID_KD_MASK);
+        case RP_PID_21: return cmn_SetValue(&pid_reg->pid21_Kd, kd_integer, PID_KD_MASK);
+        case RP_PID_22: return cmn_SetValue(&pid_reg->pid22_Kd, kd_integer, PID_KD_MASK);
         default: return RP_EPN;
     }
 }
 
-int pid_GetPIDKd(rp_pid_t pid, uint32_t *kd)
+int pid_GetPIDKd(rp_pid_t pid, float *kd)
 {
+    uint32_t kd_integer;    
     switch(pid) {
-        case RP_PID_11: return cmn_GetValue(&pid_reg->pid11_Kd, kd, PID_KD_MASK);
-        case RP_PID_12: return cmn_GetValue(&pid_reg->pid12_Kd, kd, PID_KD_MASK);
-        case RP_PID_21: return cmn_GetValue(&pid_reg->pid21_Kd, kd, PID_KD_MASK);
-        case RP_PID_22: return cmn_GetValue(&pid_reg->pid22_Kd, kd, PID_KD_MASK);
+        case RP_PID_11:
+            cmn_GetValue(&pid_reg->pid11_Kd, &kd_integer, PID_KD_MASK);
+            break;
+        case RP_PID_12:
+            cmn_GetValue(&pid_reg->pid12_Kd, &kd_integer, PID_KD_MASK);
+            break;
+        case RP_PID_21:
+            cmn_GetValue(&pid_reg->pid21_Kd, &kd_integer, PID_KD_MASK);
+            break;
+        case RP_PID_22:
+            cmn_GetValue(&pid_reg->pid22_Kd, &kd_integer, PID_KD_MASK);
+            break;
         default: return RP_EPN;
     }
+
+    *kd = (float)kd_integer * PID_TIMESTEP / (1 << PID_DSR);
+    return RP_OK;    
 }
 
 int pid_SetPIDKii(rp_pid_t pid, float kii)

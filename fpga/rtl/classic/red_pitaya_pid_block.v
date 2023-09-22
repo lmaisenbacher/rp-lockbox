@@ -51,9 +51,10 @@
 module red_pitaya_pid_block #(
    parameter     PSR     = 12                   ,  // p gain = Kp >> PSR
    parameter     ISR     = 28                   ,  // i gain = Ki >> ISR
-   parameter     DSR     = 10                   ,
+   parameter     DSR     = 8                    ,
    parameter     KP_BITS = 24                   ,
-   parameter     KI_BITS = 24                   
+   parameter     KI_BITS = 24                   ,
+   parameter     KD_BITS = 24                     
 )
 (
    // data
@@ -68,7 +69,7 @@ module red_pitaya_pid_block #(
    input signed [ 14-1: 0]      set_sp_i        ,  // set point
    input        [ KP_BITS-1: 0] set_kp_i        ,  // Kp
    input        [ KI_BITS-1: 0] set_ki_i        ,  // Ki (1/s)
-   input        [ 14-1: 0]      set_kd_i        ,  // Kd (s)
+   input        [ KD_BITS-1: 0] set_kd_i        ,  // Kd
    input        [ KI_BITS-1: 0] set_kii_i       ,  // Kii (second integrator gain) (1/s)
    input        [ KP_BITS-1: 0] set_kg_i        ,  // Kg (global gain)
    input                        inverted_i      ,  // feedback sign
@@ -216,28 +217,36 @@ assign iint_shr = iint_reg[15+ISR-1:ISR];
 //---------------------------------------------------------------------------------
 //  Derivative
 
-wire  [    29-1: 0] kd_mult       ;
-reg   [29-DSR-1: 0] kd_reg        ;
-reg   [29-DSR-1: 0] kd_reg_r      ;
-reg   [29-DSR  : 0] kd_reg_s      ;
+// wire  [    29-1: 0] kd_mult       ;
+// reg   [29-DSR-1: 0] kd_reg        ;
+// reg   [29-DSR-1: 0] kd_reg_r      ;
+// reg   [29-DSR  : 0] kd_reg_s      ;
+wire signed [    32-1: 0] kd_mult       ;
+reg signed  [32-DSR-1: 0] kd_reg        ;
+reg signed  [32-DSR-1: 0] kd_reg_r      ;
+reg signed  [32-DSR  : 0] kd_reg_s      ;
+// LM: Signed wire of (always positive) derivative gain
+wire signed [KD_BITS+1-1: 0]    kd_signed;  // Required to make signed arithmetic work
+assign kd_signed = set_kd_i              ;
 
 
 always @(posedge clk_i) begin
    if (rstn_i == 1'b0) begin
-      kd_reg   <= {29-DSR{1'b0}};
-      kd_reg_r <= {29-DSR{1'b0}};
-      kd_reg_s <= {29-DSR+1{1'b0}};
+      kd_reg   <= {32-DSR{1'b0}};
+      kd_reg_r <= {32-DSR{1'b0}};
+      kd_reg_s <= {32-DSR+1{1'b0}};
    end
    else if (hold_i)
       kd_reg <= kd_reg;
    else begin
-      kd_reg   <= kd_mult[29-1:DSR] ;
+      kd_reg   <= kd_mult[32-1:DSR] ;
       kd_reg_r <= kd_reg;
-      kd_reg_s <= $signed(kd_reg) - $signed(kd_reg_r);
+      kd_reg_s <= kd_reg - kd_reg_r;
    end
 end
 
-assign kd_mult = $signed(error) * $signed(set_kd_i) ;
+// assign kd_mult = $signed(error) * $signed(set_kd_i) ;
+assign kd_mult = error * kd_signed;
 
 //---------------------------------------------------------------------------------
 //  Sum together - saturate output
