@@ -219,7 +219,7 @@ scpi_result_t RP_PIDKiQ(scpi_t *context) {
 
 scpi_result_t RP_PIDKd(scpi_t *context) {
     int result;
-    uint32_t kd;
+    float kd;
     rp_pid_t pid;
 
     /* Parse PID index */
@@ -247,7 +247,7 @@ scpi_result_t RP_PIDKd(scpi_t *context) {
 
 scpi_result_t RP_PIDKdQ(scpi_t *context) {
     int result;
-    uint32_t kd;
+    float kd;
     rp_pid_t pid;
 
     /* Parse PID index */
