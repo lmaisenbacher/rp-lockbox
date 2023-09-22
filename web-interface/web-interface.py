@@ -584,7 +584,7 @@ def get_parameters():
         retval = RP_LIB.rp_PIDGetKd(i, ctypes.byref(kd_param[i]))
         if retval != 0:
             LOG.error("Failed to get PID Kd parameter. Error code: %s", ERROR_CODES[retval])
-        fd_param[i] = 1/(2*math.pi*kd_param[i])
+        fd_param[i] = 1/(2*math.pi*kd_param[i].value)
 
         kii_param[i] = ctypes.c_float()
         retval = RP_LIB.rp_PIDGetKii(i, ctypes.byref(kii_param[i]))
@@ -750,6 +750,10 @@ def get_parameters():
         "pid_12_kd": kd_param[1].value,
         "pid_21_kd": kd_param[2].value,
         "pid_22_kd": kd_param[3].value,
+        "pid_11_fd": fd_param[0].value,
+        "pid_12_fd": fd_param[1].value,
+        "pid_21_fd": fd_param[2].value,
+        "pid_22_fd": fd_param[3].value,        
         "pid_11_kii": kii_param[0].value,
         "pid_12_kii": kii_param[1].value,
         "pid_21_kii": kii_param[2].value,
