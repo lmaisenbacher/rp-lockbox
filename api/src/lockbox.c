@@ -846,10 +846,10 @@ int rp_PIDSetKi(rp_pid_t pid, float ki) {
 int rp_PIDGetKi(rp_pid_t pid, float *ki) {
     return pid_GetPIDKi(pid, ki);
 }
-int rp_PIDSetKd(rp_pid_t pid, uint32_t kd) {
+int rp_PIDSetKd(rp_pid_t pid, float kd) {
     return pid_SetPIDKd(pid, kd);
 }
-int rp_PIDGetKd(rp_pid_t pid, uint32_t *kd) {
+int rp_PIDGetKd(rp_pid_t pid, float *kd) {
     return pid_GetPIDKd(pid, kd);
 }
 

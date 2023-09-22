@@ -146,9 +146,9 @@ def set_kd():
     :pid: the PID to adjust
     :kd: the value to set
     """
-    kd = request.params.get("kd", 0, type=int)
+    kd = request.params.get("kd", 0, type=float)
     pid = request.params.get("pid", 1, type=int)
-    retval = RP_LIB.rp_PIDSetKd(pid, ctypes.c_int(kd))
+    retval = RP_LIB.rp_PIDSetKd(pid, ctypes.c_float(kd))
     if retval != 0:
         LOG.error("Failed to set PID Kd. Error code: %s", ERROR_CODES[retval])
     LOG.info("Kd: %f", kd)
@@ -560,7 +560,7 @@ def get_parameters():
         if retval != 0:
             LOG.error("Failed to get PID Ki parameter. Error code: %s", ERROR_CODES[retval])
 
-        kd_param[i] = ctypes.c_int()
+        kd_param[i] = ctypes.c_float()
         retval = RP_LIB.rp_PIDGetKd(i, ctypes.byref(kd_param[i]))
         if retval != 0:
             LOG.error("Failed to get PID Kd parameter. Error code: %s", ERROR_CODES[retval])
