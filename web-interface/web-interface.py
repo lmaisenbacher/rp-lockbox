@@ -11,6 +11,7 @@ import ctypes
 import sys
 import json
 import logging
+import math
 from bottle import route, run, request, static_file
 
 logging.basicConfig()
@@ -108,7 +109,7 @@ def set_setpoint():
 
 @route("/_set_kp", method="POST")
 def set_kp():
-    """Handle POST request for setting the PID Kp.
+    """Handle POST request for setting the PID Kp (P gain).
 
     Accepted POST parameters:
     :pid: the PID to adjust
@@ -124,7 +125,7 @@ def set_kp():
 
 @route("/_set_ki", method="POST")
 def set_ki():
-    """Handle POST request for setting the PID Ki.
+    """Handle POST request for setting the PID Ki (integrator gain (1/s)).
 
     Accepted POST parameters:
     :pid: the PID to adjust
@@ -140,7 +141,7 @@ def set_ki():
 
 @route("/_set_kd", method="POST")
 def set_kd():
-    """Handle POST request for setting the PID Kd.
+    """Handle POST request for setting the PID Kd (derivative gain (s)).
 
     Accepted POST parameters:
     :pid: the PID to adjust
@@ -154,9 +155,27 @@ def set_kd():
     LOG.info("Kd: %f", kd)
     LOG.info("PID: %d", pid)
 
+@route("/_set_fd", method="POST")
+def set_fd():
+    """Handle POST request for setting the PID fd (derivative corner frequency (Hz)).
+
+    Accepted POST parameters:
+    :pid: the PID to adjust
+    :fd: the value to set
+    """
+    fd = request.params.get("fd", 0, type=float)
+    pid = request.params.get("pid", 1, type=int)
+    kd = 1/(2*math.pi*fd)    
+    retval = RP_LIB.rp_PIDSetKd(pid, ctypes.c_float(kd))
+    if retval != 0:
+        LOG.error("Failed to set PID fd. Error code: %s", ERROR_CODES[retval])
+    LOG.info("fd: %f", fd)
+    LOG.info("Kd: %f", kd)    
+    LOG.info("PID: %d", pid)
+
 @route("/_set_kii", method="POST")
 def set_kii():
-    """Handle POST request for setting the PID Kii.
+    """Handle POST request for setting the PID Kii (2nd integrator gain (1/s)).
 
     Accepted POST parameters:
     :pid: the PID to adjust
@@ -172,7 +191,7 @@ def set_kii():
 
 @route("/_set_kg", method="POST")
 def set_kg():
-    """Handle POST request for setting the PID Kg.
+    """Handle POST request for setting the PID Kg (global gain).
 
     Accepted POST parameters:
     :pid: the PID to adjust
@@ -531,7 +550,8 @@ def get_parameters():
     setpoint = [0., 0., 0., 0.]
     kp_param = [0., .0, 0., 0.]
     ki_param = [0., 0., 0., 0.]
-    kd_param = [0, 0, 0, 0]
+    kd_param = [0., 0., 0., 0.]
+    fd_param = [0., 0., 0., 0.]
     kii_param = [0., .0, 0., 0.]
     kg_param = [0., 0., 0., 0.]   
     inverted = [False, False, False, False]
@@ -564,6 +584,7 @@ def get_parameters():
         retval = RP_LIB.rp_PIDGetKd(i, ctypes.byref(kd_param[i]))
         if retval != 0:
             LOG.error("Failed to get PID Kd parameter. Error code: %s", ERROR_CODES[retval])
+        fd_param[i] = 1/(2*math.pi*kd_param[i])
 
         kii_param[i] = ctypes.c_float()
         retval = RP_LIB.rp_PIDGetKii(i, ctypes.byref(kii_param[i]))
