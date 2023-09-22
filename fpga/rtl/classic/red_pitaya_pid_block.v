@@ -94,26 +94,6 @@ always @(posedge clk_i) begin
 end
 
 //---------------------------------------------------------------------------------
-//  Global gain
-reg signed   [ 15-1: 0]              kg_reg   ;  // error multiplied by global gain
-wire signed  [KP_BITS+1+15-1: 0]     kg_mult  ;
-wire signed  [KP_BITS+1-1: 0]        kg_signed;  // Required to make signed arithmetic work
-assign kg_signed = set_kg_i                   ;
-
-always @(posedge clk_i) begin
-   if (rstn_i == 1'b0) begin
-      kg_reg  <= 15'h0 ;
-   end
-   else if (hold_i)
-      kg_reg <= kg_reg;
-   else begin
-      kg_reg <= kg_mult[KP_BITS+1+2-1:PSR] ;
-   end
-end
-
-assign kg_mult = error * kg_signed;
-
-//---------------------------------------------------------------------------------
 //  Proportional part
 reg signed   [KP_BITS+1+15-PSR-1: 0] kp_reg   ;
 wire signed  [KP_BITS+1+15-1: 0]     kp_mult  ;
@@ -131,7 +111,7 @@ always @(posedge clk_i) begin
    end
 end
 
-assign kp_mult = kg_reg * kp_signed;
+assign kp_mult = error * kp_signed;
 
 //---------------------------------------------------------------------------------
 //  Integrator
@@ -153,9 +133,9 @@ always @(posedge clk_i) begin
       int_reg  <= {15+ISR{1'b0}};
    end
    else begin
-      // LM: Multiply current error signal value with (signed wire) integrator gain
+      // LM: Multiply current error signal value with (signed wire) integrator gain (`ki_signed`)
       // to get value to be added to integrator register
-      ki_mult <= kg_reg * ki_signed;
+      ki_mult <= error * ki_signed;
 
       if (int_rst_i)
          int_reg <= {15+ISR{1'b0}}; // reset
@@ -186,14 +166,14 @@ assign int_shr = int_reg[15+ISR-1:ISR];
 //---------------------------------------------------------------------------------
 //  Second integrator
 
-// LM: Register holding current error signal multiplied with integrator gain
+// LM: Register holding current 1st integrator value multiplied with 2nd integrator gain
 reg signed  [KI_BITS+1+15-1: 0] kii_mult  ;
-// LM: Register holding new integrator value (40-bit)
+// LM: Register holding new 2nd integrator value (40-bit)
 wire signed [15+ISR+1-1: 0]     iint_sum  ;
-// LM: Internal register holding integrator value (39-bit)
+// LM: Internal register holding 2nd integrator value (39-bit)
 reg signed  [15+ISR-1: 0]       iint_reg  ;
 wire signed [15-1: 0]           iint_shr  ;  // Twice the DAC range (14 bit) should be enough
-// LM: Signed wire of (always positive) integrator gain
+// LM: Signed wire of (always positive) 2nd integrator gain
 wire signed [KI_BITS+1-1: 0]    kii_signed;  // Required to make signed arithmetic work
 assign kii_signed = set_kii_i             ;
 
@@ -203,8 +183,8 @@ always @(posedge clk_i) begin
       iint_reg  <= {15+ISR{1'b0}};
    end
    else begin
-      // LM: Multiply current error signal value with (signed wire) integrator gain
-      // to get value to be added to integrator register
+      // LM: Multiply 1st integrator output with (signed wire) 2nd integrator gain `kii_signed`
+      // to get value to be added to 2nd integrator register
       kii_mult <= int_shr * kii_signed;
 
       if (int_rst_i)
@@ -220,17 +200,17 @@ always @(posedge clk_i) begin
             || (hold_i)) // LM: integrator hold
          iint_reg <= iint_reg;
       else
-         // LM: Move all bits except MSB from `int_sum` into `int_reg`. Because `int_sum` is
+         // LM: Move all bits except MSB from `iint_sum` into `iint_reg`. Because `iint_sum` is
          // limited to (by the saturation switch above) below MSB 01 and above MSB 11, this
          // operation will preserve the sign information.
          iint_reg <= iint_sum[15+ISR-1:0]; // use sum as it is
    end
 end
 
-// LM: Add error signal * integrator gain (= `ki_mult`) to internal integrator register,
-// which is the basis of the new integrator value
+// LM: Add 1st integrator output * 2nd integrator gain (= `kii_mult`) to
+// internal 2nd integrator register, which is the basis of the new 2nd integrator value
 assign iint_sum = kii_mult + iint_reg;
-// LM: Select most-significant 15 bits from internal integrator register to be added to output
+// LM: Select most-significant 15 bits from internal 2nd integrator register to be added to output
 assign iint_shr = iint_reg[15+ISR-1:ISR];
 
 //---------------------------------------------------------------------------------
@@ -257,28 +237,35 @@ always @(posedge clk_i) begin
    end
 end
 
-assign kd_mult = $signed(kg_reg) * $signed(set_kd_i) ;
+assign kd_mult = $signed(error) * $signed(set_kd_i) ;
 
 //---------------------------------------------------------------------------------
 //  Sum together - saturate output
 wire signed  [   33-1: 0] pid_sum     ; // biggest posible bit-width
 reg signed   [   14-1: 0] pid_out     ;
+// Global gain
+wire signed  [KP_BITS+1-1: 0]        kg_signed;  // Required to make signed arithmetic work
+assign kg_signed = set_kg_i                   ;
 
 always @(posedge clk_i) begin
    if (rstn_i == 1'b0) begin
       pid_out    <= 14'b0 ;
    end
    else begin
-      if ({pid_sum[33-1],|pid_sum[32-2:13]} == 2'b01) //positive overflow
+      // if ({pid_sum[33-1],|pid_sum[32-2:13]} == 2'b01) //positive overflow      
+      if ({pid_sum[33-1],|pid_sum[32-2:13+PSR]} == 2'b01) //positive overflow
          pid_out <= 14'h1FFF ;
-      else if ({pid_sum[33-1],&pid_sum[33-2:13]} == 2'b10) //negative overflow
+      // else if ({pid_sum[33-1],&pid_sum[33-2:13]} == 2'b10) //negative overflow         
+      else if ({pid_sum[33-1],&pid_sum[33-2:13+PSR]} == 2'b10) //negative overflow
          pid_out <= 14'h2000 ;
       else
-         pid_out <= pid_sum[14-1:0] ;
+         // pid_out <= pid_sum[14-1:0] ;
+         pid_out <= pid_sum[14+PSR-1:+PSR] ;         
    end
 end
 
-assign pid_sum = kp_reg + $signed(int_shr) + $signed(iint_shr) + $signed(kd_reg_s) ;
+// assign pid_sum = kp_reg + $signed(int_shr) + $signed(iint_shr) + $signed(kd_reg_s) ;
+assign pid_sum = kg_signed * (kp_reg + $signed(int_shr) + $signed(iint_shr) + $signed(kd_reg_s));
 
 assign dat_o = pid_out ;
 
