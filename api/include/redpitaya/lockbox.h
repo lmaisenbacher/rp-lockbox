@@ -276,7 +276,7 @@ typedef struct {
     float pid_setpoint[4];
     float pid_kp[4];
     float pid_ki[4];
-    uint32_t pid_kd[4];
+    float pid_kd[4];
     float pid_kii[4];
     float pid_kg[4];
     bool pid_int_reset[4];
