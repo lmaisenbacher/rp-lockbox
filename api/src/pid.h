@@ -125,8 +125,6 @@ int pid_GetPIDRelock(rp_pid_t pid, bool *enabled);
 int pid_SetPIDEnable(rp_pid_t pid, bool enable);
 int pid_GetPIDEnable(rp_pid_t pid, bool *enabled);
 int pid_GetPIDLockStatus(rp_pid_t pid, bool *lock_status);
-int pid_SetPIDLockStatusOutputEnable(rp_pid_t pid, bool enable);
-int pid_GetPIDLockStatusOutputEnable(rp_pid_t pid, bool *enabled);
 int pid_SetRelockStepsize(rp_pid_t pid, float stepsize);
 int pid_GetRelockStepsize(rp_pid_t pid, float *stepsize);
 int pid_SetRelockMinimum(rp_pid_t pid, float minimum);
@@ -135,5 +133,7 @@ int pid_SetRelockMaximum(rp_pid_t pid, float maximum);
 int pid_GetRelockMaximum(rp_pid_t pid, float *maximum);
 int pid_SetRelockInput(rp_pid_t pid, rp_apin_t pin);
 int pid_GetRelockInput(rp_pid_t pid, rp_apin_t *pin);
+int pid_SetLockStatusOutputEnable(rp_pid_t pid, bool enable);
+int pid_GetLockStatusOutputEnable(rp_pid_t pid, bool *enabled);
 
 #endif //__PID_H
