@@ -105,6 +105,7 @@ reg         [3:0]         set_irst_when_railed      ;
 reg         [3:0]         set_hold                  ;
 reg         [3:0]         set_output_enabled        ;
 reg         [3:0]         set_reset_enabled         ;
+reg         [3:0]         set_lock_status_out_en    ;
 wire        [3:0]         pid_irst                  ;
 wire        [3:0]         pid_ctr_rst               ;
 wire signed [14-1:0]      pid_ctr_val          [3:0];
@@ -247,7 +248,11 @@ always @(posedge clk_i) begin
    relock_lock_status[3] <= relock_locked_o[3];
 end
 // Output of lock status to top module, where it is written to digital output
-assign lock_status_o = relock_lock_status;
+// assign lock_status_o = relock_lock_status;
+assign lock_status_o[0] = relock_lock_status[0] && set_lock_status_out_en[0];
+assign lock_status_o[1] = relock_lock_status[1] && set_lock_status_out_en[1];
+assign lock_status_o[2] = relock_lock_status[2] && set_lock_status_out_en[2];
+assign lock_status_o[3] = relock_lock_status[3] && set_lock_status_out_en[3];
 
 //---------------------------------------------------------------------------------
 //  Sum and saturation
@@ -352,7 +357,8 @@ endgenerate
 // Flags write
 always @(posedge clk_i) begin
     if (rstn_i == 1'b0) begin
-          set_reset_enabled      <=  4'b1000;
+          set_reset_enabled      <=  4'b1000;                
+          set_lock_status_out_en <=  4'b1111;                
           set_output_enabled     <=  4'b1111;
           relock_enabled         <=  4'b0   ;
           set_hold               <=  4'b0   ;
@@ -369,6 +375,8 @@ always @(posedge clk_i) begin
              pid_inverted,
              set_irst}
             <= sys_wdata[24-1:0];
+            {set_lock_status_out_en}
+            <= sys_wdata[32-1:28];            
     end
 end
 
@@ -385,8 +393,8 @@ end else begin
    casez (sys_addr[19:0])
        20'h00: begin
           sys_ack <= sys_en;
-          sys_rdata <= {{32-28{1'b0}}, relock_lock_status, set_output_enabled, relock_enabled, set_hold, set_irst_when_railed,
-                        pid_inverted, set_irst};
+          sys_rdata <= {set_lock_status_out_en, relock_lock_status, set_output_enabled, relock_enabled,
+                        set_hold, set_irst_when_railed, pid_inverted, set_irst};
       end 
 
       20'h1?: begin sys_ack <= sys_en; sys_rdata <= {{32-14{1'b0}}, set_sp[sys_addr[3:0] >> 2]}; end 

@@ -917,6 +917,14 @@ int rp_PIDGetLockStatus(rp_pid_t pid, bool *lock_status) {
     return pid_GetPIDLockStatus(pid, lock_status);
 }
 
+int rp_PIDGetLockStatusOutputEnable(rp_pid_t pid, bool enable) {
+    return pid_SetPIDLockStatusOutputEnable(pid, enable);
+}
+
+int rp_PIDGetLockStatusOutputEnable(rp_pid_t pid, bool *enabled) {
+    return pid_GetPIDLockStatusOutputEnable(pid, enabled);
+}
+
 int rp_PIDSetRelockStepsize(rp_pid_t pid, float stepsize) {
     return pid_SetRelockStepsize(pid, stepsize);
 }

@@ -355,6 +355,20 @@ def set_relock_input():
     if retval != 0:
         LOG.error("Failed to select analog input to be used for relocking the PID. Error code: %s",
                   ERROR_CODES[retval])
+        
+@route("/_set_lso_enabled", method="POST")
+def set_lso_enabled():
+    """Handle POST request for enabling the PID lock status output.
+
+    Accepted POST parameters:
+    :pid: the PID to adjust
+    :enabled: If true, the PID lock status output is enabled.
+    """
+    enabled = request.params.get("enabled", 0) == "true"
+    pid = request.params.get("pid", 1, type=int)
+    retval = RP_LIB.rp_PIDSetLockStatusOutputEnable(pid, enabled)
+    if retval != 0:
+        LOG.error("Failed to set PID lock status output enabled. Error code: %s", ERROR_CODES[retval])        
 
 @route("/_set_limit_min", method="POST")
 def set_limit_min():
@@ -564,6 +578,7 @@ def get_parameters():
     relock_slew_rate = [0., 0., 0., 0.]
     relock_enabled = [False, False, False, False]
     relock_input = [0, 0, 0, 0]
+    lso_enabled = [False, False, False, False]    
     for i in range(4):
         setpoint[i] = ctypes.c_float()
         retval = RP_LIB.rp_PIDGetSetpoint(i, ctypes.byref(setpoint[i]))
@@ -655,6 +670,12 @@ def get_parameters():
         if retval != 0:
             LOG.error("Failed to get analog input of PID relock. Error code: %s",
                       ERROR_CODES[retval])
+            
+        lso_enabled[i] = ctypes.c_bool()
+        retval = RP_LIB.rp_PIDGetLockStatusOutputEnable(i, ctypes.byref(enabled[i]))
+        if retval != 0:
+            LOG.error("Failed to get state of PID lock status output enable. Error code: %s",
+                      ERROR_CODES[retval])                 
 
     limit_min_1 = ctypes.c_float()
     retval = RP_LIB.rp_LimitGetMin(0, ctypes.byref(limit_min_1))

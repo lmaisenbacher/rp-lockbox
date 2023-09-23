@@ -518,6 +518,37 @@ int pid_GetPIDLockStatus(rp_pid_t pid, bool *lock_status) {
     }
 }
 
+int pid_SetPIDLockStatusOutputEnable(rp_pid_t pid, bool enable) {
+    if(enable) {
+        switch(pid) {
+            case RP_PID_11: return cmn_SetBits(&pid_reg->conf, 0x1 << 28, PID_CONF_MASK);
+            case RP_PID_12: return cmn_SetBits(&pid_reg->conf, 0x1 << 29, PID_CONF_MASK);
+            case RP_PID_21: return cmn_SetBits(&pid_reg->conf, 0x1 << 30, PID_CONF_MASK);
+            case RP_PID_22: return cmn_SetBits(&pid_reg->conf, 0x1 << 31, PID_CONF_MASK);
+            default: return RP_EPN;
+        }
+    }
+    else {
+        switch(pid) {
+            case RP_PID_11: return cmn_UnsetBits(&pid_reg->conf, 0x1 << 28, PID_CONF_MASK);
+            case RP_PID_12: return cmn_UnsetBits(&pid_reg->conf, 0x1 << 29, PID_CONF_MASK);
+            case RP_PID_21: return cmn_UnsetBits(&pid_reg->conf, 0x1 << 30, PID_CONF_MASK);
+            case RP_PID_22: return cmn_UnsetBits(&pid_reg->conf, 0x1 << 31, PID_CONF_MASK);
+            default: return RP_EPN;
+        }
+    }
+}
+
+int pid_GetPIDLockStatusOutputEnable(rp_pid_t pid, bool *enabled) {
+    switch(pid) {
+        case RP_PID_11: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 28, PID_CONF_MASK, enabled);
+        case RP_PID_12: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 29, PID_CONF_MASK, enabled);
+        case RP_PID_21: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 30, PID_CONF_MASK, enabled);
+        case RP_PID_22: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 31, PID_CONF_MASK, enabled);
+        default: return RP_EPN;
+    }
+}
+
 int pid_SetRelockStepsize(rp_pid_t pid, float stepsize) {
     uint32_t stepsize_integer;
 

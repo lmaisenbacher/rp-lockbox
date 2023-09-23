@@ -1582,6 +1582,9 @@ int rp_PIDGetEnable(rp_pid_t pid, bool *enabled);
  */
 int rp_PIDGetLockStatus(rp_pid_t pid, bool *lock_status);
 
+int rp_PIDSetLockStatusOutputEnable(rp_pid_t pid, bool enable);
+int rp_PIDGetLockStatusOutputEnable(rp_pid_t pid, bool *enabled);
+
 /*
  * Set the relock stepsize of the specified PID using the ADC calibration values
  * stored in EEPROM.

@@ -49,9 +49,9 @@
 
 `timescale 1ns / 1ps
 module red_pitaya_pid_block #(
-   parameter     PSR     = 12                   ,  // p gain = Kp >> PSR
-   parameter     ISR     = 28                   ,  // i gain = Ki >> ISR
-   parameter     DSR     = 8                    ,
+   parameter     PSR     = 12                   ,  // P, global gain = Kp, Kg >> PSR
+   parameter     ISR     = 28                   ,  // I, II gain = Ki, Kii >> ISR
+   parameter     DSR     = 8                    ,  // D gain = Kd >> DSR
    parameter     KP_BITS = 24                   ,
    parameter     KI_BITS = 24                   ,
    parameter     KD_BITS = 24                     
