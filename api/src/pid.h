@@ -35,7 +35,6 @@ static const int PID_BASE_SIZE = 0x4C;
 // PID structure declaration
 typedef struct pid_control_s {
     uint32_t conf;
-    uint32_t reserved[3];
     uint32_t pid11_setpoint;
     uint32_t pid12_setpoint;
     uint32_t pid21_setpoint;
