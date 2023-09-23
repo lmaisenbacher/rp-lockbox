@@ -125,11 +125,11 @@
         var checkbox_pid_int_res_name = ["#checkbox_pid_11_int_res", "#checkbox_pid_21_int_res", "#checkbox_pid_12_int_res", "#checkbox_pid_22_int_res"];
         var checkbox_pid_int_auto_reset_name = ["#checkbox_pid_11_int_auto_reset", "#checkbox_pid_21_int_auto_reset", "#checkbox_pid_12_int_auto_reset", "#checkbox_pid_22_int_auto_reset"];
         var checkbox_pid_enabled_name = ["#checkbox_pid_11_enabled", "#checkbox_pid_21_enabled", "#checkbox_pid_12_enabled", "#checkbox_pid_22_enabled"];
-        var checkbox_lso_enabled_name = ["#checkbox_lso_11_enabled", "#checkbox_lso_21_enabled", "#checkbox_lso_12_enabled", "#checkbox_lso_22_enabled"];
         var spinner_relock_min_name = ["#spinner_relock_11_min", "#spinner_relock_21_min", "#spinner_relock_12_min", "#spinner_relock_22_min"];
         var spinner_relock_max_name = ["#spinner_relock_11_max", "#spinner_relock_21_max", "#spinner_relock_12_max", "#spinner_relock_22_max"];
         var spinner_relock_slew_rate_name = ["#spinner_relock_11_slew_rate", "#spinner_relock_21_slew_rate", "#spinner_relock_12_slew_rate", "#spinner_relock_22_slew_rate"];
         var checkbox_relock_enabled_name = ["#checkbox_relock_11_enabled", "#checkbox_relock_21_enabled", "#checkbox_relock_12_enabled", "#checkbox_relock_22_enabled"];
+        var checkbox_lso_enabled_name = ["#checkbox_lso_11_enabled", "#checkbox_lso_21_enabled", "#checkbox_lso_12_enabled", "#checkbox_lso_22_enabled"];        
         var relock_input_name = ["#relock_11_input", "#relock_21_input", "#relock_12_input", "#relock_22_input"];
         var spinner_limit_name = ["#spinner_limit_1_min", "#spinner_limit_2_min", "#spinner_limit_1_max", "#spinner_limit_2_max"];
         var spinner_sg_amp_offset_name = ["#spinner_sg_1_amp", "#spinner_sg_2_amp", "#spinner_sg_1_offset", "#spinner_sg_2_offset"];
@@ -219,13 +219,6 @@
 				pid_enabled: pid_enabled,
 			});
 		};        
-		
-		function set_lso_enabled(pid, enabled) {
-			$.post("_set_lso_enabled", {
-				pid: pid,
-				enabled: enabled,
-			});
-		};        
 
 		function set_relock_min(pid, relock_min) {
 			$.post("_set_relock_min", {
@@ -261,6 +254,13 @@
 			ain: ain,
 			});
 		};
+
+		function set_lso_enabled(pid, enabled) {
+			$.post("_set_lso_enabled", {
+				pid: pid,
+				enabled: enabled,
+			});
+		};                
 		
 		function set_limit_min(output, limit_min) {
 			$.post("_set_limit_min", {
@@ -623,27 +623,6 @@
             set_pid_enabled(pid, $(event.target).prop("checked"));
         }
 
-        function lso_enabled_changed(event, ui) {
-            var pid;
-            switch(event.target.id) {
-                case "checkbox_lso_11_enabled":
-                    pid = 0;
-                    break;
-                case "checkbox_lso_12_enabled":
-                    pid = 1;
-                    break;
-                case "checkbox_lso_21_enabled":
-                    pid = 2;
-                    break;
-                case "checkbox_lso_22_enabled":
-                    pid = 3;
-                    break;
-                default:
-                    pid = 0;
-            }
-            set_lso_enabled(pid, $(event.target).prop("checked"));
-        }
-
 		function relock_min_changed(event, ui) {
             var pid;
             switch(event.target.id) {
@@ -748,6 +727,27 @@
             }
             set_relock_input(pid, $(event.target).val());
         }
+
+        function lso_enabled_changed(event, ui) {
+            var pid;
+            switch(event.target.id) {
+                case "checkbox_lso_11_enabled":
+                    pid = 0;
+                    break;
+                case "checkbox_lso_12_enabled":
+                    pid = 1;
+                    break;
+                case "checkbox_lso_21_enabled":
+                    pid = 2;
+                    break;
+                case "checkbox_lso_22_enabled":
+                    pid = 3;
+                    break;
+                default:
+                    pid = 0;
+            }
+            set_lso_enabled(pid, $(event.target).prop("checked"));
+        }        
 
 		function limit_min_changed(event, ui) {
             var output;
@@ -1107,13 +1107,13 @@
         $( ".int_res_checkbox" ).on("change", int_reset_changed);
         $( ".int_auto_reset_checkbox" ).on("change", int_auto_changed);
 		$( ".pid_enabled_checkbox").on("change", pid_enabled_changed);        
-		$( ".lso_enabled_checkbox").on("change", lso_enabled_changed);                
 		
 		$( ".relock_enabled_checkbox").on("change", relock_enabled_changed);
         $( ".relock_limit_min_spinner").on("spinstop", relock_min_changed);
         $( ".relock_limit_max_spinner").on("spinstop", relock_max_changed);
         $( ".slew_rate_spinner").on("spinstop", relock_slew_rate_changed);
         $(".relock-select").on("change", relock_input_changed);
+		$( ".lso_enabled_checkbox").on("change", lso_enabled_changed);                        
 		
 		$( "#spinner_limit_1_min").on("spinstop", limit_min_changed);
 		$( "#spinner_limit_2_min").on("spinstop", limit_min_changed);
@@ -1253,15 +1253,11 @@
                             <td><output id="lock_status_11">0</output></td>
                         </tr>
                         <tr>
-                            <label class="checkbox-container">Relock enabled
-                                <input type="checkbox" id="checkbox_lso_11_enabled" class="relock_enabled_checkbox">
+                            <label class="checkbox-container">Lock status output enabled
+                                <input type="checkbox" id="checkbox_lso_11_enabled" class="lso_enabled_checkbox">
                                 <span class="checkmark"></span>
                             </label>
-                        </tr>                        
-                        <label class="checkbox-container">PID + relock output enabled
-                            <input type="checkbox" id="checkbox_pid_11_enabled" class="pid_enabled_checkbox">
-                            <span class="checkmark"></span>
-                        </label>                                                 
+                        </tr>                                                                     
                     </table>
 					  
                 </fieldset>

@@ -672,7 +672,7 @@ def get_parameters():
                       ERROR_CODES[retval])
             
         lso_enabled[i] = ctypes.c_bool()
-        retval = RP_LIB.rp_PIDGetLockStatusOutputEnable(i, ctypes.byref(enabled[i]))
+        retval = RP_LIB.rp_PIDGetLockStatusOutputEnable(i, ctypes.byref(lso_enabled[i]))
         if retval != 0:
             LOG.error("Failed to get state of PID lock status output enable. Error code: %s",
                       ERROR_CODES[retval])                 
