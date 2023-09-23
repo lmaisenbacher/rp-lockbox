@@ -289,7 +289,7 @@ typedef struct {
     float pid_relock_minimum[4];
     float pid_relock_maximum[4];
     rp_apin_t pid_relock_input[4];
-    bool pid_lso_enabled[4];    
+    bool pid_lso_enabled[4];
     float limit_min[2];
     float limit_max[2];
     bool gen_enabled[2];
@@ -1583,9 +1583,6 @@ int rp_PIDGetEnable(rp_pid_t pid, bool *enabled);
  */
 int rp_PIDGetLockStatus(rp_pid_t pid, bool *lock_status);
 
-int rp_PIDSetLockStatusOutputEnable(rp_pid_t pid, bool enable);
-int rp_PIDGetLockStatusOutputEnable(rp_pid_t pid, bool *enabled);
-
 /*
  * Set the relock stepsize of the specified PID using the ADC calibration values
  * stored in EEPROM.
@@ -1672,6 +1669,9 @@ int rp_PIDSetRelockInput(rp_pid_t pid, rp_apin_t pin);
  * indicate an error.
  */
 int rp_PIDGetRelockInput(rp_pid_t pid, rp_apin_t *pin);
+
+int rp_PIDSetLockStatusOutputEnable(rp_pid_t pid, bool enable);
+int rp_PIDGetLockStatusOutputEnable(rp_pid_t pid, bool *enabled);
 
 /*
  * Set the minimum DAC output voltage of the specified channel using the

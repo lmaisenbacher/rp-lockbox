@@ -917,14 +917,6 @@ int rp_PIDGetLockStatus(rp_pid_t pid, bool *lock_status) {
     return pid_GetPIDLockStatus(pid, lock_status);
 }
 
-int rp_PIDSetLockStatusOutputEnable(rp_pid_t pid, bool enable) {
-    return pid_SetPIDLockStatusOutputEnable(pid, enable);
-}
-
-int rp_PIDGetLockStatusOutputEnable(rp_pid_t pid, bool *enabled) {
-    return pid_GetPIDLockStatusOutputEnable(pid, enabled);
-}
-
 int rp_PIDSetRelockStepsize(rp_pid_t pid, float stepsize) {
     return pid_SetRelockStepsize(pid, stepsize);
 }
@@ -953,6 +945,14 @@ int rp_PIDSetRelockInput(rp_pid_t pid, rp_apin_t pin) {
 }
 int rp_PIDGetRelockInput(rp_pid_t pid, rp_apin_t *pin) {
     return pid_GetRelockInput(pid, pin);
+}
+
+int rp_PIDSetLockStatusOutputEnable(rp_pid_t pid, bool enable) {
+    return pid_SetLockStatusOutputEnable(pid, enable);
+}
+
+int rp_PIDGetLockStatusOutputEnable(rp_pid_t pid, bool *enabled) {
+    return pid_GetLockStatusOutputEnable(pid, enabled);
 }
 
 /**
