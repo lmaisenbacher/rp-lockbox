@@ -290,6 +290,8 @@ typedef struct {
     float pid_relock_maximum[4];
     rp_apin_t pid_relock_input[4];
     bool pid_lso_enabled[4];
+    bool pid_ext_reset_enabled[4];
+    rp_dpin_t pid_ext_reset_input[4];
     float limit_min[2];
     float limit_max[2];
     bool gen_enabled[2];

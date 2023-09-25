@@ -1045,7 +1045,7 @@
         };
 
         function update_values() {
-            var relock_input_values = [0, 0, 0, 0];
+            var relock_input_value = [0, 0, 0, 0];
             $.getJSON("_get_values").done(function(data){
                 var data_values = [data.ain0_voltage, data.ain1_voltage, data.ain2_voltage, data.ain3_voltage];
                 var lock_status_values = [data.pid_11_lock_status, data.pid_21_lock_status, data.pid_12_lock_status, data.pid_22_lock_status];
@@ -1345,7 +1345,7 @@
 
                 </fieldset>
 
-				<fieldset class="ex-reset-group">
+				<fieldset class="ext-reset-group">
                     <legend><h3>External lock reset</h3></legend>
 
                     <table>
@@ -1472,6 +1472,13 @@
                         </tr>
                     </table>
 
+                    <div class="controlgroup-vertical">
+                        <label class="checkbox-container">Lock status output enabled
+                            <input type="checkbox" id="checkbox_lso_21_enabled" class="lso_enabled_checkbox">
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+
                 </fieldset>
 
 				<fieldset class="relock-group">
@@ -1487,6 +1494,29 @@
                         <tr>
                             <td><label for="spinner_relock_21_slew_rate">Slew Rate (V/s)</label></td>
                             <td><input id="spinner_relock_21_slew_rate" class="slew_rate_spinner"></td>
+                        </tr>
+                    </table>
+
+                </fieldset>
+
+				<fieldset class="ext-reset-group">
+                    <legend><h3>External lock reset</h3></legend>
+
+                    <table>
+                        <tr>
+                            <label class="checkbox-container">External lock reset enabled
+                                <input type="checkbox" id="checkbox_ext_reset_21_enabled" class="ext_reset_enabled_checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </tr>
+						<tr>
+                            <td><label for="ext_reset_21_input">Input</label></td>
+                            <td>
+                                <select id="ext_reset_21_input" class="ext_reset_input_select">
+                                    <option value="13">DIO5_P</option>
+                                    <option value="14">DIO6_P</option>
+                                </select>
+                            </td>
                         </tr>
                     </table>
 
@@ -1571,16 +1601,10 @@
 
                 </fieldset>
 
-                <fieldset class="relock-group">
-                    <legend><h3>Lock monitoring and relock</h3></legend>
+				<fieldset class="lock-monitoring-group">
+                    <legend><h3>Lock monitoring</h3></legend>
 
                     <table>
-                        <tr>
-                            <label class="checkbox-container">Relock enabled
-                                <input type="checkbox" id="checkbox_relock_12_enabled" class="relock_enabled_checkbox">
-                                <span class="checkmark"></span>
-                            </label>
-                        </tr>
                         <tr>
                             <td><label for="spinner_relock_12_min">Min (V)</label></td>
                             <td><input id="spinner_relock_12_min" class="relock_limit_min_spinner"></td>
@@ -1588,10 +1612,6 @@
                         <tr>
                             <td><label for="spinner_relock_12_max">Max (V)</label></td>
                             <td><input id="spinner_relock_12_max" class="relock_limit_max_spinner"></td>
-                        </tr>
-                        <tr>
-                            <td><label for="spinner_relock_12_slew_rate">Slew Rate (V/s)</label></td>
-                            <td><input id="spinner_relock_12_slew_rate" class="slew_rate_spinner"></td>
                         </tr>
 						<tr>
                             <td><label for="relock_12_input">Input</label></td>
@@ -1611,6 +1631,54 @@
                         <tr>
                             <td><a>Lock status</a></td>
                             <td><output id="lock_status_12">0</output></td>
+                        </tr>
+                    </table>
+
+                    <div class="controlgroup-vertical">
+                        <label class="checkbox-container">Lock status output enabled
+                            <input type="checkbox" id="checkbox_lso_12_enabled" class="lso_enabled_checkbox">
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+
+                </fieldset>
+
+				<fieldset class="relock-group">
+                    <legend><h3>Relock</h3></legend>
+
+                    <table>
+                        <tr>
+                            <label class="checkbox-container">Relock enabled
+                                <input type="checkbox" id="checkbox_relock_12_enabled" class="relock_enabled_checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </tr>
+                        <tr>
+                            <td><label for="spinner_relock_12_slew_rate">Slew Rate (V/s)</label></td>
+                            <td><input id="spinner_relock_12_slew_rate" class="slew_rate_spinner"></td>
+                        </tr>
+                    </table>
+
+                </fieldset>
+
+				<fieldset class="ext-reset-group">
+                    <legend><h3>External lock reset</h3></legend>
+
+                    <table>
+                        <tr>
+                            <label class="checkbox-container">External lock reset enabled
+                                <input type="checkbox" id="checkbox_ext_reset_12_enabled" class="ext_reset_enabled_checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </tr>
+						<tr>
+                            <td><label for="ext_reset_12_input">Input</label></td>
+                            <td>
+                                <select id="ext_reset_12_input" class="ext_reset_input_select">
+                                    <option value="13">DIO5_P</option>
+                                    <option value="14">DIO6_P</option>
+                                </select>
+                            </td>
                         </tr>
                     </table>
 
@@ -1686,16 +1754,10 @@
 
                 </fieldset>
 
-				<fieldset class="relock-group">
-                    <legend><h3>Lock monitoring and relock</h3></legend>
+				<fieldset class="lock-monitoring-group">
+                    <legend><h3>Lock monitoring</h3></legend>
 
                     <table>
-                        <tr>
-                            <label class="checkbox-container">Relock enabled
-                                <input type="checkbox" id="checkbox_relock_22_enabled" class="relock_enabled_checkbox">
-                                <span class="checkmark"></span>
-                            </label>
-                        </tr>
                         <tr>
                             <td><label for="spinner_relock_22_min">Min (V)</label></td>
                             <td><input id="spinner_relock_22_min" class="relock_limit_min_spinner"></td>
@@ -1703,10 +1765,6 @@
                         <tr>
                             <td><label for="spinner_relock_22_max">Max (V)</label></td>
                             <td><input id="spinner_relock_22_max" class="relock_limit_max_spinner"></td>
-                        </tr>
-                        <tr>
-                            <td><label for="spinner_relock_22_slew_rate">Slew Rate (V/s)</label></td>
-                            <td><input id="spinner_relock_22_slew_rate" class="slew_rate_spinner"></td>
                         </tr>
 						<tr>
                             <td><label for="relock_22_input">Input</label></td>
@@ -1726,6 +1784,54 @@
                         <tr>
                             <td><a>Lock status</a></td>
                             <td><output id="lock_status_22">0</output></td>
+                        </tr>
+                    </table>
+
+                    <div class="controlgroup-vertical">
+                        <label class="checkbox-container">Lock status output enabled
+                            <input type="checkbox" id="checkbox_lso_22_enabled" class="lso_enabled_checkbox">
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+
+                </fieldset>
+
+				<fieldset class="relock-group">
+                    <legend><h3>Relock</h3></legend>
+
+                    <table>
+                        <tr>
+                            <label class="checkbox-container">Relock enabled
+                                <input type="checkbox" id="checkbox_relock_22_enabled" class="relock_enabled_checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </tr>
+                        <tr>
+                            <td><label for="spinner_relock_22_slew_rate">Slew Rate (V/s)</label></td>
+                            <td><input id="spinner_relock_22_slew_rate" class="slew_rate_spinner"></td>
+                        </tr>
+                    </table>
+
+                </fieldset>
+
+				<fieldset class="ext-reset-group">
+                    <legend><h3>External lock reset</h3></legend>
+
+                    <table>
+                        <tr>
+                            <label class="checkbox-container">External lock reset enabled
+                                <input type="checkbox" id="checkbox_ext_reset_22_enabled" class="ext_reset_enabled_checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </tr>
+						<tr>
+                            <td><label for="ext_reset_22_input">Input</label></td>
+                            <td>
+                                <select id="ext_reset_22_input" class="ext_reset_input_select">
+                                    <option value="13">DIO5_P</option>
+                                    <option value="14">DIO6_P</option>
+                                </select>
+                            </td>
                         </tr>
                     </table>
 

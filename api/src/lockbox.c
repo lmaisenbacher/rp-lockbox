@@ -1010,6 +1010,8 @@ int rp_SaveLockboxConfig() {
         rp_PIDGetRelockMaximum(i, &config.pid_relock_maximum[i]);
         rp_PIDGetRelockInput(i, &config.pid_relock_input[i]);
         rp_PIDGetLockStatusOutputEnable(i, &config.pid_lso_enabled[i]);
+        rp_PIDGetExtResetEnable(i, &config.pid_ext_reset_enabled[i]);
+        rp_PIDGetExtResetInput(i, &config.pid_ext_reset_input[i]);
     }
     for (int i=0; i<2; i++) {
         rp_LimitGetMin(i, &config.limit_min[i]);
@@ -1064,6 +1066,8 @@ int rp_LoadLockboxConfig() {
         rp_PIDSetRelockMaximum(i, config.pid_relock_maximum[i]);
         rp_PIDSetRelockInput(i, config.pid_relock_input[i]);
         rp_PIDSetLockStatusOutputEnable(i, config.pid_lso_enabled[i]);
+        rp_PIDSetExtResetEnable(i, config.pid_ext_reset_enabled[i]);
+        rp_PIDSetExtResetInput(i, config.pid_ext_reset_input[i]);
     }
     for (int i=0; i<2; i++) {
         rp_LimitMin(i, config.limit_min[i]);
