@@ -390,7 +390,7 @@ def set_ext_reset_input():
 
     Accepted POST parameters:
     :pid: the PID to adjust
-    :ain: number of the digital input to be used for resetting the PID.
+    :din: number of the digital input to be used for resetting the PID.
     """
     din = request.params.get("din", 0, type=int)
     pid = request.params.get("pid", 1, type=int)

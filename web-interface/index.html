@@ -1045,7 +1045,7 @@
         };
 
         function update_values() {
-            var ext_reset_input_value = [0, 0, 0, 0];
+            var relock_input_values = [0, 0, 0, 0];
             $.getJSON("_get_values").done(function(data){
                 var data_values = [data.ain0_voltage, data.ain1_voltage, data.ain2_voltage, data.ain3_voltage];
                 var lock_status_values = [data.pid_11_lock_status, data.pid_21_lock_status, data.pid_12_lock_status, data.pid_22_lock_status];
@@ -1177,7 +1177,7 @@
         $(".relock-select").on("change", relock_input_changed);
 		$( ".lso_enabled_checkbox").on("change", lso_enabled_changed);
 		$( ".ext_reset_enabled_checkbox").on("change", ext_reset_enabled_changed);
-        $(".ext_input_select").on("change", ext_reset_input_changed);
+        $(".ext_reset_input_select").on("change", ext_reset_input_changed);
 
 		$( "#spinner_limit_1_min").on("spinstop", limit_min_changed);
 		$( "#spinner_limit_2_min").on("spinstop", limit_min_changed);
@@ -1358,7 +1358,7 @@
 						<tr>
                             <td><label for="ext_reset_11_input">Input</label></td>
                             <td>
-                                <select id="ext_reset_11_input" class="ext_reset_select">
+                                <select id="ext_reset_11_input" class="ext_reset_input_select">
                                     <option value="13">DIO5_P</option>
                                     <option value="14">DIO6_P</option>
                                 </select>
