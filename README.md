@@ -7,12 +7,13 @@ Note that only the versions of the STEMlab 125-14 using the Xilinx Zynq 7010 SoC
 The original project by Fabian Schmid can be found [here](https://github.com/schmidf/rp-lockbox).
 
 ## Features
-* Multiple-Input, Multiple-Output PID controller
+* Multiple-input, multiple-output PID (proportional-integral-derivative) controller
+* Second integrator for additional gain at low frequencies
 * Web interface for configuration
 * Automatic relock (e.g., using the transmission signal of a cavity)
 * Remote control via Ethernet using SCPI commands
 * Autonomous operation (connection to a PC is only required for configuration)
-* Output of lock status on digital pins (allowing cascaded control schemes)
+* Output and reset of lock status on digital pins (allowing cascaded control schemes)
 
 ## Installation
 Build the software and FPGA configuration from source (see below) or download a binary archive
@@ -93,6 +94,11 @@ the lock status is asserted as not locked by the lock monitoring feature, the
 internal state of the PID controller is frozen and a triangular voltage sweep with user-defined slew
 rate and increasing amplitude is generated on the output. Once the lock status is asserted as
 locked, the PID controller is engaged again.
+
+### External lock reset
+An external digital input can be used to reset each of the PID controllers. If the lock reset is enabled, all output from the controller is suppressed, including the from the relock feature, when the lock reset input is asserted high. In addition, the internal integrator registers are cleared, that is, the integrators are reset. When the lock reset input is asserted low, controller operation proceeds as if the lock had just been engaged. The digital input can be chosen to be either DIO5_P or DIO6_P, both of which are located on the GPIO pins of extension connector E1.
+Note that by default, there are no pull-down resistors present on the GPIO pins, meaning the input state is not defined as long as no input is connected.
+By connecting the lock status output of one of the PID controllers (e.g., PID11) to the lock reset input of another PID controller (e.g., PID22), the controllers can be cascaded: e.g., PID22 is only active when PID11 is asserted locked.
 
 ### Input and output configuration
 The table below shows the input and output configuration for each of the four PID controllers:
