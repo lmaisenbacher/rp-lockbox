@@ -728,3 +728,36 @@ int pid_GetExtResetEnable(rp_pid_t pid, bool *enabled) {
         default: return RP_EPN;
     }
 }
+
+int pid_SetExtResetInput(rp_pid_t pid, rp_dpin_t pin) {
+    if (pin > RP_DIO7_N)
+        return RP_EPN;
+    switch(pid) {
+        case RP_PID_11: return cmn_SetValue(&pid_reg->pid11_ext_reset_input, pin-RP_DIO5_P, PID_EXT_RESET_INPUT_MASK);
+        case RP_PID_12: return cmn_SetValue(&pid_reg->pid12_ext_reset_input, pin-RP_DIO5_P, PID_EXT_RESET_INPUT_MASK);
+        case RP_PID_21: return cmn_SetValue(&pid_reg->pid21_ext_reset_input, pin-RP_DIO5_P, PID_EXT_RESET_INPUT_MASK);
+        case RP_PID_22: return cmn_SetValue(&pid_reg->pid22_ext_reset_input, pin-RP_DIO5_P, PID_EXT_RESET_INPUT_MASK);
+        default: return RP_EPN;
+    }
+    return RP_OK;
+}
+int pid_GetExtResetInput(rp_pid_t pid, rp_dpin_t *pin) {
+    rp_dpin_t tmp_pin;
+    switch(pid) {
+        case RP_PID_11:
+            cmn_GetValue(&pid_reg->pid11_ext_reset_input, &tmp_pin, PID_EXT_RESET_INPUT_MASK);
+            break;
+        case RP_PID_12:
+            cmn_GetValue(&pid_reg->pid12_ext_reset_input, &tmp_pin, PID_EXT_RESET_INPUT_MASK);
+            break;
+        case RP_PID_21:
+            cmn_GetValue(&pid_reg->pid21_ext_reset_input, &tmp_pin, PID_EXT_RESET_INPUT_MASK);
+            break;
+        case RP_PID_22:
+            cmn_GetValue(&pid_reg->pid22_ext_reset_input, &tmp_pin, PID_EXT_RESET_INPUT_MASK);
+            break;
+        default: return RP_EPN;
+    }
+    *pin = tmp_pin+RP_DIO5_P;
+    return RP_OK;
+}

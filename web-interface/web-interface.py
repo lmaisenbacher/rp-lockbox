@@ -384,6 +384,21 @@ def set_ext_reset_enabled():
     if retval != 0:
         LOG.error("Failed to set PID external reset enabled. Error code: %s", ERROR_CODES[retval])
 
+@route("/_set_ext_reset_input", method="POST")
+def set_ext_reset_input():
+    """Handle POST request for setting the digital input to be used for resetting the PID.
+
+    Accepted POST parameters:
+    :pid: the PID to adjust
+    :ain: number of the digital input to be used for resetting the PID.
+    """
+    din = request.params.get("din", 0, type=int)
+    pid = request.params.get("pid", 1, type=int)
+    retval = RP_LIB.rp_PIDSetExtResetInput(pid, ctypes.c_int(din))
+    if retval != 0:
+        LOG.error("Failed to select digital input to be used for resetting the PID. Error code: %s",
+                  ERROR_CODES[retval])
+
 @route("/_set_limit_min", method="POST")
 def set_limit_min():
     """Handle POST request for setting minimum output value.
@@ -594,6 +609,7 @@ def get_parameters():
     relock_input = [0, 0, 0, 0]
     lso_enabled = [False, False, False, False]
     ext_reset_enabled = [False, False, False, False]
+    ext_reset_input = [0, 0, 0, 0]
     for i in range(4):
         setpoint[i] = ctypes.c_float()
         retval = RP_LIB.rp_PIDGetSetpoint(i, ctypes.byref(setpoint[i]))
@@ -696,6 +712,12 @@ def get_parameters():
         retval = RP_LIB.rp_PIDGetExtResetEnable(i, ctypes.byref(ext_reset_enabled[i]))
         if retval != 0:
             LOG.error("Failed to get state of PID external reset enable. Error code: %s",
+                      ERROR_CODES[retval])
+
+        ext_reset_input[i] = ctypes.c_int()
+        retval = RP_LIB.rp_PIDGetExtResetInput(i, ctypes.byref(ext_reset_input[i]))
+        if retval != 0:
+            LOG.error("Failed to get digital input of PID reset. Error code: %s",
                       ERROR_CODES[retval])
 
     limit_min_1 = ctypes.c_float()
@@ -853,6 +875,10 @@ def get_parameters():
         "pid_12_ext_reset_enabled": ext_reset_enabled[1].value,
         "pid_21_ext_reset_enabled": ext_reset_enabled[2].value,
         "pid_22_ext_reset_enabled": ext_reset_enabled[3].value,
+        "pid_11_ext_reset_input": ext_reset_input[0].value,
+        "pid_12_ext_reset_input": ext_reset_input[1].value,
+        "pid_21_ext_reset_input": ext_reset_input[2].value,
+        "pid_22_ext_reset_input": ext_reset_input[3].value,
         "limit_min_1": limit_min_1.value,
         "limit_min_2": limit_min_2.value,
         "limit_max_1": limit_max_1.value,

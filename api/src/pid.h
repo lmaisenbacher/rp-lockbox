@@ -77,6 +77,10 @@ typedef struct pid_control_s {
     uint32_t pid12_Kg;
     uint32_t pid21_Kg;
     uint32_t pid22_Kg;
+    uint32_t pid11_ext_reset_input;
+    uint32_t pid12_ext_reset_input;
+    uint32_t pid21_ext_reset_input;
+    uint32_t pid22_ext_reset_input;
 } pid_control_t;
 
 static const uint32_t PID_CONF_MASK = 0xFFFFFFFF; // (32 bits)
@@ -90,6 +94,7 @@ static const uint32_t PID_RELOCK_MASK = 0xFFF; // (12 bits)
 static const uint32_t PID_RELOCK_INPUT_MASK = 0x3; // (2 bits)
 static const uint32_t PID_KII_MASK = 0xFFFFFF; // (24 bits)
 static const uint32_t PID_KG_MASK = 0xFFFFFF; // (24 bits)
+static const uint32_t PID_EXT_RESET_INPUT_MASK = 0x3; // (2 bits)
 
 static const float PID_TIMESTEP = 8E-9; // Inverse of the sampling rate
 static const float PID_DACCOUNT = 1.221E-4; // DAC count in V = 2V/2**14
@@ -139,5 +144,7 @@ int pid_SetLockStatusOutputEnable(rp_pid_t pid, bool enable);
 int pid_GetLockStatusOutputEnable(rp_pid_t pid, bool *enabled);
 int pid_SetExtResetEnable(rp_pid_t pid, bool enable);
 int pid_GetExtResetEnable(rp_pid_t pid, bool *enabled);
+int pid_SetExtResetInput(rp_pid_t pid, rp_dpin_t pin);
+int pid_GetExtResetInput(rp_pid_t pid, rp_dpin_t *pin);
 
 #endif //__PID_H

@@ -940,9 +940,11 @@ int rp_PIDSetRelockMaximum(rp_pid_t pid, float maximum) {
 int rp_PIDGetRelockMaximum(rp_pid_t pid, float *maximum) {
     return pid_GetRelockMaximum(pid, maximum);
 }
+
 int rp_PIDSetRelockInput(rp_pid_t pid, rp_apin_t pin) {
     return pid_SetRelockInput(pid, pin);
 }
+
 int rp_PIDGetRelockInput(rp_pid_t pid, rp_apin_t *pin) {
     return pid_GetRelockInput(pid, pin);
 }
@@ -961,6 +963,14 @@ int rp_PIDSetExtResetEnable(rp_pid_t pid, bool enable) {
 
 int rp_PIDGetExtResetEnable(rp_pid_t pid, bool *enabled) {
     return pid_GetExtResetEnable(pid, enabled);
+}
+
+int rp_PIDSetExtResetInput(rp_pid_t pid, rp_dpin_t pin) {
+    return pid_SetExtResetInput(pid, pin);
+}
+
+int rp_PIDGetExtResetInput(rp_pid_t pid, rp_dpin_t *pin) {
+    return pid_GetExtResetInput(pid, pin);
 }
 
 /**
