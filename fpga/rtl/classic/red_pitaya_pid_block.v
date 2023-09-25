@@ -1,5 +1,6 @@
 /**
  * Copyright (c) 2018, Fabian Schmid
+ * Copyright (c) 2023, Lothar Maisenbacher
  *
  * All rights reserved.
  *
@@ -37,14 +38,14 @@
  *                      \---/
  *
  *
- * Proportional-integral-derivative (PID) controller is made from three parts. 
+ * Proportional-integral-derivative (PID) controller is made from three parts.
  *
  * Error which is difference between set point and input signal is driven into
  * propotional, integral and derivative part. Each calculates its own value which
  * is then summed and saturated before given to output.
  *
  * Integral part has also separate input to reset integrator value to 0.
- * 
+ *
  */
 
 `timescale 1ns / 1ps
@@ -54,7 +55,7 @@ module red_pitaya_pid_block #(
    parameter     DSR     = 8                    ,  // D gain = Kd >> DSR
    parameter     KP_BITS = 24                   ,
    parameter     KI_BITS = 24                   ,
-   parameter     KD_BITS = 24                     
+   parameter     KD_BITS = 24
 )
 (
    // data
@@ -261,15 +262,15 @@ always @(posedge clk_i) begin
       pid_out    <= 14'b0 ;
    end
    else begin
-      // if ({pid_sum[33-1],|pid_sum[32-2:13]} == 2'b01) //positive overflow      
+      // if ({pid_sum[33-1],|pid_sum[32-2:13]} == 2'b01) //positive overflow
       if ({pid_sum[33-1],|pid_sum[32-2:13+PSR]} == 2'b01) //positive overflow
          pid_out <= 14'h1FFF ;
-      // else if ({pid_sum[33-1],&pid_sum[33-2:13]} == 2'b10) //negative overflow         
+      // else if ({pid_sum[33-1],&pid_sum[33-2:13]} == 2'b10) //negative overflow
       else if ({pid_sum[33-1],&pid_sum[33-2:13+PSR]} == 2'b10) //negative overflow
          pid_out <= 14'h2000 ;
       else
          // pid_out <= pid_sum[14-1:0] ;
-         pid_out <= pid_sum[14+PSR-1:+PSR] ;         
+         pid_out <= pid_sum[14+PSR-1:+PSR] ;
    end
 end
 
