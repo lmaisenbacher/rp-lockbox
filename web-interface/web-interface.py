@@ -165,12 +165,12 @@ def set_kd():
 #     """
 #     fd = request.params.get("fd", 0, type=float)
 #     pid = request.params.get("pid", 1, type=int)
-#     kd = 1/(2*math.pi*fd)    
+#     kd = 1/(2*math.pi*fd)
 #     retval = RP_LIB.rp_PIDSetKd(pid, ctypes.c_float(kd))
 #     if retval != 0:
 #         LOG.error("Failed to set PID fd. Error code: %s", ERROR_CODES[retval])
 #     LOG.info("fd: %f", fd)
-#     LOG.info("Kd: %f", kd)    
+#     LOG.info("Kd: %f", kd)
 #     LOG.info("PID: %d", pid)
 
 @route("/_set_kii", method="POST")
@@ -355,7 +355,7 @@ def set_relock_input():
     if retval != 0:
         LOG.error("Failed to select analog input to be used for relocking the PID. Error code: %s",
                   ERROR_CODES[retval])
-        
+
 @route("/_set_lso_enabled", method="POST")
 def set_lso_enabled():
     """Handle POST request for enabling the PID lock status output.
@@ -368,7 +368,21 @@ def set_lso_enabled():
     pid = request.params.get("pid", 1, type=int)
     retval = RP_LIB.rp_PIDSetLockStatusOutputEnable(pid, enabled)
     if retval != 0:
-        LOG.error("Failed to set PID lock status output enabled. Error code: %s", ERROR_CODES[retval])        
+        LOG.error("Failed to set PID lock status output enabled. Error code: %s", ERROR_CODES[retval])
+
+@route("/_set_ext_reset_enabled", method="POST")
+def set_ext_reset_enabled():
+    """Handle POST request for enabling the PID external reset.
+
+    Accepted POST parameters:
+    :pid: the PID to adjust
+    :enabled: If true, the PID external reset is enabled.
+    """
+    enabled = request.params.get("enabled", 0) == "true"
+    pid = request.params.get("pid", 1, type=int)
+    retval = RP_LIB.rp_PIDSetExtResetEnable(pid, enabled)
+    if retval != 0:
+        LOG.error("Failed to set PID external reset enabled. Error code: %s", ERROR_CODES[retval])
 
 @route("/_set_limit_min", method="POST")
 def set_limit_min():
@@ -491,7 +505,7 @@ def set_sg_poffset_enabled():
     else:
         retval = RP_LIB.rp_GenPOffsetDisable(output)
         if retval != 0:
-            LOG.error("Failed to disable permanent offset of signal generator. Error code: %s", ERROR_CODES[retval])            
+            LOG.error("Failed to disable permanent offset of signal generator. Error code: %s", ERROR_CODES[retval])
 
 @route("/_save_parameters", method="POST")
 def save_parameters():
@@ -532,13 +546,13 @@ def get_values():
         if retval != 0:
             LOG.error("Failed to get fast output voltage. Error code: %s", ERROR_CODES[retval])
 
-    lock_status = [False, False, False, False]    
-    for i in range(4):    
+    lock_status = [False, False, False, False]
+    for i in range(4):
         lock_status[i] = ctypes.c_bool()
         retval = RP_LIB.rp_PIDGetLockStatus(i, ctypes.byref(lock_status[i]))
         if retval != 0:
             LOG.error("Failed to get lock status of PID. Error code: %s",
-                      ERROR_CODES[retval])                          
+                      ERROR_CODES[retval])
 
     ain_voltage_values = {
         "ain0_voltage": ain_voltage[0].value,
@@ -552,7 +566,7 @@ def get_values():
         "pid_11_lock_status": lock_status[0].value,
         "pid_12_lock_status": lock_status[1].value,
         "pid_21_lock_status": lock_status[2].value,
-        "pid_22_lock_status": lock_status[3].value        
+        "pid_22_lock_status": lock_status[3].value
     }
     return json.dumps(ain_voltage_values)
 
@@ -567,7 +581,7 @@ def get_parameters():
     kd_param = [0., 0., 0., 0.]
     # fd_param = [0., 0., 0., 0.]
     kii_param = [0., .0, 0., 0.]
-    kg_param = [0., 0., 0., 0.]   
+    kg_param = [0., 0., 0., 0.]
     inverted = [False, False, False, False]
     hold = [False, False, False, False]
     int_reset = [False, False, False, False]
@@ -578,7 +592,8 @@ def get_parameters():
     relock_slew_rate = [0., 0., 0., 0.]
     relock_enabled = [False, False, False, False]
     relock_input = [0, 0, 0, 0]
-    lso_enabled = [False, False, False, False]    
+    lso_enabled = [False, False, False, False]
+    ext_reset_enabled = [False, False, False, False]
     for i in range(4):
         setpoint[i] = ctypes.c_float()
         retval = RP_LIB.rp_PIDGetSetpoint(i, ctypes.byref(setpoint[i]))
@@ -605,12 +620,12 @@ def get_parameters():
         kii_param[i] = ctypes.c_float()
         retval = RP_LIB.rp_PIDGetKii(i, ctypes.byref(kii_param[i]))
         if retval != 0:
-            LOG.error("Failed to get PID Kii parameter. Error code: %s", ERROR_CODES[retval])     
+            LOG.error("Failed to get PID Kii parameter. Error code: %s", ERROR_CODES[retval])
 
         kg_param[i] = ctypes.c_float()
         retval = RP_LIB.rp_PIDGetKg(i, ctypes.byref(kg_param[i]))
         if retval != 0:
-            LOG.error("Failed to get PID Kg parameter. Error code: %s", ERROR_CODES[retval])                   
+            LOG.error("Failed to get PID Kg parameter. Error code: %s", ERROR_CODES[retval])
 
         inverted[i] = ctypes.c_bool()
         retval = RP_LIB.rp_PIDGetInverted(i, ctypes.byref(inverted[i]))
@@ -634,12 +649,12 @@ def get_parameters():
         if retval != 0:
             LOG.error("Failed to get state of PID automatical integrator reset. Error code: %s",
                       ERROR_CODES[retval])
-            
+
         enabled[i] = ctypes.c_bool()
         retval = RP_LIB.rp_PIDGetEnable(i, ctypes.byref(enabled[i]))
         if retval != 0:
             LOG.error("Failed to get state of PID enable. Error code: %s",
-                      ERROR_CODES[retval])     
+                      ERROR_CODES[retval])
 
         relock_min[i] = ctypes.c_float()
         retval = RP_LIB.rp_PIDGetRelockMinimum(i, ctypes.byref(relock_min[i]))
@@ -670,12 +685,18 @@ def get_parameters():
         if retval != 0:
             LOG.error("Failed to get analog input of PID relock. Error code: %s",
                       ERROR_CODES[retval])
-            
+
         lso_enabled[i] = ctypes.c_bool()
         retval = RP_LIB.rp_PIDGetLockStatusOutputEnable(i, ctypes.byref(lso_enabled[i]))
         if retval != 0:
             LOG.error("Failed to get state of PID lock status output enable. Error code: %s",
-                      ERROR_CODES[retval])                 
+                      ERROR_CODES[retval])
+
+        ext_reset_enabled[i] = ctypes.c_bool()
+        retval = RP_LIB.rp_PIDGetExtResetEnable(i, ctypes.byref(ext_reset_enabled[i]))
+        if retval != 0:
+            LOG.error("Failed to get state of PID external reset enable. Error code: %s",
+                      ERROR_CODES[retval])
 
     limit_min_1 = ctypes.c_float()
     retval = RP_LIB.rp_LimitGetMin(0, ctypes.byref(limit_min_1))
@@ -743,7 +764,7 @@ def get_parameters():
     if retval != 0:
         LOG.error("Failed to get if signal generator is enabled. Error code: %s",
                   ERROR_CODES[retval])
-        
+
     sg_1_poffset_enabled = ctypes.c_bool()
     retval = RP_LIB.rp_GenPOffsetIsEnabled(0, ctypes.byref(sg_1_poffset_enabled))
     if retval != 0:
@@ -753,7 +774,7 @@ def get_parameters():
     retval = RP_LIB.rp_GenPOffsetIsEnabled(1, ctypes.byref(sg_2_poffset_enabled))
     if retval != 0:
         LOG.error("Failed to get if signal generator permanent offset is enabled. Error code: %s",
-                  ERROR_CODES[retval])        
+                  ERROR_CODES[retval])
 
     parameters = {
         "pid_11_setpoint": setpoint[0].value,
@@ -775,15 +796,15 @@ def get_parameters():
         # "pid_11_fd": fd_param[0].value,
         # "pid_12_fd": fd_param[1].value,
         # "pid_21_fd": fd_param[2].value,
-        # "pid_22_fd": fd_param[3].value,        
+        # "pid_22_fd": fd_param[3].value,
         "pid_11_kii": kii_param[0].value,
         "pid_12_kii": kii_param[1].value,
         "pid_21_kii": kii_param[2].value,
-        "pid_22_kii": kii_param[3].value,   
+        "pid_22_kii": kii_param[3].value,
         "pid_11_kg": kg_param[0].value,
         "pid_12_kg": kg_param[1].value,
         "pid_21_kg": kg_param[2].value,
-        "pid_22_kg": kg_param[3].value,             
+        "pid_22_kg": kg_param[3].value,
         "pid_11_inverted": inverted[0].value,
         "pid_12_inverted": inverted[1].value,
         "pid_21_inverted": inverted[2].value,
@@ -803,7 +824,7 @@ def get_parameters():
         "pid_11_enabled": enabled[0].value,
         "pid_12_enabled": enabled[1].value,
         "pid_21_enabled": enabled[2].value,
-        "pid_22_enabled": enabled[3].value,    
+        "pid_22_enabled": enabled[3].value,
         "pid_11_relock_min": relock_min[0].value,
         "pid_12_relock_min": relock_min[1].value,
         "pid_21_relock_min": relock_min[2].value,
@@ -827,7 +848,11 @@ def get_parameters():
         "pid_11_lso_enabled": lso_enabled[0].value,
         "pid_12_lso_enabled": lso_enabled[1].value,
         "pid_21_lso_enabled": lso_enabled[2].value,
-        "pid_22_lso_enabled": lso_enabled[3].value,        
+        "pid_22_lso_enabled": lso_enabled[3].value,
+        "pid_11_ext_reset_enabled": ext_reset_enabled[0].value,
+        "pid_11_ext_reset_enabled": ext_reset_enabled[1].value,
+        "pid_21_ext_reset_enabled": ext_reset_enabled[2].value,
+        "pid_22_ext_reset_enabled": ext_reset_enabled[3].value,
         "limit_min_1": limit_min_1.value,
         "limit_min_2": limit_min_2.value,
         "limit_max_1": limit_max_1.value,
@@ -1045,12 +1070,12 @@ class MockRPLib():
         LOG.debug("rp_GenOutIsEnabled called")
         sg_enabled._obj.value = True
         return 0
-    
+
     def rp_ApinGetValue(self, ain, ain_voltage):
         LOG.debug("rp_ApinGetValue called")
         ain_voltage._obj.value = 1.3
         return 0
-    
+
     def rp_GetInVoltage(self, input, fast_input_voltage):
         LOG.debug("rp_GetInVoltage called")
         fast_input_voltage._obj.value = 0.9

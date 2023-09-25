@@ -35,7 +35,8 @@ static const int PID_BASE_SIZE = 0x4C;
 // PID structure declaration
 typedef struct pid_control_s {
     uint32_t conf;
-    uint32_t reserved[3];
+    uint32_t conf2;
+    uint32_t reserved[2];
     uint32_t pid11_setpoint;
     uint32_t pid12_setpoint;
     uint32_t pid21_setpoint;
@@ -71,14 +72,15 @@ typedef struct pid_control_s {
     uint32_t pid11_Kii;
     uint32_t pid12_Kii;
     uint32_t pid21_Kii;
-    uint32_t pid22_Kii;    
+    uint32_t pid22_Kii;
     uint32_t pid11_Kg;
     uint32_t pid12_Kg;
     uint32_t pid21_Kg;
-    uint32_t pid22_Kg;    
+    uint32_t pid22_Kg;
 } pid_control_t;
 
 static const uint32_t PID_CONF_MASK = 0xFFFFFFFF; // (32 bits)
+static const uint32_t PID_CONF2_MASK = 0x0000000F; // (4 bits)
 static const uint32_t PID_SETPOINT_MASK = 0x3FFF; // (14 bits)
 static const uint32_t PID_KP_MASK = 0xFFFFFF; // (24 bits)
 static const uint32_t PID_KI_MASK = 0xFFFFFF; // (24 bits)
@@ -95,7 +97,7 @@ static const uint32_t PID_PSR = 12; // P gain = Kp >> PID_PSR
 static const uint32_t PID_ISR = 28; // I gain = Ki >> PID_PSR
 static const uint32_t PID_DSR = 8; // D gain = Kp >> PID_DSR
 // Slew rate (in DAC counts/clock cycle) = stepsize >> PID_STEPSR
-static const uint32_t PID_STEPSR = 18; 
+static const uint32_t PID_STEPSR = 18;
 
 int pid_Init();
 int pid_Release();
@@ -135,5 +137,7 @@ int pid_SetRelockInput(rp_pid_t pid, rp_apin_t pin);
 int pid_GetRelockInput(rp_pid_t pid, rp_apin_t *pin);
 int pid_SetLockStatusOutputEnable(rp_pid_t pid, bool enable);
 int pid_GetLockStatusOutputEnable(rp_pid_t pid, bool *enabled);
+int pid_SetExtResetEnable(rp_pid_t pid, bool enable);
+int pid_GetExtResetEnable(rp_pid_t pid, bool *enabled);
 
 #endif //__PID_H

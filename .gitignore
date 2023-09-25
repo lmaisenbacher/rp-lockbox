@@ -13,3 +13,4 @@ scpi-server/lockbox-server
 **/prj/**/sdk
 build/
 __pycache__/
+/.vscode/

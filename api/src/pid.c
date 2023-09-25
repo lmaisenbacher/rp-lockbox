@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2018, Fabian Schmid
- * Copyright (c) 2023, Lothar Maisenbacher 
+ * Copyright (c) 2023, Lothar Maisenbacher
  *
  * All rights reserved.
  *
@@ -111,7 +111,7 @@ int pid_SetPIDKp(rp_pid_t pid, float kp)
     if(kp < 0) {
         return RP_EIPV;
     }
-    
+
     kp_integer = (int)round(kp * (1 << PID_PSR));
     if(kp_integer > PID_KP_MASK)  // check for integer overflow
         kp_integer = PID_KP_MASK;
@@ -215,7 +215,7 @@ int pid_SetPIDKd(rp_pid_t pid, float kd)
 
 int pid_GetPIDKd(rp_pid_t pid, float *kd)
 {
-    uint32_t kd_integer;    
+    uint32_t kd_integer;
     switch(pid) {
         case RP_PID_11:
             cmn_GetValue(&pid_reg->pid11_Kd, &kd_integer, PID_KD_MASK);
@@ -233,7 +233,7 @@ int pid_GetPIDKd(rp_pid_t pid, float *kd)
     }
 
     *kd = (float)kd_integer * PID_TIMESTEP / (1 << PID_DSR);
-    return RP_OK;    
+    return RP_OK;
 }
 
 int pid_SetPIDKii(rp_pid_t pid, float kii)
@@ -287,7 +287,7 @@ int pid_SetPIDKg(rp_pid_t pid, float kg)
     if(kg < 0) {
         return RP_EIPV;
     }
-    
+
     kg_integer = (int)round(kg * (1 << PID_PSR));
     if(kg_integer > PID_KG_MASK)  // check for integer overflow
         kg_integer = PID_KG_MASK;
@@ -629,7 +629,7 @@ int pid_GetRelockMaximum(rp_pid_t pid, float *maximum) {
             break;
         default: return RP_EPN;
     }
-    
+
     *maximum = (float)maximum_counts / ANALOG_IN_MAX_VAL_INTEGER * (ANALOG_IN_MAX_VAL - ANALOG_IN_MIN_VAL) + ANALOG_IN_MIN_VAL;
     return RP_OK;
 }
@@ -694,6 +694,37 @@ int pid_GetLockStatusOutputEnable(rp_pid_t pid, bool *enabled) {
         case RP_PID_12: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 29, PID_CONF_MASK, enabled);
         case RP_PID_21: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 30, PID_CONF_MASK, enabled);
         case RP_PID_22: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 31, PID_CONF_MASK, enabled);
+        default: return RP_EPN;
+    }
+}
+
+int pid_SetExtResetEnable(rp_pid_t pid, bool enable) {
+    if(enable) {
+        switch(pid) {
+            case RP_PID_11: return cmn_SetBits(&pid_reg->conf2, 0x1 << 0, PID_CONF2_MASK);
+            case RP_PID_12: return cmn_SetBits(&pid_reg->conf2, 0x1 << 1, PID_CONF2_MASK);
+            case RP_PID_21: return cmn_SetBits(&pid_reg->conf2, 0x1 << 2, PID_CONF2_MASK);
+            case RP_PID_22: return cmn_SetBits(&pid_reg->conf2, 0x1 << 3, PID_CONF2_MASK);
+            default: return RP_EPN;
+        }
+    }
+    else {
+        switch(pid) {
+            case RP_PID_11: return cmn_UnsetBits(&pid_reg->conf2, 0x1 << 0, PID_CONF2_MASK);
+            case RP_PID_12: return cmn_UnsetBits(&pid_reg->conf2, 0x1 << 1, PID_CONF2_MASK);
+            case RP_PID_21: return cmn_UnsetBits(&pid_reg->conf2, 0x1 << 2, PID_CONF2_MASK);
+            case RP_PID_22: return cmn_UnsetBits(&pid_reg->conf2, 0x1 << 3, PID_CONF2_MASK);
+            default: return RP_EPN;
+        }
+    }
+}
+
+int pid_GetExtResetEnable(rp_pid_t pid, bool *enabled) {
+    switch(pid) {
+        case RP_PID_11: return cmn_AreBitsSet(pid_reg->conf2, 0x1 << 0, PID_CONF2_MASK, enabled);
+        case RP_PID_12: return cmn_AreBitsSet(pid_reg->conf2, 0x1 << 1, PID_CONF2_MASK, enabled);
+        case RP_PID_21: return cmn_AreBitsSet(pid_reg->conf2, 0x1 << 2, PID_CONF2_MASK, enabled);
+        case RP_PID_22: return cmn_AreBitsSet(pid_reg->conf2, 0x1 << 3, PID_CONF2_MASK, enabled);
         default: return RP_EPN;
     }
 }

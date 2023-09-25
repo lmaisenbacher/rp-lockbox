@@ -71,8 +71,8 @@ int rp_Release()
     calib_Release();
     cmn_Release();
     // TODO: Place other module releasing here (in reverse order)
-    pid_Release(); 
-    limit_Release(); 
+    pid_Release();
+    limit_Release();
     return RP_OK;
 }
 
@@ -955,6 +955,14 @@ int rp_PIDGetLockStatusOutputEnable(rp_pid_t pid, bool *enabled) {
     return pid_GetLockStatusOutputEnable(pid, enabled);
 }
 
+int rp_PIDSetExtResetEnable(rp_pid_t pid, bool enable) {
+    return pid_SetExtResetEnable(pid, enable);
+}
+
+int rp_PIDGetExtResetEnable(rp_pid_t pid, bool *enabled) {
+    return pid_GetExtResetEnable(pid, enabled);
+}
+
 /**
  * Output limiter
  */
@@ -980,13 +988,13 @@ int rp_SaveLockboxConfig() {
         rp_PIDGetKi(i, &config.pid_ki[i]);
         rp_PIDGetKd(i, &config.pid_kd[i]);
         rp_PIDGetKii(i, &config.pid_kii[i]);
-        rp_PIDGetKg(i, &config.pid_kg[i]);   
+        rp_PIDGetKg(i, &config.pid_kg[i]);
         rp_PIDGetIntReset(i, &config.pid_int_reset[i]);
         rp_PIDGetInverted(i, &config.pid_inverted[i]);
         rp_PIDGetResetWhenRailed(i, &config.pid_reset_when_railed[i]);
         rp_PIDGetHold(i, &config.pid_hold[i]);
         rp_PIDGetRelock(i, &config.pid_relock_enabled[i]);
-        rp_PIDGetEnable(i, &config.pid_enabled[i]);        
+        rp_PIDGetEnable(i, &config.pid_enabled[i]);
         rp_PIDGetRelockStepsize(i, &config.pid_relock_stepsize[i]);
         rp_PIDGetRelockMinimum(i, &config.pid_relock_minimum[i]);
         rp_PIDGetRelockMaximum(i, &config.pid_relock_maximum[i]);
@@ -997,7 +1005,7 @@ int rp_SaveLockboxConfig() {
         rp_LimitGetMin(i, &config.limit_min[i]);
         rp_LimitGetMax(i, &config.limit_max[i]);
         rp_GenOutIsEnabled(i, &config.gen_enabled[i]);
-        rp_GenPOffsetIsEnabled(i, &config.gen_poffset_enabled[i]);        
+        rp_GenPOffsetIsEnabled(i, &config.gen_poffset_enabled[i]);
         rp_GenGetAmp(i, &config.gen_amp[i]);
         rp_GenGetOffset(i, &config.gen_offset[i]);
         rp_GenGetFreq(i, &config.gen_freq[i]);
@@ -1034,18 +1042,18 @@ int rp_LoadLockboxConfig() {
         rp_PIDSetKi(i, config.pid_ki[i]);
         rp_PIDSetKd(i, config.pid_kd[i]);
         rp_PIDSetKii(i, config.pid_kii[i]);
-        rp_PIDSetKg(i, config.pid_kg[i]);     
+        rp_PIDSetKg(i, config.pid_kg[i]);
         rp_PIDSetIntReset(i, config.pid_int_reset[i]);
         rp_PIDSetInverted(i, config.pid_inverted[i]);
         rp_PIDSetResetWhenRailed(i, config.pid_reset_when_railed[i]);
         rp_PIDSetHold(i, config.pid_hold[i]);
         rp_PIDSetRelock(i, config.pid_relock_enabled[i]);
-        rp_PIDSetEnable(i, config.pid_enabled[i]);        
+        rp_PIDSetEnable(i, config.pid_enabled[i]);
         rp_PIDSetRelockStepsize(i, config.pid_relock_stepsize[i]);
         rp_PIDSetRelockMinimum(i, config.pid_relock_minimum[i]);
         rp_PIDSetRelockMaximum(i, config.pid_relock_maximum[i]);
         rp_PIDSetRelockInput(i, config.pid_relock_input[i]);
-        rp_PIDSetLockStatusOutputEnable(i, config.pid_lso_enabled[i]);        
+        rp_PIDSetLockStatusOutputEnable(i, config.pid_lso_enabled[i]);
     }
     for (int i=0; i<2; i++) {
         rp_LimitMin(i, config.limit_min[i]);
@@ -1057,7 +1065,7 @@ int rp_LoadLockboxConfig() {
         if (config.gen_poffset_enabled[i])
             rp_GenPOffsetEnable(i);
         else
-            rp_GenPOffsetDisable(i);            
+            rp_GenPOffsetDisable(i);
         rp_GenAmp(i, config.gen_amp[i]);
         rp_GenOffset(i, config.gen_offset[i]);
         rp_GenFreq(i, config.gen_freq[i]);
@@ -1070,4 +1078,3 @@ float rp_CmnCnvCntToV(uint32_t field_len, uint32_t cnts, float adc_max_v, uint32
 {
 	return cmn_CnvCntToV(field_len, cnts, adc_max_v, calibScale, calib_dc_off, user_dc_off);
 }
-

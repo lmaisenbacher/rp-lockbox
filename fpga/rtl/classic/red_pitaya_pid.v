@@ -104,7 +104,7 @@ reg         [3:0]         set_irst                  ;
 reg         [3:0]         set_irst_when_railed      ;
 reg         [3:0]         set_hold                  ;
 reg         [3:0]         set_output_enabled        ;
-reg         [3:0]         set_reset_enabled         ;
+reg         [3:0]         set_ext_reset_enabled     ;
 reg         [3:0]         set_lock_status_out_en    ;
 wire        [3:0]         pid_irst                  ;
 wire        [3:0]         pid_ctr_rst               ;
@@ -112,6 +112,8 @@ wire signed [14-1:0]      pid_ctr_val          [3:0];
 wire                      pid_hold             [3:0];
 wire        [1:0]         pid_railed_i         [3:0];
 wire        [1:0]         output_enabled       [3:0];
+wire        [3:0]         ext_reset            [3:0];
+reg         [2-1:0]       ext_reset_source     [3:0];
 
 wire signed [15-1:0]      pid_sum              [3:0];
 wire signed [14-1:0]      pid_sat              [3:0];
@@ -129,7 +131,7 @@ wire        [12-1:0]               relock_signal_i  [3:0];
 wire                               relock_hold_i    [3:0];
 wire                               relock_locked_o  [3:0];
 
-wire        [12-1:0]                relock_i         [3:0];
+wire        [12-1:0]               relock_i         [3:0];
 assign relock_i[0] = relock_a_i;
 assign relock_i[1] = relock_b_i;
 assign relock_i[2] = relock_c_i;
@@ -137,15 +139,14 @@ assign relock_i[3] = relock_d_i;
 
 // External (through digital input) loop reset
 wire        [3:0]                  reset_i          [3:0];
-assign reset_i[0] = reset_a_i && set_reset_enabled[0];
-assign reset_i[1] = set_reset_enabled[1];
-assign reset_i[2] = set_reset_enabled[2];
-assign reset_i[3] = reset_d_i && set_reset_enabled[3];
+assign reset_i[0] = reset_a_i;
+assign reset_i[1] = reset_d_i;
 
 genvar pid_index;
 
 generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
-    assign pid_hold[pid_index] = relock_hold_o[pid_index] || set_hold[pid_index] || reset_i[pid_index];
+    assign ext_reset[pid_index] = reset_i[ext_reset_source[pid_index]] && set_ext_reset_enabled[pid_index];
+    assign pid_hold[pid_index] = relock_hold_o[pid_index] || set_hold[pid_index] || ext_reset[pid_index];
     assign pid_sum[pid_index] = pid_out[pid_index] + relock_signal_o[pid_index];
     assign pid_sat[pid_index] = (^pid_sum[pid_index][15-1:15-2]) ?
                                 {pid_sum[pid_index][15-1], {13{~pid_sum[pid_index][15-1]}}} :
@@ -207,10 +208,10 @@ assign pid_in[1] = dat_b_i;
 assign pid_in[2] = dat_a_i;
 assign pid_in[3] = dat_b_i;
 
-assign pid_irst[0] = set_irst[0] || reset_i[0];
-assign pid_irst[1] = set_irst[1] || reset_i[1];
-assign pid_irst[2] = set_irst[2] || reset_i[2];
-assign pid_irst[3] = set_irst[3] || reset_i[3];
+assign pid_irst[0] = set_irst[0] || ext_reset[0];
+assign pid_irst[1] = set_irst[1] || ext_reset[1];
+assign pid_irst[2] = set_irst[2] || ext_reset[2];
+assign pid_irst[3] = set_irst[3] || ext_reset[3];
 
 assign pid_ctr_rst[0] = (set_irst_when_railed[0] && (railed_a_i[0] || railed_a_i[1])) || relock_clear_o[0];
 assign pid_ctr_rst[1] = (set_irst_when_railed[1] && (railed_a_i[0] || railed_a_i[1])) || relock_clear_o[1];
@@ -227,16 +228,16 @@ assign pid_railed_i[1] = railed_a_i;
 assign pid_railed_i[2] = railed_b_i;
 assign pid_railed_i[3] = railed_b_i;
 
-assign relock_hold_i[0] = set_hold[0] || reset_i[0];
-assign relock_hold_i[1] = set_hold[1] || reset_i[1];
-assign relock_hold_i[2] = set_hold[2] || reset_i[2];
-assign relock_hold_i[3] = set_hold[3] || reset_i[3];
+assign relock_hold_i[0] = set_hold[0] || ext_reset[0];
+assign relock_hold_i[1] = set_hold[1] || ext_reset[1];
+assign relock_hold_i[2] = set_hold[2] || ext_reset[2];
+assign relock_hold_i[3] = set_hold[3] || ext_reset[3];
 
 // Determine whether outputs of PIDs are enabled
-assign output_enabled[0] = set_output_enabled[0] && !reset_i[0];
-assign output_enabled[1] = set_output_enabled[1] && !reset_i[1];
-assign output_enabled[2] = set_output_enabled[2] && !reset_i[2];
-assign output_enabled[3] = set_output_enabled[3] && !reset_i[3];
+assign output_enabled[0] = set_output_enabled[0] && !ext_reset[0];
+assign output_enabled[1] = set_output_enabled[1] && !ext_reset[1];
+assign output_enabled[2] = set_output_enabled[2] && !ext_reset[2];
+assign output_enabled[3] = set_output_enabled[3] && !ext_reset[3];
 
 // Update register holding lock status
 // This register is then written to memory (but not read back from memory)
@@ -325,6 +326,7 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
           relock_maxval[pid_index]   <= 12'd0;
           relock_stepsize[pid_index] <= {RELOCK_STEP_BITS{1'b0}};
           relock_source[pid_index]   <= 2'd0;
+          ext_reset_source[pid_index]<= 2'd0;
        end
        else begin
           if (sys_wen) begin
@@ -348,6 +350,8 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
                  set_kii[pid_index] <= sys_wdata[KP_BITS-1:0];
              if (sys_addr[19:0]==('ha0+4*pid_index))
                  set_kg[pid_index] <= sys_wdata[KP_BITS-1:0];
+             if (sys_addr[19:0]==('hb0+4*pid_index))
+                 ext_reset_source[pid_index]  <= sys_wdata[2-1:0] ;
           end
        end
     end
@@ -357,7 +361,7 @@ endgenerate
 // Flags write
 always @(posedge clk_i) begin
     if (rstn_i == 1'b0) begin
-          set_reset_enabled      <=  4'b1000;
+          set_ext_reset_enabled  <=  4'b0;
           set_lock_status_out_en <=  4'b1111;
           set_output_enabled     <=  4'b1111;
           relock_enabled         <=  4'b0   ;
@@ -378,6 +382,9 @@ always @(posedge clk_i) begin
             {set_lock_status_out_en}
             <= sys_wdata[32-1:28];
         end
+        if (rstn_i & sys_wen & sys_addr[19:0]==20'h4)
+            {set_ext_reset_enabled}
+            <= sys_wdata[4-1:0];
     end
 end
 
@@ -397,6 +404,10 @@ end else begin
           sys_rdata <= {set_lock_status_out_en, relock_lock_status, set_output_enabled, relock_enabled,
                         set_hold, set_irst_when_railed, pid_inverted, set_irst};
       end
+       20'h04: begin
+          sys_ack <= sys_en;
+          sys_rdata <= {{32-28{1'b0}}, set_ext_reset_enabled};
+      end
 
       20'h1?: begin sys_ack <= sys_en; sys_rdata <= {{32-14{1'b0}}, set_sp[sys_addr[3:0] >> 2]}; end
       20'h2?: begin sys_ack <= sys_en; sys_rdata <= {{32-KP_BITS{1'b0}}, set_kp[sys_addr[3:0] >> 2]}; end
@@ -409,6 +420,7 @@ end else begin
       20'h8?: begin sys_ack <= sys_en; sys_rdata <= {{32-2{1'b0}}, relock_source[sys_addr[3:0] >> 2]}; end
       20'h9?: begin sys_ack <= sys_en; sys_rdata <= {{32-KI_BITS{1'b0}}, set_kii[sys_addr[3:0] >> 2]}; end
       20'ha?: begin sys_ack <= sys_en; sys_rdata <= {{32-KP_BITS{1'b0}}, set_kg[sys_addr[3:0] >> 2]}; end
+      20'hb?: begin sys_ack <= sys_en; sys_rdata <= {{32-2{1'b0}}, ext_reset_source[sys_addr[3:0] >> 2]}; end
 
      default: begin sys_ack <= sys_en; sys_rdata <=  32'h0; end
    endcase

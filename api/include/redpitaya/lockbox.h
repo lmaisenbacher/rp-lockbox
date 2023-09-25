@@ -293,7 +293,7 @@ typedef struct {
     float limit_min[2];
     float limit_max[2];
     bool gen_enabled[2];
-    bool gen_poffset_enabled[2];    
+    bool gen_poffset_enabled[2];
     float gen_amp[2];
     float gen_offset[2];
     float gen_freq[2];
@@ -1588,7 +1588,7 @@ int rp_PIDGetLockStatus(rp_pid_t pid, bool *lock_status);
  * stored in EEPROM.
  * @param pid The PID to use (see rp_pid_t documentation for details).
  * @param stepsize The step size (slew rate) in V/s. Valid values are between
- * 58E-3 and 1.0E6 V/s. 
+ * 58E-3 and 1.0E6 V/s.
  * @return If the function is successful, the return value is RP_OK.
  * If the function is unsuccessful, the return value is any of RP_E* values that
  * indicate an error.
@@ -1672,6 +1672,9 @@ int rp_PIDGetRelockInput(rp_pid_t pid, rp_apin_t *pin);
 
 int rp_PIDSetLockStatusOutputEnable(rp_pid_t pid, bool enable);
 int rp_PIDGetLockStatusOutputEnable(rp_pid_t pid, bool *enabled);
+
+int rp_PIDSetExtResetEnable(rp_pid_t pid, bool enable);
+int rp_PIDGetExtResetEnable(rp_pid_t pid, bool *enabled);
 
 /*
  * Set the minimum DAC output voltage of the specified channel using the
