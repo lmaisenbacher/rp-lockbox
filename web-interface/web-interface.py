@@ -155,24 +155,6 @@ def set_kd():
     LOG.info("Kd: %f", kd)
     LOG.info("PID: %d", pid)
 
-# @route("/_set_fd", method="POST")
-# def set_fd():
-#     """Handle POST request for setting the PID fd (derivative corner frequency (Hz)).
-
-#     Accepted POST parameters:
-#     :pid: the PID to adjust
-#     :fd: the value to set
-#     """
-#     fd = request.params.get("fd", 0, type=float)
-#     pid = request.params.get("pid", 1, type=int)
-#     kd = 1/(2*math.pi*fd)
-#     retval = RP_LIB.rp_PIDSetKd(pid, ctypes.c_float(kd))
-#     if retval != 0:
-#         LOG.error("Failed to set PID fd. Error code: %s", ERROR_CODES[retval])
-#     LOG.info("fd: %f", fd)
-#     LOG.info("Kd: %f", kd)
-#     LOG.info("PID: %d", pid)
-
 @route("/_set_kii", method="POST")
 def set_kii():
     """Handle POST request for setting the PID Kii (2nd integrator gain (1/s)).
@@ -594,7 +576,6 @@ def get_parameters():
     kp_param = [0., .0, 0., 0.]
     ki_param = [0., 0., 0., 0.]
     kd_param = [0., 0., 0., 0.]
-    # fd_param = [0., 0., 0., 0.]
     kii_param = [0., .0, 0., 0.]
     kg_param = [0., 0., 0., 0.]
     inverted = [False, False, False, False]
@@ -631,7 +612,6 @@ def get_parameters():
         if retval != 0:
             LOG.error("Failed to get PID Kd parameter. Error code: %s", ERROR_CODES[retval])
         kd_param[i] = kd_param[i].value*1e9
-        # fd_param[i] = 1/(2*math.pi*kd_param[i].value)
 
         kii_param[i] = ctypes.c_float()
         retval = RP_LIB.rp_PIDGetKii(i, ctypes.byref(kii_param[i]))
@@ -815,10 +795,6 @@ def get_parameters():
         "pid_12_kd": kd_param[1],
         "pid_21_kd": kd_param[2],
         "pid_22_kd": kd_param[3],
-        # "pid_11_fd": fd_param[0].value,
-        # "pid_12_fd": fd_param[1].value,
-        # "pid_21_fd": fd_param[2].value,
-        # "pid_22_fd": fd_param[3].value,
         "pid_11_kii": kii_param[0].value,
         "pid_12_kii": kii_param[1].value,
         "pid_21_kii": kii_param[2].value,

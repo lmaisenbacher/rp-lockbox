@@ -117,7 +117,6 @@
         var spinner_pid_kp_name = ["#spinner_pid_11_kp", "#spinner_pid_21_kp", "#spinner_pid_12_kp", "#spinner_pid_22_kp"];
         var spinner_pid_ki_name = ["#spinner_pid_11_ki", "#spinner_pid_21_ki", "#spinner_pid_12_ki", "#spinner_pid_22_ki"];
         var spinner_pid_kd_name = ["#spinner_pid_11_kd", "#spinner_pid_21_kd", "#spinner_pid_12_kd", "#spinner_pid_22_kd"];
-        // var spinner_pid_fd_name = ["#spinner_pid_11_fd", "#spinner_pid_21_fd", "#spinner_pid_12_fd", "#spinner_pid_22_fd"];
         var spinner_pid_kii_name = ["#spinner_pid_11_kii", "#spinner_pid_21_kii", "#spinner_pid_12_kii", "#spinner_pid_22_kii"];
         var spinner_pid_kg_name = ["#spinner_pid_11_kg", "#spinner_pid_21_kg", "#spinner_pid_12_kg", "#spinner_pid_22_kg"];
         var checkbox_pid_inv_name = ["#checkbox_pid_11_inv", "#checkbox_pid_21_inv", "#checkbox_pid_12_inv", "#checkbox_pid_22_inv"];
@@ -165,13 +164,6 @@
                 kd: kd,
             });
         };
-
-		// function set_fd(pid, fd) {
-        //     $.post("_set_fd", {
-        //         pid: pid,
-        //         fd: fd,
-        //     });
-        // };
 
 		function set_kii(pid, kii) {
             $.post("_set_kii", {
@@ -470,27 +462,6 @@
             }
             set_kd(pid, $(event.target).val());
         }
-
-        // function fd_changed(event, ui) {
-        //     var pid;
-        //     switch(event.target.id) {
-        //         case "spinner_pid_11_fd":
-        //             pid = 0;
-        //             break;
-        //         case "spinner_pid_12_fd":
-        //             pid = 1;
-        //             break;
-        //         case "spinner_pid_21_fd":
-        //             pid = 2;
-        //             break;
-        //         case "spinner_pid_22_fd":
-        //             pid = 3;
-        //             break;
-        //         default:
-        //             pid = 0;
-        //     }
-        //     set_fd(pid, $(event.target).val());
-        // }
 
         function kii_changed(event, ui) {
             var pid;
@@ -987,7 +958,6 @@
                 var kp_values = [data.pid_11_kp, data.pid_21_kp, data.pid_12_kp, data.pid_22_kp];
                 var ki_values = [data.pid_11_ki, data.pid_21_ki, data.pid_12_ki, data.pid_22_ki];
                 var kd_values = [data.pid_11_kd, data.pid_21_kd, data.pid_12_kd, data.pid_22_kd];
-                // var fd_values = [data.pid_11_fd, data.pid_21_fd, data.pid_12_fd, data.pid_22_fd];
                 var kii_values = [data.pid_11_kii, data.pid_21_kii, data.pid_12_kii, data.pid_22_kii];
                 var kg_values = [data.pid_11_kg, data.pid_21_kg, data.pid_12_kg, data.pid_22_kg];
                 var inv_values = [data.pid_11_inverted, data.pid_21_inverted, data.pid_12_inverted, data.pid_22_inverted];
@@ -1011,7 +981,6 @@
                     $(spinner_pid_kp_name[i]).not(":focus").val(kp_values[i].toFixed(3));
                     $(spinner_pid_ki_name[i]).not(":focus").val(ki_values[i].toFixed(2));
                     $(spinner_pid_kd_name[i]).not(":focus").val(kd_values[i].toFixed(2));
-                    // $(spinner_pid_fd_name[i]).not(":focus").val(fd_values[i]);
                     $(spinner_pid_kii_name[i]).not(":focus").val(kii_values[i].toFixed(2));
                     $(spinner_pid_kg_name[i]).not(":focus").val(kg_values[i].toFixed(2));
                     $(checkbox_pid_inv_name[i]).not(":focus").prop("checked", inv_values[i]);
@@ -1095,12 +1064,6 @@
             max: 524287.
             });
         $( ".kd_spinner" ).width(105);
-        // $( ".fd_spinner" ).spinner({
-        //     step: 1,
-        //     min: 304.,
-        //     max: 50e6
-        //     });
-        // $( ".fd_spinner" ).width(105);
         $( ".kii_spinner" ).spinner({
             step: 1.,
             min: 0.,
@@ -1160,7 +1123,6 @@
 		$( ".kp_spinner" ).on("spinstop", kp_changed);
 		$( ".ki_spinner" ).on("spinstop", ki_changed);
 		$( ".kd_spinner" ).on("spinstop", kd_changed);
-		// $( ".kf_spinner" ).on("spinstop", fd_changed);
         $( ".kii_spinner" ).on("spinstop", kii_changed);
         $( ".kg_spinner" ).on("spinstop", kg_changed);
 
@@ -1319,7 +1281,7 @@
                     </table>
 
                     <div class="controlgroup-vertical">
-                        <label class="checkbox-container">Lock status output enabled
+                        <label class="checkbox-container">Lock status output enabled<br>(DIO1_N/DIO1_P)
                             <input type="checkbox" id="checkbox_lso_11_enabled" class="lso_enabled_checkbox">
                             <span class="checkmark"></span>
                         </label>
@@ -1382,14 +1344,16 @@
 
 				<a>Output voltage (V)</a>
                 <output id="fast_output_21_voltage">0</output>
-
                 <fieldset>
                     <legend><h3>PID</h3></legend>
-
                     <table>
                         <tr>
                             <td><label for="spinner_pid_21_sp">Setpoint (V)</label></td>
                             <td><input id="spinner_pid_21_sp" class="sp_spinner"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="spinner_pid_21_kg">Global gain</label></td>
+                            <td><input id="spinner_pid_21_kg" class="kg_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_21_kp">KP</label></td>
@@ -1400,20 +1364,12 @@
                             <td><input id="spinner_pid_21_ki" class="ki_spinner"></td>
                         </tr>
                         <tr>
-                            <td><label for="spinner_pid_21_kd">KD (ns)</label></td>
-                            <td><input id="spinner_pid_21_kd" class="kd_spinner"></td>
-                        </tr>
-                        <!-- <tr>
-                            <td><label for="spinner_pid_21_fd">fD (Hz)</label></td>
-                            <td><input id="spinner_pid_21_fd" class="fd_spinner"></td>
-                        </tr>                                                 -->
-                        <tr>
                             <td><label for="spinner_pid_21_kii">KII (1/s)</label></td>
                             <td><input id="spinner_pid_21_kii" class="kii_spinner"></td>
                         </tr>
                         <tr>
-                            <td><label for="spinner_pid_21_kg">Global</label></td>
-                            <td><input id="spinner_pid_21_kg" class="kg_spinner"></td>
+                            <td><label for="spinner_pid_21_kd">KD (ns)</label></td>
+                            <td><input id="spinner_pid_21_kd" class="kd_spinner"></td>
                         </tr>
                     </table>
 
@@ -1423,16 +1379,16 @@
                             <span class="checkmark"></span>
                         </label>
                         <label class="checkbox-container">Hold internal state
-                            <input type="checkbox" id="checkbox_pid_21_hold" class="hold_checkbox">
-                            <span class="checkmark"></span>
+                                <input type="checkbox" id="checkbox_pid_21_hold" class="hold_checkbox">
+                                <span class="checkmark"></span>
                         </label>
                         <label class="checkbox-container">Integrator reset
-                            <input type="checkbox" id="checkbox_pid_21_int_res" class="int_res_checkbox">
-                            <span class="checkmark"></span>
+                                <input type="checkbox" id="checkbox_pid_21_int_res" class="int_res_checkbox">
+                                <span class="checkmark"></span>
                         </label>
                         <label class="checkbox-container">Automatic integrator reset
-                            <input type="checkbox" id="checkbox_pid_21_int_auto_reset" class="int_auto_reset_checkbox">
-                            <span class="checkmark"></span>
+                                <input type="checkbox" id="checkbox_pid_21_int_auto_reset" class="int_auto_reset_checkbox">
+                                <span class="checkmark"></span>
                         </label>
                         <button id="button_toggle_21" class="button">Toggle Lock/Scan</button>
                     </div>
@@ -1473,7 +1429,7 @@
                     </table>
 
                     <div class="controlgroup-vertical">
-                        <label class="checkbox-container">Lock status output enabled
+                        <label class="checkbox-container">Lock status output enabled<br>(DIO3_N/DIO3_P)
                             <input type="checkbox" id="checkbox_lso_21_enabled" class="lso_enabled_checkbox">
                             <span class="checkmark"></span>
                         </label>
@@ -1554,6 +1510,10 @@
                             <td><input id="spinner_pid_12_sp" class="sp_spinner"></td>
                         </tr>
                         <tr>
+                            <td><label for="spinner_pid_12_kg">Global gain</label></td>
+                            <td><input id="spinner_pid_12_kg" class="kg_spinner"></td>
+                        </tr>
+                        <tr>
                             <td><label for="spinner_pid_12_kp">KP</label></td>
                             <td><input id="spinner_pid_12_kp" class="kp_spinner"></td>
                         </tr>
@@ -1562,20 +1522,12 @@
                             <td><input id="spinner_pid_12_ki" class="ki_spinner"></td>
                         </tr>
                         <tr>
-                            <td><label for="spinner_pid_12_kd">KD (ns)</label></td>
-                            <td><input id="spinner_pid_12_kd" class="kd_spinner"></td>
-                        </tr>
-                        <!-- <tr>
-                            <td><label for="spinner_pid_12_fd">fD (Hz)</label></td>
-                            <td><input id="spinner_pid_12_fd" class="fd_spinner"></td>
-                        </tr>                                                 -->
-                        <tr>
                             <td><label for="spinner_pid_12_kii">KII (1/s)</label></td>
                             <td><input id="spinner_pid_12_kii" class="kii_spinner"></td>
                         </tr>
                         <tr>
-                            <td><label for="spinner_pid_12_kg">Global</label></td>
-                            <td><input id="spinner_pid_12_kg" class="kg_spinner"></td>
+                            <td><label for="spinner_pid_12_kd">KD (ns)</label></td>
+                            <td><input id="spinner_pid_12_kd" class="kd_spinner"></td>
                         </tr>
                     </table>
 
@@ -1585,16 +1537,16 @@
                             <span class="checkmark"></span>
                         </label>
                         <label class="checkbox-container">Hold internal state
-                            <input type="checkbox" id="checkbox_pid_12_hold" class="hold_checkbox">
-                            <span class="checkmark"></span>
+                                <input type="checkbox" id="checkbox_pid_12_hold" class="hold_checkbox">
+                                <span class="checkmark"></span>
                         </label>
                         <label class="checkbox-container">Integrator reset
-                            <input type="checkbox" id="checkbox_pid_12_int_res" class="int_res_checkbox">
-                            <span class="checkmark"></span>
+                                <input type="checkbox" id="checkbox_pid_12_int_res" class="int_res_checkbox">
+                                <span class="checkmark"></span>
                         </label>
                         <label class="checkbox-container">Automatic integrator reset
-                            <input type="checkbox" id="checkbox_pid_12_int_auto_reset" class="int_auto_reset_checkbox">
-                            <span class="checkmark"></span>
+                                <input type="checkbox" id="checkbox_pid_12_int_auto_reset" class="int_auto_reset_checkbox">
+                                <span class="checkmark"></span>
                         </label>
                         <button id="button_toggle_12" class="button">Toggle Lock/Scan</button>
                     </div>
@@ -1635,7 +1587,7 @@
                     </table>
 
                     <div class="controlgroup-vertical">
-                        <label class="checkbox-container">Lock status output enabled
+                        <label class="checkbox-container">Lock status output enabled<br>(DIO2_N/DIO2_P)
                             <input type="checkbox" id="checkbox_lso_12_enabled" class="lso_enabled_checkbox">
                             <span class="checkmark"></span>
                         </label>
@@ -1700,11 +1652,14 @@
 
                 <fieldset>
                     <legend><h3>PID</h3></legend>
-
                     <table>
                         <tr>
                             <td><label for="spinner_pid_22_sp">Setpoint (V)</label></td>
                             <td><input id="spinner_pid_22_sp" class="sp_spinner"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="spinner_pid_22_kg">Global gain</label></td>
+                            <td><input id="spinner_pid_22_kg" class="kg_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_22_kp">KP</label></td>
@@ -1715,20 +1670,12 @@
                             <td><input id="spinner_pid_22_ki" class="ki_spinner"></td>
                         </tr>
                         <tr>
-                            <td><label for="spinner_pid_22_kd">KD (ns)</label></td>
-                            <td><input id="spinner_pid_22_kd" class="kd_spinner"></td>
-                        </tr>
-                        <!-- <tr>
-                            <td><label for="spinner_pid_22_fd">fD (Hz)</label></td>
-                            <td><input id="spinner_pid_22_fd" class="fd_spinner"></td>
-                        </tr>                                                 -->
-                        <tr>
                             <td><label for="spinner_pid_22_kii">KII (1/s)</label></td>
                             <td><input id="spinner_pid_22_kii" class="kii_spinner"></td>
                         </tr>
                         <tr>
-                            <td><label for="spinner_pid_22_kg">Global</label></td>
-                            <td><input id="spinner_pid_22_kg" class="kg_spinner"></td>
+                            <td><label for="spinner_pid_22_kd">KD (ns)</label></td>
+                            <td><input id="spinner_pid_22_kd" class="kd_spinner"></td>
                         </tr>
                     </table>
 
@@ -1738,16 +1685,16 @@
                             <span class="checkmark"></span>
                         </label>
                         <label class="checkbox-container">Hold internal state
-                            <input type="checkbox" id="checkbox_pid_22_hold" class="hold_checkbox">
-                            <span class="checkmark"></span>
+                                <input type="checkbox" id="checkbox_pid_22_hold" class="hold_checkbox">
+                                <span class="checkmark"></span>
                         </label>
                         <label class="checkbox-container">Integrator reset
-                            <input type="checkbox" id="checkbox_pid_22_int_res" class="int_res_checkbox">
-                            <span class="checkmark"></span>
+                                <input type="checkbox" id="checkbox_pid_22_int_res" class="int_res_checkbox">
+                                <span class="checkmark"></span>
                         </label>
                         <label class="checkbox-container">Automatic integrator reset
-                            <input type="checkbox" id="checkbox_pid_22_int_auto_reset" class="int_auto_reset_checkbox">
-                            <span class="checkmark"></span>
+                                <input type="checkbox" id="checkbox_pid_22_int_auto_reset" class="int_auto_reset_checkbox">
+                                <span class="checkmark"></span>
                         </label>
                         <button id="button_toggle_22" class="button">Toggle Lock/Scan</button>
                     </div>
@@ -1788,7 +1735,7 @@
                     </table>
 
                     <div class="controlgroup-vertical">
-                        <label class="checkbox-container">Lock status output enabled
+                        <label class="checkbox-container">Lock status output enabled<br>(DIO4_N/DIO4_P)
                             <input type="checkbox" id="checkbox_lso_22_enabled" class="lso_enabled_checkbox">
                             <span class="checkmark"></span>
                         </label>
