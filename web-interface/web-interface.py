@@ -850,7 +850,7 @@ def get_parameters():
         "pid_21_lso_enabled": lso_enabled[2].value,
         "pid_22_lso_enabled": lso_enabled[3].value,
         "pid_11_ext_reset_enabled": ext_reset_enabled[0].value,
-        "pid_11_ext_reset_enabled": ext_reset_enabled[1].value,
+        "pid_12_ext_reset_enabled": ext_reset_enabled[1].value,
         "pid_21_ext_reset_enabled": ext_reset_enabled[2].value,
         "pid_22_ext_reset_enabled": ext_reset_enabled[3].value,
         "limit_min_1": limit_min_1.value,
