@@ -37,19 +37,19 @@
  *                                     |   |
  *                 /-------\           |   |
  *            ---> | PID12 | --------------
- *            |    \-------/           |    
+ *            |    \-------/           |
  *            |                        ˇ
  *            |    /-------\       /-----------\
  *   CHB -----+--> | PID22 | ------| SUM & SAT | ---> CHB
  *                 \-------/       \-----------/
  *
  *
- * MIMO controller is build from four equal submodules, each can have 
+ * MIMO controller is build from four equal submodules, each can have
  * different settings.
  *
  * Each output is sum of two controllers with different input. That sum is also
  * saturated to protect from wrapping.
- * 
+ *
  */
 `timescale 1ns / 1ps
 module red_pitaya_pid (
@@ -71,7 +71,7 @@ module red_pitaya_pid (
    output       [ 14-1: 0] dat_a_o         ,  //!< output data CHA
    output       [ 14-1: 0] dat_b_o         ,  //!< output data CHB
    output       [  4-1: 0] lock_status_o    ,  // lock status
-  
+
    // system bus
    input      [ 32-1: 0] sys_addr        ,  //!< bus address
    input      [ 32-1: 0] sys_wdata       ,  //!< bus write data
@@ -79,7 +79,7 @@ module red_pitaya_pid (
    input                 sys_ren         ,  //!< bus read enable
    output reg [ 32-1: 0] sys_rdata       ,  //!< bus read data
    output reg            sys_err         ,  //!< bus error indicator
-   output reg            sys_ack            //!< bus acknowledge signal   
+   output reg            sys_ack            //!< bus acknowledge signal
 );
 
 localparam  PSR = 12         ;              // p gain = Kp >> PSR
@@ -164,7 +164,7 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
        // data
       .clk_i        (  clk_i                  ),  // clock
       .rstn_i       (  rstn_i                 ),  // reset - active low
-      .railed_i     (  pid_railed_i[pid_index]),  // output railed 
+      .railed_i     (  pid_railed_i[pid_index]),  // output railed
       .hold_i       (  pid_hold[pid_index]    ),  // PID internal state hold
       .dat_i        (  pid_in[pid_index]      ),  // input data
       .dat_o        (  pid_out[pid_index]     ),  // output data
@@ -319,8 +319,8 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin
           set_kp[pid_index]          <= {KP_BITS{1'b0}} ;
           set_ki[pid_index]          <= {KI_BITS{1'b0}} ;
           set_kd[pid_index]          <= {KD_BITS{1'b0}} ;
-          set_kii[pid_index]         <= {KI_BITS{1'b0}} ;          
-          set_kg[pid_index]          <= {KP_BITS{1'b0}} ;        
+          set_kii[pid_index]         <= {KI_BITS{1'b0}} ;
+          set_kg[pid_index]          <= {KP_BITS{1'b0}} ;
           relock_minval[pid_index]   <= 12'd0;
           relock_maxval[pid_index]   <= 12'd0;
           relock_stepsize[pid_index] <= {RELOCK_STEP_BITS{1'b0}};
@@ -357,17 +357,17 @@ endgenerate
 // Flags write
 always @(posedge clk_i) begin
     if (rstn_i == 1'b0) begin
-          set_reset_enabled      <=  4'b1000;                
-          set_lock_status_out_en <=  4'b1111;                
+          set_reset_enabled      <=  4'b1000;
+          set_lock_status_out_en <=  4'b1111;
           set_output_enabled     <=  4'b1111;
           relock_enabled         <=  4'b0   ;
           set_hold               <=  4'b0   ;
-          set_irst_when_railed   <=  4'b0   ;          
+          set_irst_when_railed   <=  4'b0   ;
           pid_inverted           <=  4'b0   ;
           set_irst               <=  4'b1111;
     end
     else begin
-        if (rstn_i & sys_wen & sys_addr[19:0]==16'h0)
+        if (rstn_i & sys_wen & sys_addr[19:0]==20'h0) begin
             {set_output_enabled,
              relock_enabled,
              set_hold,
@@ -376,7 +376,8 @@ always @(posedge clk_i) begin
              set_irst}
             <= sys_wdata[24-1:0];
             {set_lock_status_out_en}
-            <= sys_wdata[32-1:28];            
+            <= sys_wdata[32-1:28];
+        end
     end
 end
 
@@ -395,17 +396,17 @@ end else begin
           sys_ack <= sys_en;
           sys_rdata <= {set_lock_status_out_en, relock_lock_status, set_output_enabled, relock_enabled,
                         set_hold, set_irst_when_railed, pid_inverted, set_irst};
-      end 
+      end
 
-      20'h1?: begin sys_ack <= sys_en; sys_rdata <= {{32-14{1'b0}}, set_sp[sys_addr[3:0] >> 2]}; end 
-      20'h2?: begin sys_ack <= sys_en; sys_rdata <= {{32-KP_BITS{1'b0}}, set_kp[sys_addr[3:0] >> 2]}; end 
-      20'h3?: begin sys_ack <= sys_en; sys_rdata <= {{32-KI_BITS{1'b0}}, set_ki[sys_addr[3:0] >> 2]}; end 
-      20'h4?: begin sys_ack <= sys_en; sys_rdata <= {{32-KD_BITS{1'b0}}, set_kd[sys_addr[3:0] >> 2]}; end 
+      20'h1?: begin sys_ack <= sys_en; sys_rdata <= {{32-14{1'b0}}, set_sp[sys_addr[3:0] >> 2]}; end
+      20'h2?: begin sys_ack <= sys_en; sys_rdata <= {{32-KP_BITS{1'b0}}, set_kp[sys_addr[3:0] >> 2]}; end
+      20'h3?: begin sys_ack <= sys_en; sys_rdata <= {{32-KI_BITS{1'b0}}, set_ki[sys_addr[3:0] >> 2]}; end
+      20'h4?: begin sys_ack <= sys_en; sys_rdata <= {{32-KD_BITS{1'b0}}, set_kd[sys_addr[3:0] >> 2]}; end
 
-      20'h5?: begin sys_ack <= sys_en; sys_rdata <= {{32-12{1'b0}}, relock_minval[sys_addr[3:0] >> 2]}; end 
-      20'h6?: begin sys_ack <= sys_en; sys_rdata <= {{32-12{1'b0}}, relock_maxval[sys_addr[3:0] >> 2]}; end 
-      20'h7?: begin sys_ack <= sys_en; sys_rdata <= {{32-RELOCK_STEP_BITS{1'b0}}, relock_stepsize[sys_addr[3:0] >> 2]}; end 
-      20'h8?: begin sys_ack <= sys_en; sys_rdata <= {{32-2{1'b0}}, relock_source[sys_addr[3:0] >> 2]}; end 
+      20'h5?: begin sys_ack <= sys_en; sys_rdata <= {{32-12{1'b0}}, relock_minval[sys_addr[3:0] >> 2]}; end
+      20'h6?: begin sys_ack <= sys_en; sys_rdata <= {{32-12{1'b0}}, relock_maxval[sys_addr[3:0] >> 2]}; end
+      20'h7?: begin sys_ack <= sys_en; sys_rdata <= {{32-RELOCK_STEP_BITS{1'b0}}, relock_stepsize[sys_addr[3:0] >> 2]}; end
+      20'h8?: begin sys_ack <= sys_en; sys_rdata <= {{32-2{1'b0}}, relock_source[sys_addr[3:0] >> 2]}; end
       20'h9?: begin sys_ack <= sys_en; sys_rdata <= {{32-KI_BITS{1'b0}}, set_kii[sys_addr[3:0] >> 2]}; end
       20'ha?: begin sys_ack <= sys_en; sys_rdata <= {{32-KP_BITS{1'b0}}, set_kg[sys_addr[3:0] >> 2]}; end
 
