@@ -1676,8 +1676,8 @@ int rp_PIDGetLockStatusOutputEnable(rp_pid_t pid, bool *enabled);
 int rp_PIDSetExtResetEnable(rp_pid_t pid, bool enable);
 int rp_PIDGetExtResetEnable(rp_pid_t pid, bool *enabled);
 
-int rp_PIDGetExtResetInput(rp_pid_t pid, rp_dpin_t pin);
-int rp_PIDSetExtResetInput(rp_pid_t pid, rp_dpin_t *pin);
+int rp_PIDSetExtResetInput(rp_pid_t pid, rp_dpin_t pin);
+int rp_PIDGetExtResetInput(rp_pid_t pid, rp_dpin_t *pin);
 
 /*
  * Set the minimum DAC output voltage of the specified channel using the
