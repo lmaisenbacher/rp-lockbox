@@ -13,6 +13,8 @@
 
 scpi_result_t RP_PIDSetpoint(scpi_t *context);
 scpi_result_t RP_PIDSetpointQ(scpi_t *context);
+scpi_result_t RP_PIDKg(scpi_t *context);
+scpi_result_t RP_PIDKgQ(scpi_t *context);
 scpi_result_t RP_PIDKp(scpi_t *context);
 scpi_result_t RP_PIDKpQ(scpi_t *context);
 scpi_result_t RP_PIDKi(scpi_t *context);

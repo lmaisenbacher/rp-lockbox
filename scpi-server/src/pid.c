@@ -113,6 +113,58 @@ scpi_result_t RP_PIDSetpointQ(scpi_t *context) {
     return SCPI_RES_OK;
 }
 
+scpi_result_t RP_PIDKg(scpi_t *context) {
+    int result;
+    scpi_number_t kg;
+    rp_pid_t pid;
+
+    /* Parse PID index */
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KG Failed to parse input/output choice: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    /* Parse first parameter (Kg) */
+    if(!SCPI_ParamNumber(context, scpi_special_numbers_def, &kg, true)) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KG Failed to parse first parameter.\n");
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDSetKg(pid, kg.value);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KG Failed to set Kg parameter: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KG Successfully set Kg.\n");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_PIDKgQ(scpi_t *context) {
+    int result;
+    float kg;
+    rp_pid_t pid;
+
+    /* Parse PID index */
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KG? Failed to parse input/output choice: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDGetKg(pid, &kg);
+    if(result != RP_OK){
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KG? Failed to get Kg: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    SCPI_ResultDouble(context, kg);
+
+    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KG? Successfully returned Kg value to client.\n");
+    return SCPI_RES_OK;
+}
+
 scpi_result_t RP_PIDKp(scpi_t *context) {
     int result;
     scpi_number_t kp;

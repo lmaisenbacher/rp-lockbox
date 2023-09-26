@@ -212,6 +212,8 @@ static const scpi_command_t scpi_commands[] = {
     /* PID */
     {.pattern = "PID:IN#:OUT#:SETPoint", .callback              = RP_PIDSetpoint,},
     {.pattern = "PID:IN#:OUT#:SETPoint?", .callback             = RP_PIDSetpointQ,},
+    {.pattern = "PID:IN#:OUT#:KG", .callback                    = RP_PIDKg,},
+    {.pattern = "PID:IN#:OUT#:KG?", .callback                   = RP_PIDKgQ,},
     {.pattern = "PID:IN#:OUT#:KP", .callback                    = RP_PIDKp,},
     {.pattern = "PID:IN#:OUT#:KP?", .callback                   = RP_PIDKpQ,},
     {.pattern = "PID:IN#:OUT#:KI", .callback                    = RP_PIDKi,},
