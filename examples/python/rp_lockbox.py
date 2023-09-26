@@ -177,6 +177,20 @@ class RedPitaya():
         """
         return float(self.txrx_txt('PID:IN{}:OUT{}:SETPoint?'.format(num_in, num_out)))
 
+    def set_kg(self, num_in, num_out, gain):
+        """Set the global gain.
+
+        :gain: the gain to set (0 to 4096)
+        """
+        self.tx_txt('PID:IN{}:OUT{}:KG {}'.format(num_in, num_out, gain))
+
+    def get_kg(self, num_in, num_out):
+        """Return the global gain.
+
+        :returns: the global gain
+        """
+        return float(self.txrx_txt('PID:IN{}:OUT{}:KG?'.format(num_in, num_out)))
+
     def set_kp(self, num_in, num_out, gain):
         """Set the P gain.
 
@@ -203,17 +217,29 @@ class RedPitaya():
         :returns: the I gain in 1/s. The unity gain frequency is ki/(2 pi)."""
         return float(self.txrx_txt('PID:IN{}:OUT{}:KI?'.format(num_in, num_out)))
 
+    def set_kii(self, num_in, num_out, gain):
+        """Set the II (second integrator) gain.
+
+        :gain: the gain to set in 1/s. The corner frequency is kii/(2 pi)."""
+        self.tx_txt('PID:IN{}:OUT{}:KII {}'.format(num_in, num_out, gain))
+
+    def get_kii(self, num_in, num_out):
+        """Return the II (second integrator) gain.
+
+        :returns: the II gain in 1/s. The corner frequency is kii/(2 pi)."""
+        return float(self.txrx_txt('PID:IN{}:OUT{}:KII?'.format(num_in, num_out)))
+
     def set_kd(self, num_in, num_out, gain):
         """Set the D gain.
 
-        :gain: the gain to set
+        :gain: the gain to set in s. The unity gain frequency is 1/(2 pi kd).
         """
         self.tx_txt('PID:IN{}:OUT{}:KD {}'.format(num_in, num_out, gain))
 
     def get_kd(self, num_in, num_out):
         """Return the D gain
 
-        :returns: the D gain
+        :returns: the D gain in s. The unity gain frequency is 1/(2 pi kd).
         """
         return float(self.txrx_txt('PID:IN{}:OUT{}:KD?'.format(num_in, num_out)))
 
