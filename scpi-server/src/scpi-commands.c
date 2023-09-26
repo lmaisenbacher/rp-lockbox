@@ -216,6 +216,8 @@ static const scpi_command_t scpi_commands[] = {
     {.pattern = "PID:IN#:OUT#:KP?", .callback                   = RP_PIDKpQ,},
     {.pattern = "PID:IN#:OUT#:KI", .callback                    = RP_PIDKi,},
     {.pattern = "PID:IN#:OUT#:KI?", .callback                   = RP_PIDKiQ,},
+    {.pattern = "PID:IN#:OUT#:KII", .callback                   = RP_PIDKii,},
+    {.pattern = "PID:IN#:OUT#:KII?", .callback                  = RP_PIDKiiQ,},
     {.pattern = "PID:IN#:OUT#:KD", .callback                    = RP_PIDKd,},
     {.pattern = "PID:IN#:OUT#:KD?", .callback                   = RP_PIDKdQ,},
     {.pattern = "PID:IN#:OUT#:HOLD", .callback                  = RP_PIDHold,},
@@ -275,4 +277,3 @@ scpi_t scpi_context = {
     .units = scpi_units_def,
     .idn = {"REDPITAYA", "INSTR2014", NULL, "01-02"},
 };
-

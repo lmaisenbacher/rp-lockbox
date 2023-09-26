@@ -217,9 +217,61 @@ scpi_result_t RP_PIDKiQ(scpi_t *context) {
     return SCPI_RES_OK;
 }
 
+scpi_result_t RP_PIDKii(scpi_t *context) {
+    int result;
+    scpi_number_t kii;
+    rp_pid_t pid;
+
+    /* Parse PID index */
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KII Failed to parse input/output choice: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    /* Parse first parameter (Kii) */
+    if(!SCPI_ParamNumber(context, scpi_special_numbers_def, &kii, true)) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KII Failed to parse first parameter.\n");
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDSetKii(pid, kii.value);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KII Failed to set Kii parameter: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KII Successfully set Kii.\n");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_PIDKiiQ(scpi_t *context) {
+    int result;
+    float kii;
+    rp_pid_t pid;
+
+    /* Parse PID index */
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KII? Failed to parse input/output choice: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDGetKii(pid, &kii);
+    if(result != RP_OK){
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KII? Failed to get Kii: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    SCPI_ResultDouble(context, kii);
+
+    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KII? Successfully returned Kii value to client.\n");
+    return SCPI_RES_OK;
+}
+
 scpi_result_t RP_PIDKd(scpi_t *context) {
     int result;
-    float kd;
+    scpi_number_t kd;
     rp_pid_t pid;
 
     /* Parse PID index */
@@ -229,13 +281,13 @@ scpi_result_t RP_PIDKd(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    /* Parse first parameter (KD) */
-    if(!SCPI_ParamUInt32(context, &kd, true)) {
+    /* Parse first parameter (Kd) */
+    if(!SCPI_ParamNumber(context, scpi_special_numbers_def, &kd, true)) {
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KD Failed to parse first parameter.\n");
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDSetKd(pid, kd);
+    result = rp_PIDSetKd(pid, kd.value);
     if(result != RP_OK) {
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KD Failed to set Kd parameter: %s", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -263,7 +315,7 @@ scpi_result_t RP_PIDKdQ(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    SCPI_ResultUInt32Base(context, kd, 10);
+    SCPI_ResultDouble(context, kd);
 
     RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KD? Successfully returned Kd value to client.\n");
     return SCPI_RES_OK;

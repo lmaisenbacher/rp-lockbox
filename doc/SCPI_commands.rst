@@ -1,5 +1,5 @@
 *******************************
-List of supported SCPI commands 
+List of supported SCPI commands
 *******************************
 
 .. (link - https://dl.dropboxusercontent.com/s/eiihbzicmucjtlz/SCPI_commands_beta_release.pdf)
@@ -12,9 +12,9 @@ Table of correlated SCPI and API commands on Red Pitaya.
 | SCPI                               | API                     | description                                          |
 +====================================+=========================+======================================================+
 | | ``DIG:PIN:DIR <dir>,<gpio>``     | ``rp_DpinSetDirection`` | Set direction of digital pins to output or input.    |
-| | Examples:                        |                         |                                                      |                       
-| | ``DIG:PIN:DIR OUT,DIO0_N``       |                         |                                                      |  
-| | ``DIG:PIN:DIR IN,DIO1_P``        |                         |                                                      |                  
+| | Examples:                        |                         |                                                      |
+| | ``DIG:PIN:DIR OUT,DIO0_N``       |                         |                                                      |
+| | ``DIG:PIN:DIR IN,DIO1_P``        |                         |                                                      |
 +------------------------------------+-------------------------+------------------------------------------------------+
 | | ``DIG:PIN <pin>,<state>``        | ``rp_DpinSetState``     | Set state of digital outputs to 1 (HIGH) or 0 (LOW). |
 | | Examples:                        |                         |                                                      |
@@ -50,7 +50,7 @@ Parameter options:
 * ``<pin> = {ain, aout}``
 * ``<n> = {1,2}`` (input or output channel 1 or 2)
 * ``<value> = {value in Volts}``
-   
+
 .. tabularcolumns:: |p{28mm}|p{28mm}|p{28mm}|p{28mm}|
 
 +---------------------------------------+----------------------+------------------------------------------------------+
@@ -196,9 +196,17 @@ Parameter options:
 | ``PID:IN<n>:OUT<n>:KI?``                          | ``rp_PIDGetKi``              | | Get the I gain in 1/s.                                  |
 |                                                   |                              | | The unity gain frequency is ki/(2 pi).                  |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
-| ``PID:IN<n>:OUT<n>:KD <kd>``                      | ``rp_PIDSetKd``              | Set the D gain (arbitrary units).                         |
+| ``PID:IN<n>:OUT<n>:KII <ki>``                     | ``rp_PIDSetKii``             | | Set the II gain (second integrator) in 1/s.             |
+|                                                   |                              | | The corner frequency is kii/(2 pi).                     |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
-| ``PID:IN<n>:OUT<n>:KD?``                          | ``rp_PIDGetKd``              | Get the D gain (arbitrary units).                         |
+| ``PID:IN<n>:OUT<n>:KII?``                         | ``rp_PIDGetKii``             | | Get the II gain (second integrator) in 1/s.             |
+|                                                   |                              | | The corner frequency is kii/(2 pi).                     |
++---------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:KD <kd>``                      | ``rp_PIDSetKd``              | | Set the D gain in s.                                    |
+|                                                   |                              | | The unity gain frequency is 1/(2 pi kd).                |
++---------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:KD?``                          | ``rp_PIDGetKd``              | | Get the D gain in s.                                    |
+|                                                   |                              | | The unity gain frequency is 1/(2 pi kd).                |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | ``PID:IN<n>:OUT<n>:HOLD <state>``                 | ``rp_PIDSetHold``            | Hold the internal state of the PID.                       |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
@@ -462,4 +470,4 @@ Data read
 | | ``ACQ:BUF:SIZE?`` > ``<size>``  | ``rp_AcqGetBufSize``         |  Returns buffer size.                                                                    |
 | | Example:                        |                              |                                                                                          |
 | | ``ACQ:BUF:SIZE?`` > ``16384``   |                              |                                                                                          |
-+-----------------------------------+------------------------------+------------------------------------------------------------------------------------------+ 
++-----------------------------------+------------------------------+------------------------------------------------------------------------------------------+

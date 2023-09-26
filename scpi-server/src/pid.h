@@ -17,6 +17,8 @@ scpi_result_t RP_PIDKp(scpi_t *context);
 scpi_result_t RP_PIDKpQ(scpi_t *context);
 scpi_result_t RP_PIDKi(scpi_t *context);
 scpi_result_t RP_PIDKiQ(scpi_t *context);
+scpi_result_t RP_PIDKii(scpi_t *context);
+scpi_result_t RP_PIDKiiQ(scpi_t *context);
 scpi_result_t RP_PIDKd(scpi_t *context);
 scpi_result_t RP_PIDKdQ(scpi_t *context);
 scpi_result_t RP_PIDIntReset(scpi_t *context);
