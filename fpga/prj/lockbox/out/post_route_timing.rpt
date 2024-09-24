@@ -1,0 +1,518 @@
+Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
+----------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2017.2 (lin64) Build 1909853 Thu Jun 15 18:39:10 MDT 2017
+| Date         : Tue Sep 24 09:07:27 2024
+| Host         : unitrap-ubuntu running 64-bit Ubuntu 20.04.5 LTS
+| Command      : report_timing -file out/post_route_timing.rpt -sort_by group -max_paths 100 -path_type summary
+| Design       : red_pitaya_top
+| Device       : 7z010-clg400
+| Speed File   : -1  PRODUCTION 1.11 2014-09-11
+----------------------------------------------------------------------------------------------------------------
+
+Timing Report
+
+Startpoint                     Endpoint                       Slack(ns)     
+----------------------------------------------------------------------------
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[12]/S
+                                                              -4.645        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[4]/S
+                                                              -4.645        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[9]/S
+                                                              -4.645        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[11]/S
+                                                              -4.565        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[2]/S
+                                                              -4.565        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[3]/S
+                                                              -4.565        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[11]/S
+                                                              -4.550        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[5]/S
+                                                              -4.550        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[6]/S
+                                                              -4.550        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[8]/S
+                                                              -4.550        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[0]/S
+                                                              -4.547        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[1]/S
+                                                              -4.547        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[3]/S
+                                                              -4.540        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[4]/S
+                                                              -4.540        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[8]/S
+                                                              -4.540        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[0]/S
+                                                              -4.538        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[1]/S
+                                                              -4.538        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[0]/S
+                                                              -4.518        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[1]/S
+                                                              -4.518        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[10]/S
+                                                              -4.511        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[2]/S
+                                                              -4.511        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[3]/S
+                                                              -4.511        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[7]/S
+                                                              -4.511        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[10]/S
+                                                              -4.503        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[11]/S
+                                                              -4.503        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[12]/S
+                                                              -4.503        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[2]/S
+                                                              -4.503        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[6]/S
+                                                              -4.448        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[8]/S
+                                                              -4.448        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[10]/S
+                                                              -4.441        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[5]/S
+                                                              -4.441        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[7]/S
+                                                              -4.441        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[8]/S
+                                                              -4.441        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[5]/S
+                                                              -4.408        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[6]/S
+                                                              -4.408        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[7]/S
+                                                              -4.408        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[9]/S
+                                                              -4.408        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[2]/S
+                                                              -4.401        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[3]/S
+                                                              -4.401        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[4]/S
+                                                              -4.401        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[5]/S
+                                                              -4.401        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[11]/S
+                                                              -4.398        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[12]/S
+                                                              -4.398        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[7]/S
+                                                              -4.398        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[9]/S
+                                                              -4.398        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[12]/S
+                                                              -4.383        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[4]/S
+                                                              -4.383        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[6]/S
+                                                              -4.383        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[9]/S
+                                                              -4.383        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[10]/S
+                                                              -4.310        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[0]/S
+                                                              -4.172        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[1]/S
+                                                              -4.172        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[10]/D
+                                                              -4.074        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[0]/D
+                                                              -4.021        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[1]/D
+                                                              -4.018        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[5]/D
+                                                              -3.926        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[1]/D
+                                                              -3.913        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[6]/D
+                                                              -3.897        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[12]/D
+                                                              -3.897        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[0]/D
+                                                              -3.859        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[3]/D
+                                                              -3.841        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[4]/D
+                                                              -3.839        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[13]/D
+                                                              -3.792        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[8]/D
+                                                              -3.786        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[13]/D
+                                                              -3.768        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[13]/D
+                                                              -3.765        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[9]/D
+                                                              -3.756        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[5]/D
+                                                              -3.744        
+ps/axi_slave_gp0/wr_wdata_reg[8]/C
+                               i_scope/set_b_filt_aa_reg[8]/D -3.735        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[13]/D
+                                                              -3.715        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[3]/D
+                                                              -3.713        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[11]/D
+                                                              -3.711        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[2]/D
+                                                              -3.709        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[8]/D
+                                                              -3.709        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[10]/D
+                                                              -3.703        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[7]/D
+                                                              -3.703        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[7]/D
+                                                              -3.702        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[6]/D
+                                                              -3.701        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[11]/D
+                                                              -3.701        
+i_pid/genblk1[3].i_pid/int_reg_reg[31]/C
+                               i_pid/genblk1[3].i_pid/pid_out_reg[2]/D
+                                                              -3.697        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[4]/D
+                                                              -3.697        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[12]/D
+                                                              -3.680        
+i_pid/genblk1[0].i_pid/kd_reg_s_reg[4]/C
+                               i_pid/genblk1[0].i_pid/pid_out_reg[9]/D
+                                                              -3.676        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[7]/D
+                                                              -3.631        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[9]/D
+                                                              -3.629        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[10]/D
+                                                              -3.615        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[6]/D
+                                                              -3.612        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[8]/D
+                                                              -3.610        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[11]/D
+                                                              -3.601        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[2]/D
+                                                              -3.589        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[11]/D
+                                                              -3.580        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[12]/D
+                                                              -3.575        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[0]/D
+                                                              -3.555        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[7]/D
+                                                              -3.539        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[5]/D
+                                                              -3.537        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[5]/D
+                                                              -3.535        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[1]/D
+                                                              -3.531        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[8]/D
+                                                              -3.457        
+i_pid/genblk1[1].i_pid/kd_reg_s_reg[7]/C
+                               i_pid/genblk1[1].i_pid/pid_out_reg[10]/D
+                                                              -3.455        
+i_pid/genblk1[2].i_pid/int_reg_reg[30]/C
+                               i_pid/genblk1[2].i_pid/pid_out_reg[0]/D
+                                                              -3.454        
+pwm[0]/v_r_reg[0]/C            pwm[0]/pwm_o_reg/D             -0.686        
+pwm[1]/v_r_reg[1]/C            pwm[1]/pwm_o_reg/D             -0.489        
+pwm[2]/vcnt_r_reg[6]/C         pwm[2]/pwm_o_reg/D             -0.432        
+pwm[3]/vcnt_r_reg[0]/C         pwm[3]/pwm_o_reg/D             -0.305        
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[0]/CE             -0.142        
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[5]/CE             -0.082        
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[6]/CE             -0.082        
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[7]/CE             -0.082        
+pwm_rstn_reg/C                 pwm[2]/pwm_o_reg/R             -0.016        
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[1]/CE             0.047         
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[2]/CE             0.047         
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[3]/CE             0.047         
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[4]/CE             0.047         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[0]/CE             0.085         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[5]/CE             0.085         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[6]/CE             0.085         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[7]/CE             0.085         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[6]/CE             0.153         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[7]/CE             0.153         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[8]/CE             0.153         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[9]/CE             0.153         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/v_reg[1]/CE             0.182         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/v_reg[2]/CE             0.182         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/v_reg[3]/CE             0.182         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/v_reg[4]/CE             0.182         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/v_reg[5]/CE             0.182         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/v_reg[6]/CE             0.182         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/v_reg[7]/CE             0.182         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/v_reg[0]/CE             0.192         
+pwm[3]/bcnt_reg[3]/C           pwm[3]/v_reg[0]/CE             0.204         
+pwm[3]/bcnt_reg[3]/C           pwm[3]/v_reg[2]/CE             0.204         
+pwm[3]/bcnt_reg[3]/C           pwm[3]/v_reg[3]/CE             0.204         
+pwm[3]/bcnt_reg[3]/C           pwm[3]/v_reg[4]/CE             0.204         
+pwm[3]/bcnt_reg[3]/C           pwm[3]/v_reg[5]/CE             0.204         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[4]/CE             0.210         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[5]/CE             0.210         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[0]/CE             0.214         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[1]/CE             0.214         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[2]/CE             0.214         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/bcnt_reg[0]/CE          0.217         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/bcnt_reg[1]/CE          0.217         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/bcnt_reg[2]/CE          0.217         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/bcnt_reg[3]/CE          0.217         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[3]/CE             0.244         
+pwm[3]/bcnt_reg[3]/C           pwm[3]/v_reg[1]/CE             0.254         
+pwm[3]/bcnt_reg[3]/C           pwm[3]/v_reg[6]/CE             0.254         
+pwm[3]/bcnt_reg[3]/C           pwm[3]/v_reg[7]/CE             0.254         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[10]/CE            0.313         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[11]/CE            0.313         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[12]/CE            0.313         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[13]/CE            0.313         
+pwm[3]/vcnt_reg[4]/C           pwm[3]/bcnt_reg[0]/CE          0.326         
+pwm[3]/vcnt_reg[4]/C           pwm[3]/bcnt_reg[1]/CE          0.326         
+pwm[3]/vcnt_reg[4]/C           pwm[3]/bcnt_reg[2]/CE          0.326         
+pwm[3]/vcnt_reg[4]/C           pwm[3]/bcnt_reg[3]/CE          0.326         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[12]/CE            0.344         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[13]/CE            0.344         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[14]/CE            0.344         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[1]/CE             0.348         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[2]/CE             0.348         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[3]/CE             0.348         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[4]/CE             0.348         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[14]/CE            0.351         
+pwm_rstn_reg/C                 pwm[2]/vcnt_reg[7]/R           0.385         
+pwm_rstn_reg/C                 pwm[3]/pwm_o_reg/R             0.404         
+pwm_rstn_reg/C                 pwm[2]/vcnt_reg[3]/R           0.417         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[4]/CE             0.444         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[5]/CE             0.444         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[6]/CE             0.444         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[7]/CE             0.444         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[8]/CE             0.469         
+pwm_rstn_reg/C                 pwm[3]/vcnt_reg[7]/R           0.483         
+pwm_rstn_reg/C                 pwm[2]/vcnt_reg[4]/R           0.490         
+pwm[2]/vcnt_reg[4]/C           pwm[2]/b_reg[15]/CE            0.526         
+pwm_rstn_reg/C                 pwm[2]/vcnt_reg[0]/R           0.532         
+pwm_rstn_reg/C                 pwm[2]/vcnt_reg[7]/CE          0.584         
+pwm_rstn_reg/C                 pwm[2]/vcnt_reg[5]/R           0.585         
+pwm_rstn_reg/C                 pwm[0]/vcnt_reg[3]/R           0.588         
+pwm_rstn_reg/C                 pwm[0]/pwm_o_reg/R             0.601         
+pwm_rstn_reg/C                 pwm[0]/vcnt_reg[1]/R           0.628         
+pwm_rstn_reg/C                 pwm[0]/vcnt_reg[6]/R           0.628         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[0]/CE             0.633         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[1]/CE             0.633         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[2]/CE             0.633         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[3]/CE             0.633         
+pwm_rstn_reg/C                 pwm[3]/vcnt_reg[5]/R           0.645         
+dac_rst_reg/C                  oddr_dac_dat[6]/R              0.651         
+dac_rst_reg/C                  oddr_dac_dat[1]/R              0.657         
+pwm_rstn_reg/C                 pwm[2]/vcnt_reg[1]/R           0.660         
+pwm_rstn_reg/C                 pwm[2]/vcnt_reg[6]/R           0.660         
+dac_rst_reg/C                  oddr_dac_dat[12]/R             0.672         
+i_ams/dac_a_o_reg[12]/C        pwm[0]/b_reg[12]/D             0.673         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[10]/CE            0.697         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[11]/CE            0.697         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[15]/CE            0.697         
+pwm[0]/vcnt_reg[6]/C           pwm[0]/b_reg[9]/CE             0.697         
+dac_rst_reg/C                  oddr_dac_dat[11]/R             0.711         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/bcnt_reg[0]/CE          0.720         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/bcnt_reg[1]/CE          0.720         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/bcnt_reg[2]/CE          0.720         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/bcnt_reg[3]/CE          0.720         
+pwm_rstn_reg/C                 pwm[2]/vcnt_reg[2]/R           0.722         
+pwm_rstn_reg/C                 pwm[0]/vcnt_reg[5]/R           0.725         
+pwm_rstn_reg/C                 pwm[0]/vcnt_reg[7]/R           0.735         
+dac_rst_reg/C                  oddr_dac_dat[7]/R              0.790         
+dac_rst_reg/C                  oddr_dac_dat[13]/R             0.819         
+dac_rst_reg/C                  oddr_dac_dat[10]/R             0.859         
+dac_rst_reg/C                  oddr_dac_sel/R                 0.928         
+dac_rst_reg/C                  oddr_dac_dat[8]/R              0.930         
+dac_rst_reg/C                  oddr_dac_dat[2]/R              0.936         
+dac_dat_a_reg[13]/C            oddr_dac_dat[13]/D2            0.996         
+dac_rst_reg/C                  oddr_dac_dat[0]/R              1.024         
+dac_rst_reg/C                  oddr_dac_dat[9]/R              1.069         
+dac_rst_reg/C                  oddr_dac_dat[5]/R              1.083         
+dac_rst_reg/C                  oddr_dac_dat[3]/R              1.085         
+dac_rst_reg/C                  oddr_dac_dat[4]/R              1.230         
+dac_dat_a_reg[12]/C            oddr_dac_dat[12]/D2            1.373         
+dac_dat_a_reg[0]/C             oddr_dac_dat[0]/D2             1.374         
+dac_dat_a_reg[5]/C             oddr_dac_dat[5]/D2             1.417         
+dac_dat_a_reg[1]/C             oddr_dac_dat[1]/D2             1.432         
+dac_dat_a_reg[2]/C             oddr_dac_dat[2]/D2             1.489         
+dac_dat_a_reg[3]/C             oddr_dac_dat[3]/D2             1.520         
+dac_dat_a_reg[4]/C             oddr_dac_dat[4]/D2             1.563         
+dac_dat_a_reg[10]/C            oddr_dac_dat[10]/D2            1.785         
+dac_rst_reg/C                  oddr_dac_rst/D2                1.820         
+dac_dat_a_reg[11]/C            oddr_dac_dat[11]/D2            1.843         
+dac_dat_a_reg[9]/C             oddr_dac_dat[9]/D2             1.938         
+dac_dat_a_reg[8]/C             oddr_dac_dat[8]/D2             1.983         
+dac_dat_a_reg[7]/C             oddr_dac_dat[7]/D2             1.983         
+dac_dat_a_reg[6]/C             oddr_dac_dat[6]/D2             2.045         
+i_limit/limit_a/signal_o_reg[11]/C
+                               dac_dat_a_reg[11]/D            4.074         
+i_limit/limit_a/signal_o_reg[6]/C
+                               dac_dat_a_reg[6]/D             4.219         
+i_limit/limit_b/signal_o_reg[1]/C
+                               dac_dat_b_reg[1]/D             4.310         
+i_limit/limit_b/signal_o_reg[5]/C
+                               dac_dat_b_reg[5]/D             4.356         
+i_limit/limit_b/signal_o_reg[9]/C
+                               dac_dat_b_reg[9]/D             4.403         
+i_limit/limit_b/signal_o_reg[12]/C
+                               dac_dat_b_reg[12]/D            4.420         
+i_limit/limit_b/signal_o_reg[6]/C
+                               dac_dat_b_reg[6]/D             4.498         
+i_limit/limit_b/signal_o_reg[3]/C
+                               dac_dat_b_reg[3]/D             4.530         
+i_limit/limit_a/signal_o_reg[4]/C
+                               dac_dat_a_reg[4]/D             4.563         
+i_limit/limit_a/signal_o_reg[1]/C
+                               dac_dat_a_reg[1]/D             4.640         
+i_limit/limit_b/signal_o_reg[11]/C
+                               dac_dat_b_reg[11]/D            4.663         
+i_limit/limit_b/signal_o_reg[0]/C
+                               dac_dat_b_reg[0]/D             4.668         
+i_limit/limit_b/signal_o_reg[2]/C
+                               dac_dat_b_reg[2]/D             4.795         
+i_limit/limit_a/signal_o_reg[13]/C
+                               dac_dat_a_reg[13]/D            4.887         
+i_limit/limit_a/signal_o_reg[10]/C
+                               dac_dat_a_reg[10]/D            4.974         
+i_limit/limit_a/signal_o_reg[12]/C
+                               dac_dat_a_reg[12]/D            5.036         
+i_limit/limit_a/signal_o_reg[0]/C
+                               dac_dat_a_reg[0]/D             5.045         
+dac_dat_b_reg[13]/C            oddr_dac_dat[13]/D1            5.054         
+i_limit/limit_b/signal_o_reg[4]/C
+                               dac_dat_b_reg[4]/D             5.054         
+i_limit/limit_a/signal_o_reg[5]/C
+                               dac_dat_a_reg[5]/D             5.058         
+i_limit/limit_a/signal_o_reg[3]/C
+                               dac_dat_a_reg[3]/D             5.059         
+dac_dat_b_reg[12]/C            oddr_dac_dat[12]/D1            5.097         
+i_limit/limit_b/signal_o_reg[13]/C
+                               dac_dat_b_reg[13]/D            5.129         
+dac_dat_b_reg[1]/C             oddr_dac_dat[1]/D1             5.203         
+i_limit/limit_b/signal_o_reg[7]/C
+                               dac_dat_b_reg[7]/D             5.245         
+i_limit/limit_b/signal_o_reg[8]/C
+                               dac_dat_b_reg[8]/D             5.255         
+i_limit/limit_a/signal_o_reg[2]/C
+                               dac_dat_a_reg[2]/D             5.272         
+dac_dat_b_reg[3]/C             oddr_dac_dat[3]/D1             5.309         
+dac_dat_b_reg[2]/C             oddr_dac_dat[2]/D1             5.320         
+dac_dat_b_reg[0]/C             oddr_dac_dat[0]/D1             5.375         
+i_limit/limit_a/signal_o_reg[7]/C
+                               dac_dat_a_reg[7]/D             5.460         
+i_limit/limit_b/signal_o_reg[10]/C
+                               dac_dat_b_reg[10]/D            5.474         
+i_limit/limit_a/signal_o_reg[9]/C
+                               dac_dat_a_reg[9]/D             5.485         
+i_limit/limit_a/signal_o_reg[8]/C
+                               dac_dat_a_reg[8]/D             5.502         
+dac_dat_b_reg[5]/C             oddr_dac_dat[5]/D1             5.512         
+dac_rst_reg/C                  oddr_dac_rst/D1                5.522         
+dac_dat_b_reg[4]/C             oddr_dac_dat[4]/D1             5.563         
+dac_dat_b_reg[8]/C             oddr_dac_dat[8]/D1             5.787         
+dac_dat_b_reg[11]/C            oddr_dac_dat[11]/D1            5.793         
+dac_dat_b_reg[6]/C             oddr_dac_dat[6]/D1             5.826         
+dac_dat_b_reg[7]/C             oddr_dac_dat[7]/D1             5.830         
+dac_dat_b_reg[9]/C             oddr_dac_dat[9]/D1             5.935         
+dac_dat_b_reg[10]/C            oddr_dac_dat[10]/D1            5.938         
+
+
+
