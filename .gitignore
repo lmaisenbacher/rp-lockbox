@@ -3,9 +3,11 @@
 *.so
 **/.Xil/
 *.log
+!fpga/vivado.log
 **/.srcs/
 **/out/*
 !**/out/red_pitaya.bit
+!**/out/*.rpt
 usage_statistics_webtalk.*
 synReport.txt*
 scpi-server/lockbox-server
