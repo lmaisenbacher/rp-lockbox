@@ -45,7 +45,7 @@ static const float    ANALOG_OUT_MAX_VAL         = 1.8;
 static const float    ANALOG_OUT_MIN_VAL         = 0.0;
 static const uint32_t ANALOG_OUT_MAX_VAL_INTEGER = 156;
 
-volatile analog_mixed_signals_control_t *ams;
+extern volatile analog_mixed_signals_control_t *ams;
 
 int ams_Init();
 int ams_Release();
