@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018, Fabian Schmid
- * Copyright (c) 2023, Lothar Maisenbacher 
+ * Copyright (c) 2023, Lothar Maisenbacher
  *
  * All rights reserved.
  */
@@ -14,9 +14,9 @@
 /**
  * GENERAL DESCRIPTION:
  *
- * Top module connects PS part with rest of Red Pitaya applications.  
+ * Top module connects PS part with rest of Red Pitaya applications.
  *
- *                   /-------\      
+ *                   /-------\
  *   PS DDR <------> |  PS   |      AXI <-> custom bus
  *   PS MIO <------> |   /   | <------------+
  *   PS CLK -------> |  ARM  |              |
@@ -33,14 +33,14 @@
  *            \--------/   ^   \-----/      |
  *                         |                |
  *                         |  /-------\     |
- *                         -- |  ASG  | <---+ 
+ *                         -- |  ASG  | <---+
  *                            \-------/     |
  *                                          |
  *             /--------\                   |
  *    RX ----> |        |                   |
  *   SATA      | DAISY  | <-----------------+
- *    TX <---- |        | 
- *             \--------/ 
+ *    TX <---- |        |
+ *             \--------/
  *               |    |
  *               |    |
  *               (FREE)
@@ -195,7 +195,7 @@ logic                    digital_loop;
 sys_bus_if   ps_sys      (.clk (adc_clk), .rstn (adc_rstn));
 sys_bus_if   sys [8-1:0] (.clk (adc_clk), .rstn (adc_rstn));
 
-// GPIO interface with 24 bit data width 
+// GPIO interface with 24 bit data width
 gpio_if #(.DW (24)) gpio ();
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -388,7 +388,7 @@ begin
   adc_dat_raw[0] <= adc_dat_i[0][16-1:2];
   adc_dat_raw[1] <= adc_dat_i[1][16-1:2];
 end
-    
+
 // transform into 2's complement (negative slope)
 assign adc_dat[0] = digital_loop ? dac_a : {adc_dat_raw[0][14-1], ~adc_dat_raw[0][14-2:0]};
 assign adc_dat[1] = digital_loop ? dac_b : {adc_dat_raw[1][14-1], ~adc_dat_raw[1][14-2:0]};
@@ -397,7 +397,7 @@ assign adc_dat[1] = digital_loop ? dac_b : {adc_dat_raw[1][14-1], ~adc_dat_raw[1
 // DAC IO
 ////////////////////////////////////////////////////////////////////////////////
 
-// Sumation of ASG and PID signal perform saturation before sending to DAC 
+// Sumation of ASG and PID signal perform saturation before sending to DAC
 assign dac_a_sum = asg_dat[0] + pid_dat[0];
 assign dac_b_sum = asg_dat[1] + pid_dat[1];
 
@@ -428,7 +428,7 @@ ODDR oddr_dac_dat [14-1:0] (.Q(dac_dat_o), .D1(dac_dat_b), .D2(dac_dat_a), .C(da
 logic [  8-1: 0] exp_p_in , exp_n_in ;
 logic [  8-1: 0] exp_p_out, exp_n_out;
 logic [  8-1: 0] exp_p_dir, exp_n_dir;
-// Set four negative and positive GPIO (DIO1_N-DIO3_N, DIO1_P-DIO3_P) as output
+// Set four negative and positive GPIO (DIO1_N-DIO4_N, DIO1_P-DIO4_P) as output
 assign exp_n_dir = 8'b00011110;
 assign exp_p_dir = 8'b00011110;
 
@@ -555,9 +555,9 @@ red_pitaya_pid i_pid (
   .reset_a_i       (gpio.i[13])  , // PID11 loop reset
   .reset_d_i       (gpio.i[14])  , // PID22 loop reset
 
-   // Output signals  
+   // Output signals
   .dat_a_o         (pid_dat[0]  ), // out 1
-  .dat_b_o         (pid_dat[1]  ), // out 2   
+  .dat_b_o         (pid_dat[1]  ), // out 2
   .lock_status_o   (pid_lock_status), // lock state
   // System bus
   .sys_addr        (sys[3].addr ),
@@ -579,7 +579,7 @@ red_pitaya_limit i_limit (
   .rstn_i         (adc_rstn    ), // reset - active low
   .dat_a_i        (dac_a_lim_i ), // in 1
   .dat_b_i        (dac_b_lim_i ), // in 2
-  // Output signals  
+  // Output signals
   .dat_a_o        (dac_a       ), // out 1
   .dat_b_o        (dac_b       ), // out 2
   .dat_a_railed_o (dac_a_railed), // out 1 railed
