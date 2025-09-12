@@ -17,7 +17,7 @@ The original project by Fabian Schmid can be found [here](https://github.com/sch
 
 ## Installation
 Build the software and FPGA configuration from source (see below) or download a binary archive
-(`rp-lockbox.tar.gz`) [here](https://github.com/lmaisenbacher/rp-lockbox/releases/tag/Latest).
+(`rp-lockbox.tar.gz`) [here](https://github.com/lmaisenbacher/rp-lockbox/releases/latest).
 
 Set up the Red Pitaya following the [official manual](https://redpitaya.readthedocs.io/en/latest/index.html).
 
