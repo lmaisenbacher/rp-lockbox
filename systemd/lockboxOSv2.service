@@ -1,0 +1,18 @@
+[Unit]
+Description=SCPI server for the Red Pitaya Lockbox OS version 2.0
+After=network.target redpitaya_nginx.service
+Conflicts=redpitaya_nginx.service
+
+[Service]
+Type=simple
+Restart=always
+Environment=PATH_REDPITAYA=/opt/redpitaya
+Environment=PATH=/sbin:/usr/sbin:/bin:/usr/bin:/opt/redpitaya/sbin:/opt/redpitaya/bin
+Environment=LD_LIBRARY_PATH=/opt/redpitaya/lib
+ExecStartPre=/bin/sh -c "/opt/redpitaya/bin/fpgautil -b /opt/redpitaya/fpga/lockbox.bit.bin"
+ExecStart =/opt/redpitaya/bin/lockbox-server
+#ExecReload=
+ExecStop  =/bin/kill -15 $MAINPID
+
+[Install]
+WantedBy=multi-user.target

@@ -7,6 +7,8 @@
 **/.srcs/
 **/out/*
 !**/out/red_pitaya.bit
+!**/out/red_pitaya.bif
+!**/out/red_pitaya.bit.bin
 !**/out/*.rpt
 usage_statistics_webtalk.*
 synReport.txt*
