@@ -222,6 +222,10 @@ Parameter options:
 | ``PID:IN<n>:OUT<n>:LOCKED?``                      | ``rp_PIDGetLockStatus``      | | Get the lock status from lock monitoring: ON while the  |
 |                                                   |                              | | auxiliary input is inside the relock MIN/MAX window.    |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:ENABled <state>``              | ``rp_PIDSetEnable``          | Enable or disable the PID (and relock) output.            |
++---------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:ENABled?``                     | ``rp_PIDGetEnable``          | Get if the PID (and relock) output is enabled.            |
++---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | ``PID:IN<n>:OUT<n>:INTegrator:RESet <state>``     | ``rp_PIDSetIntReset``        | Reset the integrator register.                            |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | ``PID:IN<n>:OUT<n>:INTegrator:RESet?``            | ``rp_PIDGetIntReset``        | Get the status of the integrator reset.                   |

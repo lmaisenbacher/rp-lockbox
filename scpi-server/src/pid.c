@@ -478,6 +478,61 @@ scpi_result_t RP_PIDInvertedQ(scpi_t *context) {
     return SCPI_RES_OK;
 }
 
+scpi_result_t RP_PIDEnable(scpi_t *context) {
+    int result;
+    scpi_bool_t enabled;
+    rp_pid_t pid;
+
+    /* Parse PID index */
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:ENABled Failed to parse input/output choice: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    /* Parse first parameter PID output enabled (ON,OFF) */
+    if(!SCPI_ParamBool(context, &enabled, true)) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:ENABled Failed to parse first parameter.");
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDSetEnable(pid, enabled);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:ENABled Failed to set PID output enable: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:ENABled Successfully set PID output enable.");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_PIDEnableQ(scpi_t *context) {
+    int result;
+    bool enabled;
+    rp_pid_t pid;
+
+    /* Parse PID index */
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:ENABled? Failed to parse input/output choice: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    /* The "PID + relock output enabled" switch of the web interface - the
+     * setting, before the external lock reset gates the output */
+    result = rp_PIDGetEnable(pid, &enabled);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:ENABled? Failed to get PID output enable: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    // Return result as string
+    SCPI_ResultMnemonic(context, enabled ? "ON": "OFF");
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:ENABled? Successfully returned PID output enable.");
+    return SCPI_RES_OK;
+}
+
 scpi_result_t RP_PIDHold(scpi_t *context) {
     int result;
     scpi_bool_t enabled;

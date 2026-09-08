@@ -30,6 +30,8 @@ scpi_result_t RP_PIDInvertedQ(scpi_t *context);
 scpi_result_t RP_PIDHold(scpi_t *context);
 scpi_result_t RP_PIDHoldQ(scpi_t *context);
 scpi_result_t RP_PIDLockedQ(scpi_t *context);
+scpi_result_t RP_PIDEnable(scpi_t *context);
+scpi_result_t RP_PIDEnableQ(scpi_t *context);
 scpi_result_t RP_PIDResetWhenRailed(scpi_t *context);
 scpi_result_t RP_PIDResetWhenRailedQ(scpi_t *context);
 scpi_result_t RP_PIDRelock(scpi_t *context);
