@@ -216,7 +216,7 @@ Parameter options:
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | ``PID:IN<n>:OUT<n>:HOLD?``                        | ``rp_PIDGetHold``            | Get if the internal state of the PID is held.             |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
-| ``PID:IN<n>:OUT<n>:LOCKed?``                      | ``rp_PIDGetLockStatus``      | | Get the lock status from lock monitoring: ON while the  |
+| ``PID:IN<n>:OUT<n>:LOCKED?``                      | ``rp_PIDGetLockStatus``      | | Get the lock status from lock monitoring: ON while the  |
 |                                                   |                              | | auxiliary input is inside the relock MIN/MAX window.    |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | ``PID:IN<n>:OUT<n>:INTegrator:RESet <state>``     | ``rp_PIDSetIntReset``        | Reset the integrator register.                            |

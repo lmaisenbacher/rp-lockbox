@@ -539,7 +539,7 @@ scpi_result_t RP_PIDLockedQ(scpi_t *context) {
     /* Parse PID index */
     result = RP_ParsePIDArgv(context, &pid);
     if(result != RP_OK) {
-        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:LOCKed? Failed to parse input/output choice: %s", rp_GetError(result));
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:LOCKED? Failed to parse input/output choice: %s", rp_GetError(result));
         return SCPI_RES_ERR;
     }
 
@@ -547,14 +547,14 @@ scpi_result_t RP_PIDLockedQ(scpi_t *context) {
      * (also driven onto the lock status DO pins) */
     result = rp_PIDGetLockStatus(pid, &locked);
     if(result != RP_OK) {
-        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:LOCKed? Failed to get lock status: %s", rp_GetError(result));
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:LOCKED? Failed to get lock status: %s", rp_GetError(result));
         return SCPI_RES_ERR;
     }
 
     // Return result as string
     SCPI_ResultMnemonic(context, locked ? "ON": "OFF");
 
-    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:LOCKed? Successfully returned lock status.");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:LOCKED? Successfully returned lock status.");
     return SCPI_RES_OK;
 }
 

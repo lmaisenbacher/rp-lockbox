@@ -224,7 +224,7 @@ static const scpi_command_t scpi_commands[] = {
     {.pattern = "PID:IN#:OUT#:KD?", .callback                   = RP_PIDKdQ,},
     {.pattern = "PID:IN#:OUT#:HOLD", .callback                  = RP_PIDHold,},
     {.pattern = "PID:IN#:OUT#:HOLD?", .callback                 = RP_PIDHoldQ,},
-    {.pattern = "PID:IN#:OUT#:LOCKed?", .callback               = RP_PIDLockedQ,},
+    {.pattern = "PID:IN#:OUT#:LOCKED?", .callback               = RP_PIDLockedQ,},
     {.pattern = "PID:IN#:OUT#:INTegrator:RESet", .callback      = RP_PIDIntReset,},
     {.pattern = "PID:IN#:OUT#:INTegrator:RESet?", .callback     = RP_PIDIntResetQ,},
     {.pattern = "PID:IN#:OUT#:INTegrator:AUTOreset", .callback  = RP_PIDResetWhenRailed,},
