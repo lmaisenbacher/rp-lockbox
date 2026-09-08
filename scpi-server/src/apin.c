@@ -44,7 +44,7 @@ scpi_result_t RP_AnalogPinReset(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*ANALOG:RST Successfully reset analog pin resources.\n");
+    RP_LOG(LOG_DEBUG, "*ANALOG:RST Successfully reset analog pin resources.\n");
     return SCPI_RES_OK;
 }
 
@@ -78,7 +78,7 @@ scpi_result_t RP_AnalogPinValueQ(scpi_t * context) {
     // Return back result
     SCPI_ResultDouble(context, value);
 
-    RP_LOG(LOG_INFO, "*ANALOG:PIN? Successfully returned port value.\n");
+    RP_LOG(LOG_DEBUG, "*ANALOG:PIN? Successfully returned port value.\n");
     return SCPI_RES_OK;
 }
 
@@ -114,7 +114,7 @@ scpi_result_t RP_AnalogPinValue(scpi_t * context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*ANALOG:PIN Successfully set port value.\n");
+    RP_LOG(LOG_DEBUG, "*ANALOG:PIN Successfully set port value.\n");
     return SCPI_RES_OK;
 }
 
@@ -135,7 +135,7 @@ scpi_result_t RP_AnalogInVoltageQ(scpi_t * context) {
     }
     SCPI_ResultDouble(context, voltage);
 
-    RP_LOG(LOG_INFO, "*ANALOG:IN#:VOLT? Successfully returned voltage to client.\n");
+    RP_LOG(LOG_DEBUG, "*ANALOG:IN#:VOLT? Successfully returned voltage to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -156,6 +156,6 @@ scpi_result_t RP_AnalogOutVoltageQ(scpi_t * context) {
     }
     SCPI_ResultDouble(context, voltage);
 
-    RP_LOG(LOG_INFO, "*ANALOG:OUT#:VOLT? Successfully returned voltage to client.\n");
+    RP_LOG(LOG_DEBUG, "*ANALOG:OUT#:VOLT? Successfully returned voltage to client.\n");
     return SCPI_RES_OK;
 }

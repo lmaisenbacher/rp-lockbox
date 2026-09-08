@@ -39,7 +39,7 @@ scpi_result_t RP_OutputLimitMin(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*OUTput#:LIMit:MIN Successfully set output limit.\n");
+    RP_LOG(LOG_DEBUG, "*OUTput#:LIMit:MIN Successfully set output limit.\n");
     return SCPI_RES_OK;
 }
 
@@ -60,7 +60,7 @@ scpi_result_t RP_OutputLimitMinQ(scpi_t *context) {
     }
     SCPI_ResultDouble(context, limit);
 
-    RP_LOG(LOG_INFO, "*OUTput#:LIMit:MIN? Successfully returned limit value to client.\n");
+    RP_LOG(LOG_DEBUG, "*OUTput#:LIMit:MIN? Successfully returned limit value to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -86,7 +86,7 @@ scpi_result_t RP_OutputLimitMax(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*OUTput#:LIMit:MAX Successfully set output limit.\n");
+    RP_LOG(LOG_DEBUG, "*OUTput#:LIMit:MAX Successfully set output limit.\n");
     return SCPI_RES_OK;
 }
 
@@ -107,6 +107,6 @@ scpi_result_t RP_OutputLimitMaxQ(scpi_t *context) {
     }
     SCPI_ResultDouble(context, limit);
 
-    RP_LOG(LOG_INFO, "*OUTput#:LIMit:MAX? Successfully returned limit value to client.\n");
+    RP_LOG(LOG_DEBUG, "*OUTput#:LIMit:MAX? Successfully returned limit value to client.\n");
     return SCPI_RES_OK;
 }

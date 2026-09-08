@@ -33,7 +33,7 @@ scpi_result_t RP_InitAll(scpi_t *context){
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*RP:INIT Successfully inizitalized Red Pitaya modules.\n");
+    RP_LOG(LOG_DEBUG, "*RP:INIT Successfully inizitalized Red Pitaya modules.\n");
     return SCPI_RES_OK;
 }
 
@@ -47,7 +47,7 @@ scpi_result_t RP_ResetAll(scpi_t *context){
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*RP:RST Successfully reset Red Pitaya modules.\n");
+    RP_LOG(LOG_DEBUG, "*RP:RST Successfully reset Red Pitaya modules.\n");
     return SCPI_RES_OK;
 }
 
@@ -61,7 +61,7 @@ scpi_result_t RP_ReleaseAll(scpi_t *context){
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*RP:RELEASE Successfully released Red Pitaya modules.\n");
+    RP_LOG(LOG_DEBUG, "*RP:RELEASE Successfully released Red Pitaya modules.\n");
     return SCPI_RES_OK;
 }
 
@@ -127,7 +127,7 @@ scpi_result_t RP_FpgaBitStream(scpi_t *context){
     close(fi);
     close(fo);
 
-    RP_LOG(LOG_INFO, "*RP:FPGA:BITstr Successfully loaded FPGA bit stream.\n");
+    RP_LOG(LOG_DEBUG, "*RP:FPGA:BITstr Successfully loaded FPGA bit stream.\n");
     return SCPI_RES_OK;
 }
 
@@ -141,7 +141,7 @@ scpi_result_t RP_EnableDigLoop(scpi_t *context){
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*RP:DIG:LOop Successfully initialize Red Pitaya"
+    RP_LOG(LOG_DEBUG, "*RP:DIG:LOop Successfully initialize Red Pitaya"
         " digital loop.\n");
 
     return SCPI_RES_OK;

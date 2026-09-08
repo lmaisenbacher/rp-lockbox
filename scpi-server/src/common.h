@@ -24,12 +24,11 @@
 
 #define SCPI_CMD_NUM 	1
 
-#ifdef SCPI_DEBUG
-#define RP_LOG(...) \
-syslog(__VA_ARGS__);
-#else
-#define RP_LOG(...)
-#endif
+/* Every build logs to syslog: errors and connection events at their own
+ * levels, the per-command trace at LOG_DEBUG. The log mask set in
+ * scpi-server.c hides the trace unless the server was built with
+ * SCPI_DEBUG (see the Makefile). */
+#define RP_LOG(...) syslog(__VA_ARGS__)
 
 int RP_ParseChArgv(scpi_t *context, rp_channel_t *channel);
 

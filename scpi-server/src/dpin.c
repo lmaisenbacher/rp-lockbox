@@ -65,7 +65,7 @@ scpi_result_t RP_DigitalPinReset(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*DIG:RST Successfully reset Red Pitaya digital pins.");
+    RP_LOG(LOG_DEBUG, "*DIG:RST Successfully reset Red Pitaya digital pins.");
     return SCPI_RES_OK;
 }
 
@@ -101,7 +101,7 @@ scpi_result_t RP_DigitalPinState(scpi_t * context) {
 		return SCPI_RES_ERR;
 	}
 
-	RP_LOG(LOG_INFO, "*DIG:PIN Successfully set port value");
+	RP_LOG(LOG_DEBUG, "*DIG:PIN Successfully set port value");
 	return SCPI_RES_OK;
 }
 
@@ -134,7 +134,7 @@ scpi_result_t RP_DigitalPinStateQ(scpi_t * context) {
     /* Return PIN state to the client */
     SCPI_ResultInt32(context, state);
 
-    RP_LOG(LOG_INFO, "*DIG:PIN? Successfully returned port value");
+    RP_LOG(LOG_DEBUG, "*DIG:PIN? Successfully returned port value");
     return SCPI_RES_OK;
 }
 
@@ -153,10 +153,10 @@ scpi_result_t RP_DigitalPinDirection(scpi_t * context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "DIRECTION: %d", dir_choice);
+    RP_LOG(LOG_DEBUG, "DIRECTION: %d", dir_choice);
     /* Read second, PIN parameter */
     if(!SCPI_ParamChoice(context, scpi_RpDpin, &pin_choice, true)){
-        RP_LOG(LOG_INFO, "*DIG:PIN:DIR is missing second parameter.");
+        RP_LOG(LOG_ERR, "*DIG:PIN:DIR is missing second parameter.");
         return SCPI_RES_ERR;
     }
 
@@ -164,17 +164,17 @@ scpi_result_t RP_DigitalPinDirection(scpi_t * context) {
     rp_pinDirection_t direction = dir_choice;
     rp_dpin_t pin               = pin_choice;
 
-    RP_LOG(LOG_INFO, "DIRECTION: %d", direction);
+    RP_LOG(LOG_DEBUG, "DIRECTION: %d", direction);
 
     // Now set the pin state
     int result = rp_DpinSetDirection(pin, direction);
 
     if (RP_OK != result){
-        RP_LOG(LOG_INFO, "*DIG:PIN:DIR Failed to set pin direction: %s", rp_GetError(result));
+        RP_LOG(LOG_ERR, "*DIG:PIN:DIR Failed to set pin direction: %s", rp_GetError(result));
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*DIG:PIN:DIR Successfully set port direction.");
+    RP_LOG(LOG_DEBUG, "*DIG:PIN:DIR Successfully set port direction.");
     return SCPI_RES_OK;
 }
 
@@ -198,7 +198,7 @@ scpi_result_t RP_DigitalPinDirectionQ(scpi_t *context){
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "GET DIRECTION: %d", direction);
+    RP_LOG(LOG_DEBUG, "GET DIRECTION: %d", direction);
 
     if(!SCPI_ChoiceToName(scpi_RpDir, direction, &dir_n)){
         RP_LOG(LOG_ERR, "*DIG:PIN:DIR? Failed to parse direction.");
@@ -207,6 +207,6 @@ scpi_result_t RP_DigitalPinDirectionQ(scpi_t *context){
 
     SCPI_ResultMnemonic(context, dir_n);
 
-    RP_LOG(LOG_INFO, "*DIG:PIN:DIR? Successfully returned direction value to the client.");
+    RP_LOG(LOG_DEBUG, "*DIG:PIN:DIR? Successfully returned direction value to the client.");
     return SCPI_RES_OK;
 }

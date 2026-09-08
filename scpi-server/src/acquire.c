@@ -90,11 +90,11 @@ scpi_result_t RP_AcqSetDataFormat(scpi_t *context) {
 
     if (strncasecmp(param, "BIN", param_len) == 0) {
         context->binary_output = true;
-        RP_LOG(LOG_INFO, "*ACQ:DATA:FORMAT set to BIN\n");
+        RP_LOG(LOG_DEBUG, "*ACQ:DATA:FORMAT set to BIN\n");
     }
     else if (strncasecmp(param, "ASCII", param_len) == 0) {
         context->binary_output = false;
-        RP_LOG(LOG_INFO, "*ACQ:DATA:FORMAT set to ASCII\n");
+        RP_LOG(LOG_DEBUG, "*ACQ:DATA:FORMAT set to ASCII\n");
     }
     else {
         RP_LOG(LOG_ERR, "*ACQ:DATA:FORMAT wrong argument value\n");
@@ -113,7 +113,7 @@ scpi_result_t RP_AcqStart(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*ACQ:START Successful started Red Pitaya acquire.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:START Successful started Red Pitaya acquire.\n");
     return SCPI_RES_OK;
 }
 
@@ -125,7 +125,7 @@ scpi_result_t RP_AcqStop(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*ACQ:STOP Successful stopped Red Pitaya acquire.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:STOP Successful stopped Red Pitaya acquire.\n");
     return SCPI_RES_OK;
 }
 
@@ -140,7 +140,7 @@ scpi_result_t RP_AcqReset(scpi_t *context) {
     unit = RP_SCPI_VOLTS;
     context->binary_output = false;
 
-    RP_LOG(LOG_INFO, "*ACQ:RST Successful reset  Red Pitaya acquire.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:RST Successful reset  Red Pitaya acquire.\n");
     return SCPI_RES_OK;
 }
 
@@ -194,7 +194,7 @@ scpi_result_t RP_AcqDecimation(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*ACQ:DEC Successfully set decimation.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:DEC Successfully set decimation.\n");
     return SCPI_RES_OK;
 }
 
@@ -218,7 +218,7 @@ scpi_result_t RP_AcqDecimationQ(scpi_t *context) {
     // Return back result
     SCPI_ResultUInt32Base(context, value, 10);
 
-    RP_LOG(LOG_INFO, "*ACQ:DEC? Successfully returned decimation.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:DEC? Successfully returned decimation.\n");
     return SCPI_RES_OK;
 }
 
@@ -240,7 +240,7 @@ scpi_result_t RP_AcqSamplingRateHzQ(scpi_t *context) {
     //Return string in form "<Value> Hz"
     SCPI_ResultMnemonic(context, samplingRateString);
 
-    RP_LOG(LOG_INFO, "*ACQ:SRA:HZ? Successfully returned sampling rate in Hz.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:SRA:HZ? Successfully returned sampling rate in Hz.\n");
 
     return SCPI_RES_OK;
 }
@@ -263,7 +263,7 @@ scpi_result_t RP_AcqAveraging(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*ACQ:AVG Successfully set averaging.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:AVG Successfully set averaging.\n");
     return SCPI_RES_OK;
 }
 
@@ -280,7 +280,7 @@ scpi_result_t RP_AcqAveragingQ(scpi_t *context) {
     // Return back result
     SCPI_ResultMnemonic(context, value ? "ON" : "OFF");
 
-    RP_LOG(LOG_INFO, "*ACQ:AVG? Successfully returned averaging.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:AVG? Successfully returned averaging.\n");
     return SCPI_RES_OK;
 }
 
@@ -303,7 +303,7 @@ scpi_result_t RP_AcqTriggerSrc(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*ACQ:TRIG Successfully set trigger source.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:TRIG Successfully set trigger source.\n");
     return SCPI_RES_OK;
 }
 
@@ -327,7 +327,7 @@ scpi_result_t RP_AcqTriggerSrcQ(scpi_t *context) {
     // Return back result
     SCPI_ResultMnemonic(context, trig_name);
 
-    RP_LOG(LOG_INFO, "*ACQ:TRIG:STAT? Successfully returned trigger.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:TRIG:STAT? Successfully returned trigger.\n");
     return SCPI_RES_OK;
 }
 
@@ -347,7 +347,7 @@ scpi_result_t RP_AcqTriggerDelay(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*ACQ:TRIG:DLY Successfully set trigger delay.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:TRIG:DLY Successfully set trigger delay.\n");
     return SCPI_RES_OK;
 }
 
@@ -364,7 +364,7 @@ scpi_result_t RP_AcqTriggerDelayQ(scpi_t *context) {
     // Return back result
     SCPI_ResultInt32(context, value);
 
-    RP_LOG(LOG_INFO, "*ACQ:TRIG:DLY? Successfully returned trigger delay.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:TRIG:DLY? Successfully returned trigger delay.\n");
     return SCPI_RES_OK;
 }
 
@@ -384,7 +384,7 @@ scpi_result_t RP_AcqTriggerDelayNs(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*ACQ:TRIG:DLY:NS Successfully set trigger delay.");
+    RP_LOG(LOG_DEBUG, "*ACQ:TRIG:DLY:NS Successfully set trigger delay.");
     return SCPI_RES_OK;
 }
 
@@ -401,7 +401,7 @@ scpi_result_t RP_AcqTriggerDelayNsQ(scpi_t *context) {
     // Return back result
     SCPI_ResultInt32(context, value);
 
-    RP_LOG(LOG_INFO, "*ACQ:TRIG:DLY:NS? Successfully returned trigger delay in ns.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:TRIG:DLY:NS? Successfully returned trigger delay in ns.\n");
     return SCPI_RES_OK;
 }
 
@@ -423,7 +423,7 @@ scpi_result_t RP_AcqTriggerHyst(scpi_t *context){
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*ACQ:TRIG:HYST Successfully set trigger hysteresis.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:TRIG:HYST Successfully set trigger hysteresis.\n");
     return SCPI_RES_OK;
 }
 
@@ -442,7 +442,7 @@ scpi_result_t RP_AcqTriggerHystQ(scpi_t *context){
 
     SCPI_ResultFloat(context, voltage);
 
-    RP_LOG(LOG_INFO, "*ACQ:TRIG:HYST Successfully returned "
+    RP_LOG(LOG_DEBUG, "*ACQ:TRIG:HYST Successfully returned "
         "hysteresis value to client.\n");
 
     return SCPI_RES_OK;
@@ -479,7 +479,7 @@ scpi_result_t RP_AcqGain(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "ACQ:SOUR#:GAIN Successfully set gain.\n");
+    RP_LOG(LOG_DEBUG, "ACQ:SOUR#:GAIN Successfully set gain.\n");
     return SCPI_RES_OK;
 }
 
@@ -501,7 +501,7 @@ scpi_result_t RP_AcqGainQ(scpi_t *context){
     /* Return data to client */
     SCPI_ResultMnemonic(context, state == RP_HIGH ? "HV" : "LV");
 
-    RP_LOG(LOG_INFO, "ACQ:SOUR#:GAIN? Successfully returned gain data.\n");
+    RP_LOG(LOG_DEBUG, "ACQ:SOUR#:GAIN? Successfully returned gain data.\n");
     return SCPI_RES_OK;
 }
 
@@ -527,7 +527,7 @@ scpi_result_t RP_AcqTriggerLevel(scpi_t *context) {
     }
 
 
-    RP_LOG(LOG_INFO, "*ACQ:TRIG:LEV Successfully set trigger level.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:TRIG:LEV Successfully set trigger level.\n");
     return SCPI_RES_OK;
 }
 
@@ -544,7 +544,7 @@ scpi_result_t RP_AcqTriggerLevelQ(scpi_t *context) {
     // Return back result
     SCPI_ResultDouble(context, value);
 
-    RP_LOG(LOG_INFO, "*ACQ:TRIG:LEV? Successfully returned trigger level.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:TRIG:LEV? Successfully returned trigger level.\n");
     return SCPI_RES_OK;
 }
 
@@ -562,7 +562,7 @@ scpi_result_t RP_AcqWritePointerQ(scpi_t *context) {
     // Return back result
     SCPI_ResultUInt32Base(context, value, 10);
 
-    RP_LOG(LOG_INFO, "*ACQ:WPOS? Successfully returned writer position.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:WPOS? Successfully returned writer position.\n");
     return SCPI_RES_OK;
 }
 
@@ -579,7 +579,7 @@ scpi_result_t RP_AcqWritePointerAtTrigQ(scpi_t *context) {
     // Return back result
     SCPI_ResultUInt32Base(context, value, 10);
 
-    RP_LOG(LOG_INFO, "*ACQ:TPOS? Successfully returned writer position at trigger.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:TPOS? Successfully returned writer position at trigger.\n");
     return SCPI_RES_OK;
 }
 
@@ -596,7 +596,7 @@ scpi_result_t RP_AcqScpiDataUnits(scpi_t *context) {
     /* Set global units for acq scpi */
     unit = choice;
 
-    RP_LOG(LOG_INFO, "*ACQ:DATA:UNITS Successfully set scpi units.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:DATA:UNITS Successfully set scpi units.\n");
     return SCPI_RES_OK;
 }
 
@@ -611,7 +611,7 @@ scpi_result_t RP_AcqScpiDataUnitsQ(scpi_t *context){
 
     SCPI_ResultMnemonic(context, units);
 
-    RP_LOG(LOG_INFO, "*ACQ:DATA:UNITS? Successfully returned data to client.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:DATA:UNITS? Successfully returned data to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -661,7 +661,7 @@ scpi_result_t RP_AcqDataPosQ(scpi_t *context) {
         SCPI_ResultBufferInt16(context, buffer, size);
     }
 
-    RP_LOG(LOG_INFO, "*ACQ:SOUR#:DATA:STA:END? Successfully returned data to client.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:SOUR#:DATA:STA:END? Successfully returned data to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -684,7 +684,7 @@ scpi_result_t RP_AcqDataQ(scpi_t *context) {
 
     /* Parse SIZE parameter */
     if(!SCPI_ParamUInt32(context, &size, true)){
-        RP_LOG(LOG_INFO, "*ACQ:SOUR<n>:DATA:STA:N? is missing SIZE parameter.\n");
+        RP_LOG(LOG_ERR, "*ACQ:SOUR<n>:DATA:STA:N? is missing SIZE parameter.\n");
         return SCPI_RES_ERR;
     }
 
@@ -713,7 +713,7 @@ scpi_result_t RP_AcqDataQ(scpi_t *context) {
         SCPI_ResultBufferInt16(context, buffer, size);
     }
 
-    RP_LOG(LOG_INFO, "*ACQ:SOUR<n>:DATA:STA:N? Successfully returned data.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:SOUR<n>:DATA:STA:N? Successfully returned data.\n");
     return SCPI_RES_OK;
 }
 
@@ -751,7 +751,7 @@ scpi_result_t RP_AcqDataOldestAllQ(scpi_t *context) {
         SCPI_ResultBufferInt16(context, buffer, size);
     }
 
-    RP_LOG(LOG_INFO, "*ACQ:SOUR#:DATA? Successfully returned data.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:SOUR#:DATA? Successfully returned data.\n");
     return SCPI_RES_OK;
 }
 
@@ -795,7 +795,7 @@ scpi_result_t RP_AcqOldestDataQ(scpi_t *context) {
         SCPI_ResultBufferInt16(context, buffer, size);
     }
 
-    RP_LOG(LOG_INFO, "*ACQ:SOUR#:DATA:OLD:N? Successfully returned data to client.");
+    RP_LOG(LOG_DEBUG, "*ACQ:SOUR#:DATA:OLD:N? Successfully returned data to client.");
     return SCPI_RES_OK;
 }
 
@@ -820,7 +820,7 @@ scpi_result_t RP_AcqLatestDataQ(scpi_t *context) {
         result = rp_AcqGetLatestDataV(channel, &size, buffer);
 
         if(result != RP_OK){
-            RP_LOG(LOG_INFO, "*ACQ:SOUR<n>:DATA:LAT:N? Failed to "
+            RP_LOG(LOG_ERR, "*ACQ:SOUR<n>:DATA:LAT:N? Failed to "
                 " get data in volt: %s\n", rp_GetError(result));
             return SCPI_RES_ERR;
         }
@@ -838,7 +838,7 @@ scpi_result_t RP_AcqLatestDataQ(scpi_t *context) {
         SCPI_ResultBufferInt16(context, buffer, size);
     }
 
-    RP_LOG(LOG_INFO, "*ACQ:SOUR<n>:DATA:LAT:N? Successfully returned data to client.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:SOUR<n>:DATA:LAT:N? Successfully returned data to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -853,6 +853,6 @@ scpi_result_t RP_AcqBufferSizeQ(scpi_t *context) {
 
     SCPI_ResultUInt32Base(context, size, 10);
 
-    RP_LOG(LOG_INFO, "*ACQ:BUF:SIZE?? Successfully returned buffer size.\n");
+    RP_LOG(LOG_DEBUG, "*ACQ:BUF:SIZE?? Successfully returned buffer size.\n");
     return SCPI_RES_OK;
 }

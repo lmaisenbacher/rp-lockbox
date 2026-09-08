@@ -110,7 +110,7 @@ void LogMessage(char *m, size_t len) {
     strncpy(buff, m, len);
     buff[len - 1] = '\0';
 
-    RP_LOG(LOG_INFO, "Processing command: %s\n", buff);
+    RP_LOG(LOG_DEBUG, "Processing command: %s\n", buff);
 }
 
 /**
@@ -168,7 +168,7 @@ static int handleConnection(int connfd) {
             memmove(message_buff, m, msg_end);
         }
 
-        RP_LOG(LOG_INFO, "Waiting for next client request.\n");
+        RP_LOG(LOG_DEBUG, "Waiting for next client request.\n");
     }
 
     free(message_buff);
@@ -202,7 +202,12 @@ int main(int argc, char *argv[])
 {
 
     // Open logging into "/var/log/messages" or /var/log/syslog" or other configured...
+    // The per-command trace (LOG_DEBUG) only with a SCPI_DEBUG build
+#ifdef SCPI_DEBUG
+    setlogmask (LOG_UPTO (LOG_DEBUG));
+#else
     setlogmask (LOG_UPTO (LOG_INFO));
+#endif
     openlog ("scpi-server", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
 
     RP_LOG (LOG_NOTICE, "scpi-server started");

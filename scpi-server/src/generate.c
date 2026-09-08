@@ -61,7 +61,7 @@ scpi_result_t RP_GenReset(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*GEN:RST Successfully reset Red "
+    RP_LOG(LOG_DEBUG, "*GEN:RST Successfully reset Red "
         "Pitaya generate module.\n");
     return SCPI_RES_OK;
 }
@@ -92,7 +92,7 @@ scpi_result_t RP_GenState(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*OUTPUT#:STATE Successfully enabled generate output.\n");
+    RP_LOG(LOG_DEBUG, "*OUTPUT#:STATE Successfully enabled generate output.\n");
     return SCPI_RES_OK;
 }
 
@@ -115,7 +115,7 @@ scpi_result_t RP_GenStateQ(scpi_t *context){
 
     SCPI_ResultBool(context, enabled);
 
-    RP_LOG(LOG_INFO, "*OUTPUT#:STATE Successfully returned generate state.\n");
+    RP_LOG(LOG_DEBUG, "*OUTPUT#:STATE Successfully returned generate state.\n");
     return SCPI_RES_OK;
 }
 
@@ -141,7 +141,7 @@ scpi_result_t RP_GenFrequency(scpi_t *context){
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*OUR#:FREQ:FIX Successfully set frequency.\n");
+    RP_LOG(LOG_DEBUG, "*OUR#:FREQ:FIX Successfully set frequency.\n");
     return SCPI_RES_OK;
 }
 
@@ -164,7 +164,7 @@ scpi_result_t RP_GenFrequencyQ(scpi_t *context) {
     /* Return data to client */
     SCPI_ResultDouble(context, frequency);
 
-    RP_LOG(LOG_INFO, "*OUTPUT#:STATE Successfully returned frequency value to client.\n");
+    RP_LOG(LOG_DEBUG, "*OUTPUT#:STATE Successfully returned frequency value to client.\n");
     return SCPI_RES_OK;
 }    
 
@@ -192,7 +192,7 @@ scpi_result_t RP_GenWaveForm(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*SOUR#:FUNC Successfully set generate waveform.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:FUNC Successfully set generate waveform.\n");
     return SCPI_RES_OK;
 }
 
@@ -220,7 +220,7 @@ scpi_result_t RP_GenWaveFormQ(scpi_t *context) {
     /* Return result to client */
     SCPI_ResultMnemonic(context, wf_name);
 
-    RP_LOG(LOG_INFO, "*SOUR#:FUNC? Successfully returned generate wave form to client.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:FUNC? Successfully returned generate wave form to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -245,7 +245,7 @@ scpi_result_t RP_GenAmplitude(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*SOUR#:VOLT Successfully set amplitude.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:VOLT Successfully set amplitude.\n");
     return SCPI_RES_OK;
 }
 
@@ -267,7 +267,7 @@ scpi_result_t RP_GenAmplitudeQ(scpi_t *context) {
 
     SCPI_ResultDouble(context, amplitude);
 
-    RP_LOG(LOG_INFO, "*SOUR#:VOLT? Successfully returned amplitude value to client.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:VOLT? Successfully returned amplitude value to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -292,7 +292,7 @@ scpi_result_t RP_GenOffset(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*SOUR#:VOLT:OFFS Successfully set generate offset value.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:VOLT:OFFS Successfully set generate offset value.\n");
     return SCPI_RES_OK;
 }
 
@@ -315,7 +315,7 @@ scpi_result_t RP_GenOffsetQ(scpi_t *context) {
 
     SCPI_ResultFloat(context, offset);
 
-    RP_LOG(LOG_INFO, "*SOUR#:VOLT:OFFS? Successfully returned offset to the client.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:VOLT:OFFS? Successfully returned offset to the client.\n");
     return SCPI_RES_OK;
 }
 
@@ -341,7 +341,7 @@ scpi_result_t RP_GenPhase(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*SOUR#:PHAS Successfully set generate phase.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:PHAS Successfully set generate phase.\n");
     return SCPI_RES_OK;
 }
 
@@ -363,7 +363,7 @@ scpi_result_t RP_GenPhaseQ(scpi_t *context) {
     } 
     SCPI_ResultFloat(context, phase);
 
-    RP_LOG(LOG_INFO, "*SOUR#:PHAS? Successfully returned "
+    RP_LOG(LOG_DEBUG, "*SOUR#:PHAS? Successfully returned "
         "generate phase value to client.\n");
     return SCPI_RES_OK;
 }
@@ -387,7 +387,7 @@ scpi_result_t RP_GenDutyCycle(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*SOUR#:DCYC Successfully set generate duty cycle.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:DCYC Successfully set generate duty cycle.\n");
     return SCPI_RES_OK;
 }
 
@@ -411,7 +411,7 @@ scpi_result_t RP_GenDutyCycleQ(scpi_t *context) {
 
     SCPI_ResultFloat(context, duty_cycle);
 
-    RP_LOG(LOG_INFO, "*SOUR#:DCYC Successfully "
+    RP_LOG(LOG_DEBUG, "*SOUR#:DCYC Successfully "
         "returned generate duty cycle value to client.\n");
     return SCPI_RES_OK;
 }
@@ -440,7 +440,7 @@ scpi_result_t RP_GenArbitraryWaveForm(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*SOUR#:TRAC:DATA:DATA Successfully set arbitrary waveform data.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:TRAC:DATA:DATA Successfully set arbitrary waveform data.\n");
     return SCPI_RES_OK;
 }
 
@@ -464,7 +464,7 @@ scpi_result_t RP_GenArbitraryWaveFormQ(scpi_t *context) {
 
     SCPI_ResultBufferFloat(context, buffer, size);
 
-    RP_LOG(LOG_INFO, "*SOUR#:TRAC:DATA:DATA? Successfully "
+    RP_LOG(LOG_DEBUG, "*SOUR#:TRAC:DATA:DATA? Successfully "
         "returned arbitrary waveform data to client.\n");
     return SCPI_RES_OK;
 }
@@ -492,7 +492,7 @@ scpi_result_t RP_GenGenerateMode(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*SOUR#:BURS:STAT Successfully set generate mode.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:BURS:STAT Successfully set generate mode.\n");
     return SCPI_RES_OK;
 }
 
@@ -523,7 +523,7 @@ scpi_result_t RP_GenGenerateModeQ(scpi_t *context) {
 
     SCPI_ResultMnemonic(context, gen_mode);
 
-    RP_LOG(LOG_INFO, "*SOUR#:BURS:STAT? Successfully returned "
+    RP_LOG(LOG_DEBUG, "*SOUR#:BURS:STAT? Successfully returned "
         "generate mode status to client.\n");
     return SCPI_RES_OK;
 }
@@ -550,7 +550,7 @@ scpi_result_t RP_GenBurstCount(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*SOUR#:BURS:STAT Successfully set generate burst count.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:BURS:STAT Successfully set generate burst count.\n");
     return SCPI_RES_OK;
 }
 
@@ -572,7 +572,7 @@ scpi_result_t RP_GenBurstCountQ(scpi_t *context) {
 
     SCPI_ResultInt32(context, count);
 
-    RP_LOG(LOG_INFO, "*SOUR#:BURS:STAT? Successfully returned generate "
+    RP_LOG(LOG_DEBUG, "*SOUR#:BURS:STAT? Successfully returned generate "
         "burst count value to client.\n");
     return SCPI_RES_OK;
 }
@@ -599,7 +599,7 @@ scpi_result_t RP_GenBurstRepetitions(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*SOUR#:BURS:NOR Successfully set generate repetitions.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:BURS:NOR Successfully set generate repetitions.\n");
     return SCPI_RES_OK;
 }
 
@@ -621,7 +621,7 @@ scpi_result_t RP_GenBurstRepetitionsQ(scpi_t *context) {
 
     SCPI_ResultInt32(context, repetitions);
 
-    RP_LOG(LOG_INFO, "*SOUR#:BURS:NOR Successfully returned "
+    RP_LOG(LOG_DEBUG, "*SOUR#:BURS:NOR Successfully returned "
         "generate repetitions value to client.\n");
 
     return SCPI_RES_OK;
@@ -650,7 +650,7 @@ scpi_result_t RP_GenBurstPeriod(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*SOUR#:BURS:INT:PER Successfully set generate burst period.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:BURS:INT:PER Successfully set generate burst period.\n");
     return SCPI_RES_OK;
 }
 
@@ -673,7 +673,7 @@ scpi_result_t RP_GenBurstPeriodQ(scpi_t *context) {
 
     SCPI_ResultUInt32Base(context, period, 10);
 
-    RP_LOG(LOG_INFO, "*SOUR#:BURS:INT:PER Successfully returned "
+    RP_LOG(LOG_DEBUG, "*SOUR#:BURS:INT:PER Successfully returned "
         "generate burst period value to client.\n");
     return SCPI_RES_OK;
 }
@@ -702,7 +702,7 @@ scpi_result_t RP_GenTriggerSource(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*SOUR#:TRIG:SOUR Successfully set generate trigger source.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:TRIG:SOUR Successfully set generate trigger source.\n");
     return SCPI_RES_OK;
 }
 
@@ -729,7 +729,7 @@ scpi_result_t RP_GenTriggerSourceQ(scpi_t *context) {
 
     SCPI_ResultMnemonic(context, trig_name);
 
-    RP_LOG(LOG_INFO, "*SOUR#:TRIG:SOUR? Successfully returend"
+    RP_LOG(LOG_DEBUG, "*SOUR#:TRIG:SOUR? Successfully returend"
     " generate trigger status to client.\n");
 
     return SCPI_RES_OK;
@@ -751,6 +751,6 @@ scpi_result_t RP_GenTrigger(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*SOUR#:TRIG:IMM Successfully set immediate trigger.\n");
+    RP_LOG(LOG_DEBUG, "*SOUR#:TRIG:IMM Successfully set immediate trigger.\n");
     return SCPI_RES_OK;
 }

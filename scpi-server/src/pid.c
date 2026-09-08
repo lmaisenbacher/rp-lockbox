@@ -85,7 +85,7 @@ scpi_result_t RP_PIDSetpoint(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:SETPoint Successfully set setpoint.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:SETPoint Successfully set setpoint.\n");
     return SCPI_RES_OK;
 }
 
@@ -109,7 +109,7 @@ scpi_result_t RP_PIDSetpointQ(scpi_t *context) {
 
     SCPI_ResultDouble(context, setpoint);
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:SETPoint? Successfully returned setpoint value to client.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:SETPoint? Successfully returned setpoint value to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -137,7 +137,7 @@ scpi_result_t RP_PIDKg(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KG Successfully set Kg.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:KG Successfully set Kg.\n");
     return SCPI_RES_OK;
 }
 
@@ -161,7 +161,7 @@ scpi_result_t RP_PIDKgQ(scpi_t *context) {
 
     SCPI_ResultDouble(context, kg);
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KG? Successfully returned Kg value to client.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:KG? Successfully returned Kg value to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -189,7 +189,7 @@ scpi_result_t RP_PIDKp(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KP Successfully set Kp.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:KP Successfully set Kp.\n");
     return SCPI_RES_OK;
 }
 
@@ -213,7 +213,7 @@ scpi_result_t RP_PIDKpQ(scpi_t *context) {
 
     SCPI_ResultDouble(context, kp);
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KP? Successfully returned Kp value to client.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:KP? Successfully returned Kp value to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -241,7 +241,7 @@ scpi_result_t RP_PIDKi(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KI Successfully set Ki.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:KI Successfully set Ki.\n");
     return SCPI_RES_OK;
 }
 
@@ -265,7 +265,7 @@ scpi_result_t RP_PIDKiQ(scpi_t *context) {
 
     SCPI_ResultDouble(context, ki);
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KI? Successfully returned Ki value to client.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:KI? Successfully returned Ki value to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -293,7 +293,7 @@ scpi_result_t RP_PIDKii(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KII Successfully set Kii.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:KII Successfully set Kii.\n");
     return SCPI_RES_OK;
 }
 
@@ -317,7 +317,7 @@ scpi_result_t RP_PIDKiiQ(scpi_t *context) {
 
     SCPI_ResultDouble(context, kii);
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KII? Successfully returned Kii value to client.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:KII? Successfully returned Kii value to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -345,7 +345,7 @@ scpi_result_t RP_PIDKd(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KD Successfully set Kd.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:KD Successfully set Kd.\n");
     return SCPI_RES_OK;
 }
 
@@ -369,7 +369,7 @@ scpi_result_t RP_PIDKdQ(scpi_t *context) {
 
     SCPI_ResultDouble(context, kd);
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:KD? Successfully returned Kd value to client.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:KD? Successfully returned Kd value to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -397,7 +397,7 @@ scpi_result_t RP_PIDIntReset(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:INTegrator:RESet Successfully set integrator reset.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:INTegrator:RESet Successfully set integrator reset.\n");
     return SCPI_RES_OK;
 }
 
@@ -422,7 +422,7 @@ scpi_result_t RP_PIDIntResetQ(scpi_t *context) {
     // Return result as string
     SCPI_ResultMnemonic(context, enabled ? "ON": "OFF");
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:INTegrator:RESet? Successfully returned integrator reset.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:INTegrator:RESet? Successfully returned integrator reset.\n");
     return SCPI_RES_OK;
 }
 
@@ -450,7 +450,7 @@ scpi_result_t RP_PIDInverted(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:INVerted Successfully set feedback sign.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:INVerted Successfully set feedback sign.\n");
     return SCPI_RES_OK;
 }
 scpi_result_t RP_PIDInvertedQ(scpi_t *context) {
@@ -474,7 +474,7 @@ scpi_result_t RP_PIDInvertedQ(scpi_t *context) {
     // Return result as string
     SCPI_ResultMnemonic(context, inverted ? "ON": "OFF");
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:INVerted? Successfully returned feedback sign.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:INVerted? Successfully returned feedback sign.\n");
     return SCPI_RES_OK;
 }
 
@@ -502,7 +502,7 @@ scpi_result_t RP_PIDHold(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:HOLD Successfully set PID hold.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:HOLD Successfully set PID hold.\n");
     return SCPI_RES_OK;
 }
 
@@ -527,7 +527,7 @@ scpi_result_t RP_PIDHoldQ(scpi_t *context) {
     // Return result as string
     SCPI_ResultMnemonic(context, enabled ? "ON": "OFF");
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:HOLD? Successfully returned PID hold state.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:HOLD? Successfully returned PID hold state.\n");
     return SCPI_RES_OK;
 }
 
@@ -555,7 +555,7 @@ scpi_result_t RP_PIDResetWhenRailed(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:INTegrator:AUTOreset Successfully set integrator auto reset.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:INTegrator:AUTOreset Successfully set integrator auto reset.\n");
     return SCPI_RES_OK;
 }
 scpi_result_t RP_PIDResetWhenRailedQ(scpi_t *context) {
@@ -579,7 +579,7 @@ scpi_result_t RP_PIDResetWhenRailedQ(scpi_t *context) {
     // Return result as string
     SCPI_ResultMnemonic(context, enabled ? "ON": "OFF");
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:INTegrator:AUTOreset Successfully returned integrator auto reset state.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:INTegrator:AUTOreset Successfully returned integrator auto reset state.\n");
     return SCPI_RES_OK;
 }
 
@@ -607,7 +607,7 @@ scpi_result_t RP_PIDRelock(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:RELock Successfully set relock state.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:RELock Successfully set relock state.\n");
     return SCPI_RES_OK;
 }
 
@@ -632,7 +632,7 @@ scpi_result_t RP_PIDRelockQ(scpi_t *context) {
     // Return result as string
     SCPI_ResultMnemonic(context, enabled ? "ON": "OFF");
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:RELock? Successfully returned relock state.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:RELock? Successfully returned relock state.\n");
     return SCPI_RES_OK;
 }
 
@@ -660,7 +660,7 @@ scpi_result_t RP_PIDRelockStepsize(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:RELock:STEPsize Successfully set stepsize.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:RELock:STEPsize Successfully set stepsize.\n");
     return SCPI_RES_OK;
 }
 
@@ -684,7 +684,7 @@ scpi_result_t RP_PIDRelockStepsizeQ(scpi_t *context) {
 
     SCPI_ResultDouble(context, stepsize);
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:RELock:STEPsize? Successfully returned stepsize value to client.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:RELock:STEPsize? Successfully returned stepsize value to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -712,7 +712,7 @@ scpi_result_t RP_PIDRelockMin(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:RELock:MIN Successfully set minimum value.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:RELock:MIN Successfully set minimum value.\n");
     return SCPI_RES_OK;
 }
 
@@ -736,7 +736,7 @@ scpi_result_t RP_PIDRelockMinQ(scpi_t *context) {
 
     SCPI_ResultDouble(context, minimum);
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:RELock:MIN? Successfully returned minimum value to client.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:RELock:MIN? Successfully returned minimum value to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -764,7 +764,7 @@ scpi_result_t RP_PIDRelockMax(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:RELock:MAX Successfully set maximum value.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:RELock:MAX Successfully set maximum value.\n");
     return SCPI_RES_OK;
 }
 
@@ -788,7 +788,7 @@ scpi_result_t RP_PIDRelockMaxQ(scpi_t *context) {
 
     SCPI_ResultDouble(context, maximum);
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:RELock:MAX? Successfully returned maximum value to client.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:RELock:MAX? Successfully returned maximum value to client.\n");
     return SCPI_RES_OK;
 }
 
@@ -825,7 +825,7 @@ scpi_result_t RP_PIDRelockInput(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:RELock:INPut Successfully set input pin.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:RELock:INPut Successfully set input pin.\n");
     return SCPI_RES_OK;
 }
 
@@ -856,6 +856,6 @@ scpi_result_t RP_PIDRelockInputQ(scpi_t *context) {
 
     SCPI_ResultMnemonic(context, pin_name);
 
-    RP_LOG(LOG_INFO, "*PID:IN#:OUT#:RELock:INPut? Successfully returned input pin value to client.\n");
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:RELock:INPut? Successfully returned input pin value to client.\n");
     return SCPI_RES_OK;
 }

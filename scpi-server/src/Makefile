@@ -51,6 +51,7 @@ OBJS = $(patsubst %$(OBJEXT), $(OBJECTS_DIR)/%$(OBJEXT), $(OBJECTS))
 CFLAGS += -g -std=gnu99 -Wall -Werror -fPIC
 CFLAGS += -I../../api/include
 CFLAGS += -DVERSION=$(VERSION) -DREVISION=$(REVISION)
+# Uncomment to log the per-command trace (LOG_DEBUG) to syslog as well
 # CFLAGS += -DSCPI_DEBUG=1
 LDFLAGS=
 
