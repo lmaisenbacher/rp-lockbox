@@ -87,6 +87,7 @@ Note that the lock status is always monitored, independent of whether the relock
 or not.
 The voltage can, e.g., the signal from a photodetector monitoring the transmission of a cavity
 to whose resonance a laser is locked (or vice versa).
+The lock status can also be queried via SCPI (`PID:IN<n>:OUT<n>:LOCKed?`, see [SCPI commands](doc/SCPI_commands.rst)).
 
 ### Relock
 Each of the PID controllers contains an automatic relock feature. When the feature is enabled and
