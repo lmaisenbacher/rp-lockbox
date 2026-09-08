@@ -6,6 +6,9 @@ List of supported SCPI commands
 
 Table of correlated SCPI and API commands on Red Pitaya.
 
+``*IDN?`` identifies the lockbox as ``REDPITAYA,rp-lockbox,<hostname>,<version> (<git revision>)``,
+the version being the release in the repository's ``VERSION`` file.
+
 .. tabularcolumns:: |p{28mm}|p{28mm}|p{28mm}|
 
 +------------------------------------+-------------------------+------------------------------------------------------+

@@ -201,3 +201,9 @@ make install
 make tarball
 ```
 to copy the generated files to the `build` subdirectory and generate a compressed archive.
+
+### Versioning and releases
+
+The release version lives in the file `VERSION` at the top of the repository. The top-level `make` passes it, together with the git revision of the checkout, into the API library and the SCPI server, and the server reports both in `*IDN?` (e.g., `REDPITAYA,rp-lockbox,rp-f0ac0b,1.2.1 (77505ed)`), so a running lockbox always tells which version it runs.
+
+To release: bump `VERSION` (major for incompatible SCPI or configuration changes, minor for new commands or features, patch for fixes), commit, tag the commit with the version (`git tag 1.2.1`, `git push --tags`), build the archive as described above, and attach it to a GitHub release of that tag; the [installation instructions](#installation) point at the latest release.

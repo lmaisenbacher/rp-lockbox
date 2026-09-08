@@ -238,6 +238,15 @@ int main(int argc, char *argv[])
     if (result != RP_OK)
         RP_LOG(LOG_ERR, "Failed to load lockbox config from file: %s", rp_GetError(result));
 
+    // *IDN?: the box's hostname as the serial number and the lockbox
+    // software version "<VERSION> (<git revision>)" as the firmware version
+    static char hostname[64];
+    if (gethostname(hostname, sizeof(hostname)) != 0) {
+        strcpy(hostname, "unknown");
+    }
+    scpi_context.idn[2] = hostname;
+    scpi_context.idn[3] = rp_GetVersion();
+
     // user_context will be pointer to socket
     scpi_context.user_context = NULL;
     scpi_context.binary_output = false;

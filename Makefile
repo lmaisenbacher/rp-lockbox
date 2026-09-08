@@ -1,5 +1,10 @@
 INSTALL_DIR ?= build
 TARBALL = rp-lockbox.tar.gz
+# Release version (the VERSION file; bump it and tag the commit for a
+# release) and the git revision of the build, compiled into the API
+# library and the SCPI server, which reports them in *IDN?
+VERSION ?= $(shell cat VERSION)
+REVISION ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
 
 all: api scpi fpga
 
@@ -13,7 +18,7 @@ LIBLOCKBOX_DIR = api
 
 .PHONY: api
 api:
-	$(MAKE) -C $(LIBLOCKBOX_DIR)
+	$(MAKE) -C $(LIBLOCKBOX_DIR) VERSION=$(VERSION) REVISION=$(REVISION)
 
 ################################################################################
 # SCPI server
@@ -22,7 +27,7 @@ SCPI_SERVER_DIR = scpi-server
 
 .PHONY: scpi
 scpi:
-	$(MAKE) -C $(SCPI_SERVER_DIR)
+	$(MAKE) -C $(SCPI_SERVER_DIR) VERSION=$(VERSION) REVISION=$(REVISION)
 
 ################################################################################
 # FPGA bitfile

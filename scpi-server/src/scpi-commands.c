@@ -278,5 +278,7 @@ scpi_t scpi_context = {
     .interface = &scpi_interface,
     .registers = scpi_regs,
     .units = scpi_units_def,
-    .idn = {"REDPITAYA", "INSTR2014", NULL, "01-02"},
+    /* Filled in at startup (scpi-server.c): the hostname as the serial
+     * number, the lockbox version as the firmware version */
+    .idn = {"REDPITAYA", "rp-lockbox", NULL, NULL},
 };
