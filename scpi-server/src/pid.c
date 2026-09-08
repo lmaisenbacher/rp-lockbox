@@ -21,7 +21,7 @@
 scpi_result_t RP_SaveLockboxConfig(scpi_t *context) {
     int result = rp_SaveLockboxConfig();
     if (result != RP_OK) {
-        RP_LOG("LOCKbox:CONFig:SAVE Failed to save config to file: %s\n", rp_GetError(result));
+        RP_LOG(LOG_ERR, "LOCKbox:CONFig:SAVE Failed to save config to file: %s\n", rp_GetError(result));
         return SCPI_RES_ERR;
     }
     return SCPI_RES_OK;
@@ -30,7 +30,7 @@ scpi_result_t RP_SaveLockboxConfig(scpi_t *context) {
 scpi_result_t RP_LoadLockboxConfig(scpi_t *context) {
     int result = rp_LoadLockboxConfig();
     if (result != RP_OK) {
-        RP_LOG("LOCKbox:CONFig:LOAD Failed to load config from file: %s\n", rp_GetError(result));
+        RP_LOG(LOG_ERR, "LOCKbox:CONFig:LOAD Failed to load config from file: %s\n", rp_GetError(result));
         return SCPI_RES_ERR;
     }
     return SCPI_RES_OK;
