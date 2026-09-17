@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <sys/prctl.h>
 #include <errno.h>
 #include <arpa/inet.h>
@@ -300,6 +301,19 @@ int main(int argc, char *argv[])
             RP_LOG(LOG_ERR, "Failed to accept connection (%s)", strerror(errno));
             perror("Failed to accept connection\n");
             return (EXIT_FAILURE);
+        }
+
+        // libscpi writes a response as two segments (the result, then the
+        // line ending). With Nagle's algorithm on, the second segment waits
+        // for the client's ACK of the first, which the client's delayed-ACK
+        // timer holds for 40 ms (Linux) or 200 ms (Windows): every query
+        // took ~44 ms from a Linux client. Sending each write at once
+        // makes a query cost the round trip only.
+        int nodelay = 1;
+        if (setsockopt(connfd, IPPROTO_TCP, TCP_NODELAY, &nodelay,
+                       sizeof(nodelay)) == -1) {
+            RP_LOG(LOG_WARNING, "Failed to set TCP_NODELAY (%s); replies "
+                   "will be delayed by the client's ACK timer", strerror(errno));
         }
 
         // Fork a child process, which will talk to the client
