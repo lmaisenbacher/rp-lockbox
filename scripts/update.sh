@@ -1,7 +1,10 @@
 #!/bin/bash
 # Install the build products of this checkout over the running installation
-# and restart the services. Stopping lockbox reloads the bitstream on the
-# next start, which drops the lock: run this at a relock window.
+# and restart the services. Run as root (rw/ro remount the root file system,
+# the targets are /opt/redpitaya and /etc/systemd/system). Stopping lockbox
+# reloads the bitstream on the next start, which drops the lock: run this at
+# a relock window. Installs what was last BUILT in the tree: rebuild after a
+# branch change.
 systemctl stop lockbox-web-interface
 systemctl stop lockbox-monitor
 systemctl stop lockbox

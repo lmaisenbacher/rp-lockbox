@@ -944,7 +944,7 @@ scpi_result_t RP_PIDRelockInputQ(scpi_t *context) {
 }
 
 /*
- * Lock monitor queries (the lockbox-monitor service's counters; every one
+ * Lockbox monitor queries (the lockbox-monitor service's counters; every one
  * fails with RP_EMON while the service is not running)
  */
 
@@ -962,7 +962,7 @@ scpi_result_t RP_PIDMonitorQ(scpi_t *context) {
 
     result = rp_PIDGetMonitor(pid, &m);
     if(result != RP_OK) {
-        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:MONitor? Failed to read the lock monitor: %s", rp_GetError(result));
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:MONitor? Failed to read the lockbox monitor: %s", rp_GetError(result));
         return SCPI_RES_ERR;
     }
 
@@ -1001,7 +1001,7 @@ scpi_result_t RP_PIDUnlockCountQ(scpi_t *context) {
 
     result = rp_PIDGetUnlockCount(pid, &count);
     if(result != RP_OK) {
-        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:UNLock:COUNt? Failed to read the lock monitor: %s", rp_GetError(result));
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:UNLock:COUNt? Failed to read the lockbox monitor: %s", rp_GetError(result));
         return SCPI_RES_ERR;
     }
 
@@ -1025,7 +1025,7 @@ scpi_result_t RP_PIDUnlockTimeQ(scpi_t *context) {
 
     result = rp_PIDGetUnlockedTime(pid, &seconds);
     if(result != RP_OK) {
-        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:UNLock:TIME? Failed to read the lock monitor: %s", rp_GetError(result));
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:UNLock:TIME? Failed to read the lockbox monitor: %s", rp_GetError(result));
         return SCPI_RES_ERR;
     }
 
@@ -1056,7 +1056,7 @@ scpi_result_t RP_PIDUnlockEventsQ(scpi_t *context) {
 
     result = rp_PIDGetUnlockEvents(pid, after, events, &n);
     if(result != RP_OK) {
-        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:UNLock:EVENts? Failed to read the lock monitor: %s", rp_GetError(result));
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:UNLock:EVENts? Failed to read the lockbox monitor: %s", rp_GetError(result));
         return SCPI_RES_ERR;
     }
 
@@ -1079,7 +1079,7 @@ scpi_result_t RP_LockboxMonitorQ(scpi_t *context) {
 
     int result = rp_MonitorGetHealth(&alive, &uptime_s, &period_ms, &max_gap_ms, &late_polls, &merge_ms);
     if(result != RP_OK && result != RP_EMON) {
-        RP_LOG(LOG_ERR, "*LOCKbox:MONitor? Failed to read the lock monitor: %s", rp_GetError(result));
+        RP_LOG(LOG_ERR, "*LOCKbox:MONitor? Failed to read the lockbox monitor: %s", rp_GetError(result));
         return SCPI_RES_ERR;
     }
 
@@ -1092,6 +1092,6 @@ scpi_result_t RP_LockboxMonitorQ(scpi_t *context) {
     SCPI_ResultUInt64Base(context, late_polls, 10);
     SCPI_ResultDouble(context, merge_ms);
 
-    RP_LOG(LOG_DEBUG, "*LOCKbox:MONitor? Successfully returned the lock monitor's health.");
+    RP_LOG(LOG_DEBUG, "*LOCKbox:MONitor? Successfully returned the lockbox monitor's health.");
     return SCPI_RES_OK;
 }

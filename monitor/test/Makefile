@@ -1,4 +1,4 @@
-# Host build of the lock monitor's tests (any Linux with gcc; no Red Pitaya):
+# Host build of the lockbox monitor's tests (any Linux with gcc; no Red Pitaya):
 #
 #   make test     unit tests of the lock-drop state machine, then the daemon
 #                 end to end against the stub liblockbox (run_host_test.sh)

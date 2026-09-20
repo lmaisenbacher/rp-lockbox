@@ -87,7 +87,7 @@ extern "C" {
 #define RP_EOCF   24
 /** Incompatible config file version */
 #define RP_EICV   25
-/** Lock monitor not running (the lockbox-monitor service's shared block is
+/** Lockbox monitor not running (the lockbox-monitor service's shared block is
  * absent, stale, or of another layout) */
 #define RP_EMON   26
 
@@ -354,7 +354,7 @@ int rp_Init();
 
 /**
  * Maps the lockbox's registers without changing anything: for the web
- * interface, the lock monitor, and any other process that joins a lockbox
+ * interface, the lockbox monitor, and any other process that joins a lockbox
  * the SCPI server already set up. Same use as rp_Init otherwise.
  * @return If the function is successful, the return value is RP_OK.
  * If the function is unsuccessful, the return value is any of RP_E* values that indicate an error.
@@ -1119,6 +1119,17 @@ int rp_AcqGetDataV2(uint32_t pos, uint32_t* size, float* buffer1, float* buffer2
 int rp_AcqGetOldestDataV(rp_channel_t channel, uint32_t* size, float* buffer);
 
 /**
+ * Returns the ADC buffer from the oldest sample to the newest one in the
+ * LOCKBOX'S input volts: converted with the front end's high-gain
+ * calibration and a 1 V full scale, exactly like rp_GetInVoltage and the
+ * PID setpoints (rp_AcqGetOldestDataV uses the scope's own low-gain
+ * constants, which are different volts for the same counts). Same use as
+ * rp_AcqGetOldestDataV otherwise; the lockbox monitor's input statistics
+ * come from it.
+ */
+int rp_AcqGetOldestInputV(rp_channel_t channel, uint32_t* size, float* buffer);
+
+/**
  * Returns the latest ADC buffer samples in Volt units.
  * Output buffer must be at least 'size' long.
  * @param channel Channel A or B for which we want to retrieve the ADC buffer.
@@ -1634,7 +1645,7 @@ int rp_PIDGetLockStatus(rp_pid_t pid, bool *lock_status);
 /*
  * Get the lock status and the hold setting of all four PIDs from ONE read
  * of the configuration register, so the eight flags belong to the same
- * instant (what the lock monitor samples every millisecond).
+ * instant (what the lockbox monitor samples every millisecond).
  * @param locked Pointer where the lock flags will be returned, bit i for
  * the PID with rp_pid_t value i.
  * @param held Pointer where the hold flags will be returned, same layout.
@@ -1804,7 +1815,7 @@ int rp_SaveLockboxConfig();
  */
 int rp_LoadLockboxConfig();
 
-/** @name Lock monitor
+/** @name Lockbox monitor
  * Readers of the lockbox-monitor service's shared block (see
  * lockbox_monitor.h). Every function returns RP_EMON while the service is
  * not running - its block is absent, its last poll is older than two

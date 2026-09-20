@@ -762,6 +762,33 @@ int acq_GetOldestDataV(rp_channel_t channel, uint32_t* size, float* buffer)
     return acq_GetDataV(channel, pos, size, buffer);
 }
 
+int acq_GetOldestDataInputV(rp_channel_t channel, uint32_t* size, float* buffer)
+{
+    /* The lockbox converts its inputs with the front end's high-gain
+     * calibration and a 1 V full scale (ams_GetInVoltage, the PID
+     * setpoints); the scope's own conversion above uses the low-gain
+     * constants, which gives different volts for the same counts. The
+     * lockbox monitor's statistics must match the "Input voltage" readout
+     * and the setpoint, so this reader converts like them. */
+    uint32_t pos;
+    acq_GetWritePointer(&pos);
+    pos++;
+
+    *size = MIN(*size, ADC_BUFFER_SIZE);
+
+    rp_calib_params_t calib = calib_GetParams();
+    uint32_t calibScale = channel == RP_CH_1 ? calib.fe_ch1_fs_g_hi : calib.fe_ch2_fs_g_hi;
+    int32_t dc_offs = channel == RP_CH_1 ? calib.fe_ch1_hi_offs : calib.fe_ch2_hi_offs;
+    const volatile uint32_t* raw_buffer = getRawBuffer(channel);
+
+    for (uint32_t i = 0; i < (*size); ++i) {
+        uint32_t cnts = (raw_buffer[(pos + i) % ADC_BUFFER_SIZE]) & ADC_BITS_MAK;
+        buffer[i] = cmn_CnvCntToV(ADC_BITS, cnts, 1.0, calibScale, dc_offs, 0.0);
+    }
+
+    return RP_OK;
+}
+
 int acq_GetLatestDataV(rp_channel_t channel, uint32_t* size, float* buffer)
 {
     *size = MIN(*size, ADC_BUFFER_SIZE);

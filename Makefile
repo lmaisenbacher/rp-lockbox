@@ -30,7 +30,7 @@ scpi:
 	$(MAKE) -C $(SCPI_SERVER_DIR) VERSION=$(VERSION) REVISION=$(REVISION)
 
 ################################################################################
-# Lock monitor daemon (links the API library: build `api` first)
+# Lockbox monitor daemon (links the API library: build `api` first)
 ################################################################################
 MONITOR_DIR = monitor
 
@@ -38,7 +38,7 @@ MONITOR_DIR = monitor
 monitor:
 	$(MAKE) -C $(MONITOR_DIR) VERSION=$(VERSION) REVISION=$(REVISION)
 
-# Host tests of the lock monitor (any Linux with gcc)
+# Host tests of the lockbox monitor (any Linux with gcc)
 .PHONY: monitor-test
 monitor-test:
 	$(MAKE) -C $(MONITOR_DIR) test

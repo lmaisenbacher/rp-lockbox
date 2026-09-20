@@ -73,8 +73,8 @@ Parameter options:
 | | ``ANALOG:OUT<n>:VOLT?``             | ``rp_GetOutVoltage`` | | Read the voltage from fast analog outputs.         |
 +---------------------------------------+----------------------+------------------------------------------------------+
 
-The input noise statistics come from the lock monitor service (see the README's "Lock drop
-monitor"); these queries fail with "Lock monitor not running" while it is not running.
+The input noise statistics come from the lockbox monitor service (see the README's "Lock drop
+monitor"); these queries fail with "Lockbox monitor not running" while it is not running.
 
 * ``<decimation> = {64, 1024, 8192, 65536}`` Default: ``1024``
 
@@ -84,7 +84,7 @@ monitor"); these queries fail with "Lock monitor not running" while it is not ru
 | SCPI                                  | API                               | description                                          |
 +=======================================+===================================+======================================================+
 | | ``ANALOG:IN<n>:STATs?``             | ``rp_GetInStats``                 | | The fast analog input's statistics over the        |
-| | Example:                            |                                   | | lock monitor's last window:                        |
+| | Example:                            |                                   | | lockbox monitor's last window:                     |
 | | ``ANALOG:IN1:STATs?`` >             |                                   | | ``mean_v,sd_v,min_v,max_v,window_s,age_s,``        |
 | | ``0.5001,0.00083,0.4952,``          |                                   | | ``decimation``. The standard deviation about       |
 | | ``0.5049,1.074,0.31,1024``          |                                   | | the mean is the rms noise; ``age_s`` is the time   |
@@ -314,19 +314,19 @@ Parameter options:
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | ``PID:IN<n>:OUT<n>:RELock:INPut?``                | ``rp_PIDGetRelockInput``     | Get the analog input used for relocking the PID.          |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
-| | ``PID:IN<n>:OUT<n>:MONitor?``                   | ``rp_PIDGetMonitor``         | | The lock monitor's view of the PID in one reply:        |
-| | Example:                                        |                              | | ``locked,lock_age_s,servo_on,servo_age_s,``             |
+| | ``PID:IN<n>:OUT<n>:MONitor?``                   | ``rp_PIDGetMonitor``         | | The lockbox monitor's view of the PID in one            |
+| | Example:                                        |                              | | reply: ``locked,lock_age_s,servo_on,servo_age_s,``      |
 | | ``PID:IN1:OUT1:MON?`` >                         |                              | | ``unlocks_total,unlocked_total_s,``                     |
 | | ``1,4321.2,1,5000.1,17,3.2,3,0.9,``             |                              | | ``unlocks_since_servo,unlocked_since_servo_s,``         |
 | | ``0.4,0,1500.2,0.4,20``                         |                              | | ``longest_since_servo_s,drop_open,``                    |
 |                                                   |                              | | ``last_unlock_age_s,last_unlock_s,raw_unlock_edges``    |
 |                                                   |                              | | (1/0 for the flags; ages -1 = never). See the           |
-|                                                   |                              | | README's "Lock drop monitor".                           |
+|                                                   |                              | | README's "Lockbox monitor".                             |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
-| ``PID:IN<n>:OUT<n>:UNLock:COUNt?``                | ``rp_PIDGetUnlockCount``     | | Lock drops since the lock monitor started               |
+| ``PID:IN<n>:OUT<n>:UNLock:COUNt?``                | ``rp_PIDGetUnlockCount``     | | Lock drops since the lockbox monitor started            |
 |                                                   |                              | | (monotonic; loggers take the difference).               |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
-| ``PID:IN<n>:OUT<n>:UNLock:TIME?``                 | ``rp_PIDGetUnlockedTime``    | | Time in s spent in lock drops since the lock            |
+| ``PID:IN<n>:OUT<n>:UNLock:TIME?``                 | ``rp_PIDGetUnlockedTime``    | | Time in s spent in lock drops since the lockbox         |
 |                                                   |                              | | monitor started (monotonic, the open drop included).    |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | | ``PID:IN<n>:OUT<n>:UNLock:EVENts? [<after>]``   | ``rp_PIDGetUnlockEvents``    | | The drops with an index above ``<after>`` (default      |
@@ -359,18 +359,18 @@ Parameter options:
 +---------------------------------+--------------------+--------------------------------------+
 
 ============
-Lock monitor
+Lockbox monitor
 ============
 
-The lock monitor service (see the README's "Lock drop monitor") counts lock drops and measures
+The lockbox monitor service (see the README's "Lockbox monitor") counts lock drops and measures
 the input noise; its PID queries are in the PID table above and its input statistics in the analog
-table. Every query but ``LOCKbox:MONitor?`` fails with "Lock monitor not running" while the service
+table. Every query but ``LOCKbox:MONitor?`` fails with "Lockbox monitor not running" while the service
 is not running.
 
 +-------------------------+--------------------------+--------------------------------------------------------------------+
 | SCPI                    | API                      | description                                                        |
 +=========================+==========================+====================================================================+
-| ``LOCKbox:MONitor?``    | ``rp_MonitorGetHealth``  | | The lock monitor service's health:                               |
+| ``LOCKbox:MONitor?``    | ``rp_MonitorGetHealth``  | | The lockbox monitor service's health:                            |
 |                         |                          | | ``alive,uptime_s,period_ms,max_gap_ms,late_polls,merge_ms``      |
 |                         |                          | | (a monitor that is not running answers ``0,-1,0,0,0,0``).        |
 +-------------------------+--------------------------+--------------------------------------------------------------------+

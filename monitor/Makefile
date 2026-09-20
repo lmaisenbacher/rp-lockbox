@@ -1,4 +1,4 @@
-# Lock monitor daemon makefile
+# Lockbox monitor daemon makefile
 
 # Installation directory. It is changed when using the main Makefile
 INSTALL_DIR ?= .

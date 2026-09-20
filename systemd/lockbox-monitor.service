@@ -1,5 +1,5 @@
 [Unit]
-Description=Lock monitor for the Red Pitaya Lockbox (lock drops, input noise)
+Description=Lockbox monitor for the Red Pitaya Lockbox (lock drops, input noise)
 # The SCPI server loads the bitstream and restores the saved lockbox
 # configuration; the monitor joins that running lockbox. PartOf restarts
 # the monitor with the SCPI server, so its counters start with the gateware.

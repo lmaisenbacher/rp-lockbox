@@ -3,9 +3,9 @@
  *
  * All rights reserved.
  *
- * @brief The lock monitor's shared-memory block.
+ * @brief The lockbox monitor's shared-memory block.
  *
- * The lock monitor daemon (lockbox-monitor) samples the FPGA's lock and
+ * The lockbox monitor daemon (lockbox-monitor) samples the FPGA's lock and
  * hold flags every millisecond, counts lock drops, and measures the fast
  * inputs' noise with the scope block. It publishes its state in a POSIX
  * shared-memory block (/dev/shm/lockbox-monitor); liblockbox reads the

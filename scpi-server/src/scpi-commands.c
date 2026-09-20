@@ -145,12 +145,12 @@ static const scpi_command_t scpi_commands[] = {
     {.pattern = "ANALOG:PIN?", .callback                = RP_AnalogPinValueQ,},
     {.pattern = "ANALOG:IN#:VOLT?", .callback           = RP_AnalogInVoltageQ,},
     {.pattern = "ANALOG:OUT#:VOLT?", .callback          = RP_AnalogOutVoltageQ,},
-    /* Input noise statistics of the lock monitor service */
+    /* Input noise statistics of the lockbox monitor service */
     {.pattern = "ANALOG:IN#:STATs?", .callback          = RP_AnalogInStatsQ,},
     {.pattern = "ANALOG:STATs:DECimation", .callback    = RP_AnalogStatsDecimation,},
     {.pattern = "ANALOG:STATs:DECimation?", .callback   = RP_AnalogStatsDecimationQ,},
 
-    /* Acquire (the lock monitor service owns the scope while it runs) */
+    /* Acquire (the lockbox monitor service owns the scope while it runs) */
     {.pattern = "ACQ:START", .callback                  = RP_AcqStart,},
     {.pattern = "ACQ:STOP", .callback                   = RP_AcqStop,},
     {.pattern = "ACQ:RST", .callback                    = RP_AcqReset,},
@@ -247,7 +247,7 @@ static const scpi_command_t scpi_commands[] = {
     {.pattern = "PID:IN#:OUT#:RELock:MAX?", .callback           = RP_PIDRelockMaxQ,},
     {.pattern = "PID:IN#:OUT#:RELock:INPut", .callback          = RP_PIDRelockInput,},
     {.pattern = "PID:IN#:OUT#:RELock:INPut?", .callback         = RP_PIDRelockInputQ,},
-    /* Lock monitor service: drops and their statistics */
+    /* Lockbox monitor service: drops and their statistics */
     {.pattern = "PID:IN#:OUT#:MONitor?", .callback              = RP_PIDMonitorQ,},
     {.pattern = "PID:IN#:OUT#:UNLock:COUNt?", .callback         = RP_PIDUnlockCountQ,},
     {.pattern = "PID:IN#:OUT#:UNLock:TIME?", .callback          = RP_PIDUnlockTimeQ,},
@@ -263,7 +263,7 @@ static const scpi_command_t scpi_commands[] = {
     {.pattern = "LOCKbox:CONFig:SAVE", .callback = RP_SaveLockboxConfig,},
     {.pattern = "LOCKbox:CONFig:LOAD", .callback = RP_LoadLockboxConfig,},
 
-    /* Lock monitor service health */
+    /* Lockbox monitor service health */
     {.pattern = "LOCKbox:MONitor?", .callback = RP_LockboxMonitorQ,},
 
     SCPI_CMD_LIST_END

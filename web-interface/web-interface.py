@@ -46,13 +46,13 @@ ERROR_CODES = {
     23: "RP_EMNC. Failed to open config file.",
     24: "RP_EOCF. Incompatible config file version.",
     25: "RP_EICV. Failed to Open EEPROM Devic.",
-    26: "RP_EMON. Lock monitor not running."}
+    26: "RP_EMON. Lockbox monitor not running."}
 
-#: Error code of a lock monitor that is not running (its readouts are
+#: Error code of a lockbox monitor that is not running (its readouts are
 #: shown as such, not logged as errors)
 RP_EMON = 26
 
-#: The scope decimations the lock monitor's input statistics accept, with
+#: The scope decimations the lockbox monitor's input statistics accept, with
 #: the bandwidth (-3 dB of the averaging) each gives
 STATS_DECIMATIONS = {64: "850 kHz", 1024: "54 kHz", 8192: "6.7 kHz", 65536: "0.85 kHz"}
 
@@ -101,7 +101,7 @@ class PIDMonitor(ctypes.Structure):
 
 
 def pid_monitor(pid):
-    """The lock monitor's view of PID `pid` (0-3) as a dict, or None while
+    """The lockbox monitor's view of PID `pid` (0-3) as a dict, or None while
     the monitor is not running."""
     monitor = PIDMonitor()
     retval = RP_LIB.rp_PIDGetMonitor(pid, ctypes.byref(monitor))
@@ -127,7 +127,7 @@ def pid_monitor(pid):
 
 
 def monitor_health():
-    """The lock monitor's health as a dict; `alive` False while it is not running."""
+    """The lockbox monitor's health as a dict; `alive` False while it is not running."""
     alive = ctypes.c_bool()
     uptime_s = ctypes.c_double()
     period_ms = ctypes.c_double()
@@ -138,7 +138,7 @@ def monitor_health():
         ctypes.byref(alive), ctypes.byref(uptime_s), ctypes.byref(period_ms),
         ctypes.byref(max_gap_ms), ctypes.byref(late_polls), ctypes.byref(merge_ms))
     if retval not in (0, RP_EMON):
-        LOG.error("Failed to get the lock monitor's health. Error code: %s", ERROR_CODES[retval])
+        LOG.error("Failed to get the lockbox monitor's health. Error code: %s", ERROR_CODES[retval])
     return {
         "alive": alive.value,
         "uptime_s": uptime_s.value,
@@ -150,7 +150,7 @@ def monitor_health():
 
 
 def input_stats(channel):
-    """The lock monitor's noise statistics of fast input `channel` (0 or 1)
+    """The lockbox monitor's noise statistics of fast input `channel` (0 or 1)
     as a dict, or None while the monitor is not running."""
     mean = ctypes.c_double()
     sd = ctypes.c_double()
@@ -672,7 +672,7 @@ def get_values():
             LOG.error("Failed to get lock status of PID. Error code: %s",
                       ERROR_CODES[retval])
 
-    # The lock monitor service's counters (None per entry while it is not running)
+    # The lockbox monitor service's counters (None per entry while it is not running)
     health = monitor_health()
     alive = health["alive"]
 
@@ -923,7 +923,7 @@ def get_parameters():
         LOG.error("Failed to get if signal generator permanent offset is enabled. Error code: %s",
                   ERROR_CODES[retval])
 
-    # The lock monitor's input statistics decimation: 0 while the monitor
+    # The lockbox monitor's input statistics decimation: 0 while the monitor
     # is not running or has no window yet
     stats_decimation = ctypes.c_uint32()
     retval = RP_LIB.rp_MonitorGetStatsDecimation(ctypes.byref(stats_decimation))
@@ -1045,7 +1045,7 @@ class MockRPLib():
         lock_status._obj.value = pid != 1
         return 0
 
-    # The lock monitor: a running service with fixed numbers
+    # The lockbox monitor: a running service with fixed numbers
     mock_stats_decimation = 1024
 
     def rp_MonitorGetHealth(self, alive, uptime_s, period_ms, max_gap_ms, late_polls, merge_ms):

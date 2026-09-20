@@ -96,7 +96,7 @@ static double gaussian()
     return sqrt(-2.0 * log(u1)) * cos(2.0 * M_PI * u2);
 }
 
-int rp_AcqGetOldestDataV(rp_channel_t channel, uint32_t *size, float *buffer)
+int rp_AcqGetOldestInputV(rp_channel_t channel, uint32_t *size, float *buffer)
 {
     double mean = channel == RP_CH_1 ? 0.5 : 0.25;
     double sd = channel == RP_CH_1 ? 0.001 : 0.002;

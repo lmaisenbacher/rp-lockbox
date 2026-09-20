@@ -137,11 +137,10 @@
         var spinner_sg_amp_offset_name = ["#spinner_sg_1_amp", "#spinner_sg_2_amp", "#spinner_sg_1_offset", "#spinner_sg_2_offset"];
         var ain_voltage_name = ["#ain_voltage_11", "#ain_voltage_21", "#ain_voltage_12", "#ain_voltage_22"];
         var lock_status_name = ["#lock_status_11", "#lock_status_21", "#lock_status_12", "#lock_status_22"];
-        // The lock monitor's rows (see show_monitor)
+        // The lockbox monitor's rows (see show_monitor)
         var servo_name = ["#servo_11", "#servo_21", "#servo_12", "#servo_22"];
         var drops_name = ["#drops_11", "#drops_21", "#drops_12", "#drops_22"];
-        var drops_total_name = ["#drops_total_11", "#drops_total_21", "#drops_total_12", "#drops_total_22"];
-        var input_noise_name = ["#input_noise_11", "#input_noise_21", "#input_noise_12", "#input_noise_22"];
+        var unlocked_name = ["#unlocked_11", "#unlocked_21", "#unlocked_12", "#unlocked_22"];
 
         function set_setpoint(pid, setpoint) {
             $.post("_set_setpoint", {
@@ -340,7 +339,7 @@
             $.post("_load_parameters", {});
         };
 
-        // The scope decimation behind the lock monitor's input noise
+        // The scope decimation behind the lockbox monitor's input noise
         // statistics (global: one scope for both inputs)
         function stats_decimation_changed(event, ui) {
             $.post("_set_stats_decimation", {
@@ -1022,7 +1021,7 @@
 				$("#checkbox_sg_2_enabled").not(":focus").prop("checked", data.sg_2_enabled);
 				$("#checkbox_sg_1_poffset_enabled").not(":focus").prop("checked", data.sg_1_poffset_enabled);
 				$("#checkbox_sg_2_poffset_enabled").not(":focus").prop("checked", data.sg_2_poffset_enabled);
-                // The lock monitor's input noise bandwidth (0 = no monitor)
+                // The lockbox monitor's input noise bandwidth (0 = no monitor)
                 if (data.stats_decimation) {
                     $("#stats_decimation").not(":focus").val(String(data.stats_decimation));
                 }
@@ -1062,48 +1061,55 @@
             return new Date(Date.now() - age_s * 1000).toLocaleTimeString();
         }
 
-        // The lock monitor's rows of one PID block (`m` null while the
-        // monitor is not running; `stats` the PID's input statistics)
-        function show_monitor(i, m, stats, monitor) {
+        // The lockbox monitor's rows of one PID block (`m` null while the
+        // monitor is not running)
+        function show_monitor(i, m) {
             if (!m) {
                 $(servo_name[i]).val("monitor not running");
                 $(drops_name[i]).val("-");
-                $(drops_total_name[i]).val("-");
-                $(input_noise_name[i]).val("-");
+                $(unlocked_name[i]).val("-");
                 return;
             }
             $(lock_status_name[i]).val((m.locked ? "Locked" : "Unlocked") + " for " + format_duration(m.lock_age_s));
             if (m.servo_on) {
                 $(servo_name[i]).val("since " + clock_before(m.servo_age_s) + " (" + format_duration(m.servo_age_s) + ")");
-                var drops = m.drops + (m.drops == 1 ? " drop" : " drops");
-                if (m.drops > 0) {
-                    drops += ", longest " + format_drop(m.longest_s) + ", " + format_drop(m.unlocked_s) + " unlocked";
-                }
-                if (m.drop_open) {
-                    drops += ", unlocked now";
-                }
-                $(drops_name[i]).val(drops);
+                $(drops_name[i]).val(m.drops);
+                $(unlocked_name[i]).val(m.drops > 0
+                    ? format_drop(m.unlocked_s) + " (longest " + format_drop(m.longest_s) + ")"
+                    : "-");
             } else {
                 $(servo_name[i]).val("off (scan)");
                 $(drops_name[i]).val("-");
+                $(unlocked_name[i]).val("-");
             }
-            $(drops_total_name[i]).val(m.unlocks_total + " in " + format_duration(monitor.uptime_s));
-            if (stats && stats.age_s >= 0) {
+        }
+
+        // The input noise readout at the top of an input's column: the
+        // standard deviation over the lockbox monitor's last window (about a
+        // second), whatever the lock was doing during it, with the bandwidth
+        // the dropdown under Options selects (`stats` null while the monitor
+        // is not running)
+        function show_input_noise(n, stats) {
+            if (!stats) {
+                $("#input_noise_" + n).val("-");
+            } else if (stats.age_s >= 0) {
                 var sd_mv = stats.sd_v * 1000;
-                $(input_noise_name[i]).val(sd_mv.toFixed(sd_mv < 1 ? 3 : 2) + " mV rms (" + stats.bandwidth + ", " + stats.window_s.toFixed(1) + " s)");
+                $("#input_noise_" + n).val(sd_mv.toFixed(sd_mv < 1 ? 3 : 2) + " (" + stats.bandwidth + ")");
             } else {
-                $(input_noise_name[i]).val(stats ? "measuring..." : "off");
+                $("#input_noise_" + n).val("measuring...");
             }
         }
 
         function show_monitor_status(monitor) {
             if (!monitor.alive) {
-                $("#monitor_status").val("Lock monitor not running").css("color", "red");
+                $("#monitor_status").val("not running").css("color", "red");
+                $("#monitor_polls").val("-");
+                $("#monitor_merge").val("-");
                 return;
             }
-            $("#monitor_status").val("running for " + format_duration(monitor.uptime_s) + ", " + monitor.period_ms.toFixed(2)
-                + " ms polls, longest gap " + monitor.max_gap_ms.toFixed(1) + " ms, drops merge after " + monitor.merge_ms.toFixed(0)
-                + " ms locked").css("color", "");
+            $("#monitor_status").val("running for " + format_duration(monitor.uptime_s)).css("color", "");
+            $("#monitor_polls").val(monitor.period_ms.toFixed(2) + " ms, longest gap " + monitor.max_gap_ms.toFixed(1) + " ms");
+            $("#monitor_merge").val(monitor.merge_ms.toFixed(0) + " ms locked");
         }
 
         function update_values() {
@@ -1112,14 +1118,14 @@
                 var data_values = [data.ain0_voltage, data.ain1_voltage, data.ain2_voltage, data.ain3_voltage];
                 var lock_status_values = [data.pid_11_lock_status, data.pid_21_lock_status, data.pid_12_lock_status, data.pid_22_lock_status];
                 var monitor_values = [data.pid_11_monitor, data.pid_21_monitor, data.pid_12_monitor, data.pid_22_monitor];
-                // PID11 and PID21 servo input 1, PID12 and PID22 input 2
-                var stats_values = [data.in_1_stats, data.in_1_stats, data.in_2_stats, data.in_2_stats];
                 for(i=0; i<4; i++){
                     relock_input_value[i] = $(relock_input_name[i]).val();
                     $(ain_voltage_name[i]).val(data_values[relock_input_value[i]-4].toFixed(3));
                     $(lock_status_name[i]).val(lock_status_values[i] ? "Locked" : "Unlocked");
-                    show_monitor(i, monitor_values[i], stats_values[i], data.monitor);
+                    show_monitor(i, monitor_values[i]);
                 }
+                show_input_noise(1, data.in_1_stats);
+                show_input_noise(2, data.in_2_stats);
                 show_monitor_status(data.monitor);
                 $("#fast_input_1_voltage").val(data.in_1_voltage.toFixed(3));
                 $("#fast_input_2_voltage").val(data.in_2_voltage.toFixed(3));
@@ -1281,6 +1287,10 @@
                 <a>Input voltage (V)</a>
                 <output id="fast_input_1_voltage">0</output>
             </div>
+            <div>
+                <a>Input noise (mV rms)</a>
+                <output id="input_noise_1">-</output>
+            </div>
 
             <fieldset class="output-group" id="output_group_11">
                 <legend><h2>Output 1</h2></legend>
@@ -1386,12 +1396,8 @@
                             <td><output id="drops_11">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Drops since monitor start</a></td>
-                            <td><output id="drops_total_11">-</output></td>
-                        </tr>
-                        <tr>
-                            <td><a>Input noise</a></td>
-                            <td><output id="input_noise_11">-</output></td>
+                            <td><a>Unlocked since servo on</a></td>
+                            <td><output id="unlocked_11">-</output></td>
                         </tr>
                     </table>
 
@@ -1550,12 +1556,8 @@
                             <td><output id="drops_21">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Drops since monitor start</a></td>
-                            <td><output id="drops_total_21">-</output></td>
-                        </tr>
-                        <tr>
-                            <td><a>Input noise</a></td>
-                            <td><output id="input_noise_21">-</output></td>
+                            <td><a>Unlocked since servo on</a></td>
+                            <td><output id="unlocked_21">-</output></td>
                         </tr>
                     </table>
 
@@ -1618,6 +1620,10 @@
             <div>
                 <a>Input voltage (V)</a>
                 <output id="fast_input_2_voltage">0</output>
+            </div>
+            <div>
+                <a>Input noise (mV rms)</a>
+                <output id="input_noise_2">-</output>
             </div>
 
             <fieldset class="output-group" id="output_group_12">
@@ -1724,12 +1730,8 @@
                             <td><output id="drops_12">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Drops since monitor start</a></td>
-                            <td><output id="drops_total_12">-</output></td>
-                        </tr>
-                        <tr>
-                            <td><a>Input noise</a></td>
-                            <td><output id="input_noise_12">-</output></td>
+                            <td><a>Unlocked since servo on</a></td>
+                            <td><output id="unlocked_12">-</output></td>
                         </tr>
                     </table>
 
@@ -1888,12 +1890,8 @@
                             <td><output id="drops_22">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Drops since monitor start</a></td>
-                            <td><output id="drops_total_22">-</output></td>
-                        </tr>
-                        <tr>
-                            <td><a>Input noise</a></td>
-                            <td><output id="input_noise_22">-</output></td>
+                            <td><a>Unlocked since servo on</a></td>
+                            <td><output id="unlocked_22">-</output></td>
                         </tr>
                     </table>
 
@@ -2096,11 +2094,19 @@
             </fieldset>
 
             <fieldset class="options-item">
-                <legend><h2>Lock monitor</h2></legend>
+                <legend><h2>Lockbox monitor</h2></legend>
                 <table>
                     <tr>
                         <td><a>Service</a></td>
                         <td><output id="monitor_status">-</output></td>
+                    </tr>
+                    <tr>
+                        <td><a>Poll period</a></td>
+                        <td><output id="monitor_polls">-</output></td>
+                    </tr>
+                    <tr>
+                        <td><a>Drop ends after</a></td>
+                        <td><output id="monitor_merge">-</output></td>
                     </tr>
                     <tr>
                         <td><label for="stats_decimation">Input noise bandwidth</label></td>

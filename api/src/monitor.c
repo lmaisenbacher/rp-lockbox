@@ -3,7 +3,7 @@
  *
  * All rights reserved.
  *
- * @brief Reader of the lock monitor's shared-memory block (see monitor.h).
+ * @brief Reader of the lockbox monitor's shared-memory block (see monitor.h).
  *
  * The block is a seqlock written by the lockbox-monitor daemon at its poll
  * rate. A reader maps it once and copies it under a sequence check. The

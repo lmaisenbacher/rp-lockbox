@@ -161,7 +161,7 @@ scpi_result_t RP_AnalogOutVoltageQ(scpi_t * context) {
 }
 
 /*
- * Input noise statistics from the lock monitor (the lockbox-monitor
+ * Input noise statistics from the lockbox monitor (the lockbox-monitor
  * service's scope windows; RP_EMON while the service is not running)
  */
 
@@ -178,7 +178,7 @@ scpi_result_t RP_AnalogInStatsQ(scpi_t * context) {
 
     result = rp_GetInStats(channel, &mean, &sd, &min, &max, &window_s, &age_s, &decimation);
     if(result != RP_OK) {
-        RP_LOG(LOG_ERR, "*ANALOG:IN#:STATs? Failed to read the lock monitor: %s", rp_GetError(result));
+        RP_LOG(LOG_ERR, "*ANALOG:IN#:STATs? Failed to read the lockbox monitor: %s", rp_GetError(result));
         return SCPI_RES_ERR;
     }
 
@@ -219,7 +219,7 @@ scpi_result_t RP_AnalogStatsDecimationQ(scpi_t * context) {
 
     int result = rp_MonitorGetStatsDecimation(&decimation);
     if(result != RP_OK) {
-        RP_LOG(LOG_ERR, "*ANALOG:STATs:DECimation? Failed to read the lock monitor: %s", rp_GetError(result));
+        RP_LOG(LOG_ERR, "*ANALOG:STATs:DECimation? Failed to read the lockbox monitor: %s", rp_GetError(result));
         return SCPI_RES_ERR;
     }
 

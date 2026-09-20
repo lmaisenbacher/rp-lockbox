@@ -132,7 +132,7 @@ const char* rp_GetError(int errorCode) {
         case RP_EFWB:  return "Failed to write to the bus";
         case RP_EOCF:  return "Failed to open config file.";
         case RP_EICV:  return "Incompatible config file version";
-        case RP_EMON:  return "Lock monitor not running.";
+        case RP_EMON:  return "Lockbox monitor not running.";
         default:       return "Unknown error";
     }
 }
@@ -677,6 +677,11 @@ int rp_AcqGetOldestDataRaw(rp_channel_t channel, uint32_t* size, int16_t* buffer
     return acq_GetOldestDataRaw(channel, size, buffer);
 }
 
+int rp_AcqGetOldestInputV(rp_channel_t channel, uint32_t* size, float* buffer)
+{
+    return acq_GetOldestDataInputV(channel, size, buffer);
+}
+
 int rp_AcqGetLatestDataRaw(rp_channel_t channel, uint32_t* size, int16_t* buffer)
 {
     return acq_GetLatestDataRaw(channel, size, buffer);
@@ -1107,7 +1112,7 @@ int rp_LoadLockboxConfig() {
 };
 
 /**
- * Lock monitor
+ * Lockbox monitor
  */
 int rp_PIDGetMonitor(rp_pid_t pid, rp_pid_monitor_t *out) {
     return mon_GetPID(pid, out);

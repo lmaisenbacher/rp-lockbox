@@ -500,7 +500,7 @@ int pid_GetPIDLockStatus(rp_pid_t pid, bool *lock_status) {
 
 int pid_GetLockHoldBits(uint8_t *locked, uint8_t *held) {
     // One read of the configuration word: the four lock flags and the
-    // four hold flags come from the same instant (the lock monitor polls
+    // four hold flags come from the same instant (the lockbox monitor polls
     // this once per millisecond)
     uint32_t conf = pid_reg->conf;
     *locked = (conf >> PID_CONF_LOCKED_SHIFT) & 0xF;

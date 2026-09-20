@@ -3,7 +3,7 @@
  *
  * All rights reserved.
  *
- * @brief Prints the lock monitor's shared block through liblockbox's reader
+ * @brief Prints the lockbox monitor's shared block through liblockbox's reader
  * (api/src/monitor.c), one "key=value" per line - the test harness greps
  * it, and it is a handy inspection tool on the Red Pitaya as well.
  *

@@ -3,7 +3,7 @@
  *
  * All rights reserved.
  *
- * @brief Reader of the lock monitor's shared-memory block (lockbox_monitor.h)
+ * @brief Reader of the lockbox monitor's shared-memory block (lockbox_monitor.h)
  * for the rp_PIDGetMonitor family of API functions.
  */
 

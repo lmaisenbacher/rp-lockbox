@@ -3,7 +3,7 @@
  *
  * All rights reserved.
  *
- * @brief The lock monitor daemon (lockbox-monitor).
+ * @brief The lockbox monitor daemon (lockbox-monitor).
  *
  * Polls the FPGA's lock and hold flags of the four PID controllers every
  * millisecond (one register read), runs the lock-drop bookkeeping of
@@ -317,9 +317,11 @@ static void *stats_thread(void *arg)
         if (stop_requested)
             break;
         rp_AcqStop();
+        /* In the lockbox's input volts (the "Input voltage" readout's and the
+         * setpoints' calibration), not the scope's */
         for (int ch = 0; ch < LOCKBOX_MONITOR_INPUTS; ch++) {
             uint32_t size = ADC_BUFFER_SIZE;
-            if (rp_AcqGetOldestDataV((rp_channel_t)ch, &size, buf) == RP_OK)
+            if (rp_AcqGetOldestInputV((rp_channel_t)ch, &size, buf) == RP_OK)
                 accumulate(&acc[ch], buf, size);
         }
         buffers++;
@@ -384,13 +386,18 @@ int main(int argc, char *argv[])
     sigaction(SIGTERM, &action, NULL);
     sigaction(SIGINT, &action, NULL);
 
+    /* The fatal start-up errors go to the terminal as well: a hand-started
+     * daemon otherwise quits silently (mapping the registers needs root) */
     int result = rp_Attach();
     if (result != RP_OK) {
         syslog(LOG_ERR, "rp_Attach failed: %s", rp_GetError(result));
+        fprintf(stderr, "lockbox-monitor: rp_Attach failed: %s (run as root?)\n", rp_GetError(result));
         return EXIT_FAILURE;
     }
-    if (create_block() != 0)
+    if (create_block() != 0) {
+        fprintf(stderr, "lockbox-monitor: cannot create the shared block (see syslog)\n");
         return EXIT_FAILURE;
+    }
     if (mlockall(MCL_CURRENT | MCL_FUTURE) != 0)
         syslog(LOG_WARNING, "mlockall: %s", strerror(errno));
 

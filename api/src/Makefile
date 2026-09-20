@@ -63,7 +63,7 @@ LDFLAGS=-shared -Wl,--version-script=exportmap
 
 # Additional libraries which needs to be dynamically linked to the executable
 # -lm - System math library (used by cos(), sin(), sqrt(), ... functions)
-# -lrt - shm_open() of the lock monitor's shared block (monitor.c)
+# -lrt - shm_open() of the lockbox monitor's shared block (monitor.c)
 LIBS=-lm -lpthread -lrt
 
 # Main GCC executable (used for compiling and linking)

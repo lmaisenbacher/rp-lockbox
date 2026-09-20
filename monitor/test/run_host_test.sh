@@ -1,5 +1,5 @@
 #!/bin/bash
-# End-to-end test of the lock monitor daemon on a development host: the
+# End-to-end test of the lockbox monitor daemon on a development host: the
 # daemon runs against the stub liblockbox (stub_lockbox.c) with a scripted
 # sequence of lock flags, and `readmon` reads the shared block back through
 # the library's reader. Run by `make test`.
