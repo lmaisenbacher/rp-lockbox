@@ -1,7 +1,11 @@
 [Unit]
 Description=Web interface for the Red Pitaya Lockbox
-After=network.target redpitaya_nginx.service
+After=network.target redpitaya_nginx.service lockbox.service
 Conflicts=redpitaya_nginx.service
+# Runs only beside the SCPI server, and never while the server (re)loads
+# the FPGA: a register access during the load stalls the bus
+Requires=lockbox.service
+PartOf=lockbox.service
 
 [Service]
 Type=simple

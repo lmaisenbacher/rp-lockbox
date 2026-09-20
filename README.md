@@ -109,7 +109,7 @@ millisecond (one register read) and keeps, per PID:
   state.
 * the **count**: the lock drops, i.e., locked-to-unlocked transitions of the flag while the hold is
   off, with their durations. The count is kept both since the monitor started (a monotonic total
-  for loggers) and since the hold was last switched off ("drops since servo on"). The lock
+  for loggers) and since the hold was last switched off ("unlocks since servo on" on the web page). The lock
   acquisition after switching the hold off is not a drop; transitions while the hold is on are not
   counted (during a scan the flag flickers as the scan crosses the resonance). A drop ends once the
   flag has read locked for 10 ms in a row (`--merge-ms`), so the flicker while the relock feature
@@ -137,8 +137,10 @@ server offers `PID:IN<n>:OUT<n>:MONitor?`, `PID:IN<n>:OUT<n>:UNLock:COUNt?`,
 `LOCKbox:MONitor?` (see [SCPI commands](doc/SCPI_commands.rst)). While the monitor is not running,
 these report the error "Lockbox monitor not running" (`RP_EMON`).
 
-The monitor is a systemd service (`systemd/lockbox-monitor.service`) tied to the `lockbox` service:
-it restarts with the SCPI server, so its counters start with the gateware. A process joining the
+The monitor is a systemd service (`systemd/lockbox-monitor.service`) tied to the `lockbox` service,
+as is the web interface: both start with the SCPI server and stop before it (re)loads the FPGA,
+because a process touching the registers during the load stalls the bus and hangs the board; the
+monitor's counters thus start with the gateware. A process joining the
 running lockbox, like the monitor and the web interface, attaches to the registers with `rp_Attach`;
 `rp_Init` is for the SCPI server alone, because it resets the signal generators, the digital pins
 and the scope to their defaults before the saved configuration is restored.
@@ -255,8 +257,11 @@ Note that the top-level `make clean` also cleans the FPGA project, which deletes
 bitfile and reports in `fpga/prj/lockbox/out/`; restore them with `git checkout -- fpga/prj/lockbox/out/`.
 
 To install a build on the Red Pitaya over the running installation and restart the services, run
-`scripts/update.sh` from the checkout (at a relock window: restarting `lockbox` reloads the
-bitstream), then `systemctl enable lockbox-monitor` once.
+`scripts/update.sh` as root. The lock lives in the gateware, so when the bitfile in the tree is the
+one already installed the script restarts the software without reprogramming the FPGA and the lock
+is kept; since the SCPI server restores the saved `pid_settings.conf` at its start, save the
+parameters first (web page, or `LOCKbox:CONFig:SAVE`) if they changed since the last save. A
+different bitfile is installed and loaded, which drops the lock (`--reload-fpga` forces that).
 
 #### Make compressed archive
 

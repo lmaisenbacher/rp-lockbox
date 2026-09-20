@@ -2,6 +2,11 @@
 Description=SCPI server for the Red Pitaya Lockbox
 After=network.target redpitaya_nginx.service
 Conflicts=redpitaya_nginx.service
+# The lockbox monitor and the web interface belong to this server: they
+# start with it (also with its automatic retry after a failed start) and
+# stop before its FPGA load, which stalls the bus for any process touching
+# the registers meanwhile
+Wants=lockbox-monitor.service lockbox-web-interface.service
 
 [Service]
 Type=simple
@@ -13,7 +18,10 @@ Restart=always
 Environment=PATH_REDPITAYA=/opt/redpitaya
 Environment=PATH=/sbin:/usr/sbin:/bin:/usr/bin:/opt/redpitaya/sbin:/opt/redpitaya/bin
 Environment=LD_LIBRARY_PATH=/opt/redpitaya/lib
-ExecStartPre=/bin/sh -c "cat /opt/redpitaya/fpga/lockbox.bit > /dev/xdevcfg"
+# Loads the FPGA configuration, which resets the lockbox (a running lock is
+# lost). At boot the OS's own bitstream load can still hold the device:
+# retry for a few seconds instead of failing the start
+ExecStartPre=/bin/sh -c 'for i in 1 2 3 4 5 6 7 8 9 10; do cat /opt/redpitaya/fpga/lockbox.bit > /dev/xdevcfg && exit 0; sleep 1; done; exit 1'
 ExecStart =/opt/redpitaya/bin/lockbox-server
 #ExecReload=
 ExecStop  =/bin/kill -15 $MAINPID
