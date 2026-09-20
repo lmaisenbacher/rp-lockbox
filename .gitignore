@@ -11,6 +11,11 @@
 usage_statistics_webtalk.*
 synReport.txt*
 scpi-server/lockbox-server
+monitor/lockbox-monitor
+monitor/test/test_lockstat
+monitor/test/lockbox-monitor-host
+monitor/test/readmon
+monitor/test/*.conf
 *.swp
 **/prj/**/sdk
 build/

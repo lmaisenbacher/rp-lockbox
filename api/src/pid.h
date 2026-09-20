@@ -85,6 +85,11 @@ typedef struct pid_control_s {
 
 static const uint32_t PID_CONF_MASK = 0xFFFFFFFF; // (32 bits)
 static const uint32_t PID_CONF2_MASK = 0x0000000F; // (4 bits)
+// Bit positions in `conf` of the per-PID flags, bit (SHIFT + pid) for
+// pid = RP_PID_11..RP_PID_22: the hold setting and the lock status the
+// FPGA derives from the relock input (read together by pid_GetLockHoldBits)
+static const uint32_t PID_CONF_HOLD_SHIFT = 12;
+static const uint32_t PID_CONF_LOCKED_SHIFT = 24;
 static const uint32_t PID_SETPOINT_MASK = 0x3FFF; // (14 bits)
 static const uint32_t PID_KP_MASK = 0xFFFFFF; // (24 bits)
 static const uint32_t PID_KI_MASK = 0xFFFFFF; // (24 bits)
@@ -132,6 +137,7 @@ int pid_GetPIDRelock(rp_pid_t pid, bool *enabled);
 int pid_SetPIDEnable(rp_pid_t pid, bool enable);
 int pid_GetPIDEnable(rp_pid_t pid, bool *enabled);
 int pid_GetPIDLockStatus(rp_pid_t pid, bool *lock_status);
+int pid_GetLockHoldBits(uint8_t *locked, uint8_t *held);
 int pid_SetRelockStepsize(rp_pid_t pid, float stepsize);
 int pid_GetRelockStepsize(rp_pid_t pid, float *stepsize);
 int pid_SetRelockMinimum(rp_pid_t pid, float minimum);

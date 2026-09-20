@@ -159,3 +159,72 @@ scpi_result_t RP_AnalogOutVoltageQ(scpi_t * context) {
     RP_LOG(LOG_DEBUG, "*ANALOG:OUT#:VOLT? Successfully returned voltage to client.\n");
     return SCPI_RES_OK;
 }
+
+/*
+ * Input noise statistics from the lock monitor (the lockbox-monitor
+ * service's scope windows; RP_EMON while the service is not running)
+ */
+
+scpi_result_t RP_AnalogInStatsQ(scpi_t * context) {
+    int result;
+    rp_channel_t channel;
+    double mean, sd, min, max, window_s, age_s;
+    uint32_t decimation;
+
+    /* Parse input channel */
+    if(RP_ParseChArgv(context, &channel) != RP_OK) {
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_GetInStats(channel, &mean, &sd, &min, &max, &window_s, &age_s, &decimation);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*ANALOG:IN#:STATs? Failed to read the lock monitor: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    /* mean_v,sd_v,min_v,max_v,window_s,age_s,decimation (age -1 = no window yet) */
+    SCPI_ResultDouble(context, mean);
+    SCPI_ResultDouble(context, sd);
+    SCPI_ResultDouble(context, min);
+    SCPI_ResultDouble(context, max);
+    SCPI_ResultDouble(context, window_s);
+    SCPI_ResultDouble(context, age_s);
+    SCPI_ResultUInt32Base(context, decimation, 10);
+
+    RP_LOG(LOG_DEBUG, "*ANALOG:IN#:STATs? Successfully returned the input statistics.");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_AnalogStatsDecimation(scpi_t * context) {
+    uint32_t decimation;
+
+    /* Parse first parameter: the scope decimation (64, 1024, 8192 or 65536) */
+    if(!SCPI_ParamUInt32(context, &decimation, true)) {
+        RP_LOG(LOG_ERR, "*ANALOG:STATs:DECimation Failed to parse first parameter.");
+        return SCPI_RES_ERR;
+    }
+
+    int result = rp_MonitorSetStatsDecimation(decimation);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*ANALOG:STATs:DECimation Failed to set the decimation: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    RP_LOG(LOG_DEBUG, "*ANALOG:STATs:DECimation Successfully requested the decimation.");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_AnalogStatsDecimationQ(scpi_t * context) {
+    uint32_t decimation;
+
+    int result = rp_MonitorGetStatsDecimation(&decimation);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*ANALOG:STATs:DECimation? Failed to read the lock monitor: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    SCPI_ResultUInt32Base(context, decimation, 10);
+
+    RP_LOG(LOG_DEBUG, "*ANALOG:STATs:DECimation? Successfully returned the decimation.");
+    return SCPI_RES_OK;
+}

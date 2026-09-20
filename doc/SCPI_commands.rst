@@ -73,6 +73,51 @@ Parameter options:
 | | ``ANALOG:OUT<n>:VOLT?``             | ``rp_GetOutVoltage`` | | Read the voltage from fast analog outputs.         |
 +---------------------------------------+----------------------+------------------------------------------------------+
 
+The input noise statistics come from the lock monitor service (see the README's "Lock drop
+monitor"); these queries fail with "Lock monitor not running" while it is not running.
+
+* ``<decimation> = {64, 1024, 8192, 65536}`` Default: ``1024``
+
+.. tabularcolumns:: |p{28mm}|p{28mm}|p{28mm}|
+
++---------------------------------------+-----------------------------------+------------------------------------------------------+
+| SCPI                                  | API                               | description                                          |
++=======================================+===================================+======================================================+
+| | ``ANALOG:IN<n>:STATs?``             | ``rp_GetInStats``                 | | The fast analog input's statistics over the        |
+| | Example:                            |                                   | | lock monitor's last window:                        |
+| | ``ANALOG:IN1:STATs?`` >             |                                   | | ``mean_v,sd_v,min_v,max_v,window_s,age_s,``        |
+| | ``0.5001,0.00083,0.4952,``          |                                   | | ``decimation``. The standard deviation about       |
+| | ``0.5049,1.074,0.31,1024``          |                                   | | the mean is the rms noise; ``age_s`` is the time   |
+|                                       |                                   | | since the window ended (-1: no window yet).        |
++---------------------------------------+-----------------------------------+------------------------------------------------------+
+| | ``ANALOG:STATs:DECimation``         | ``rp_MonitorSetStatsDecimation``  | | Set the scope decimation of the statistics:        |
+| | ``<decimation>``                    |                                   | | the samples are averaged over it, so it sets       |
+|                                       |                                   | | the bandwidth (1024: 122 kSa/s, -3 dB at 54 kHz,   |
+|                                       |                                   | | 1 s windows; 8192: 6.7 kHz, 2 s; 65536:            |
+|                                       |                                   | | 0.85 kHz, 9 s; 64: 850 kHz). Global to both        |
+|                                       |                                   | | inputs; kept across restarts.                      |
++---------------------------------------+-----------------------------------+------------------------------------------------------+
+| ``ANALOG:STATs:DECimation?``          | ``rp_MonitorGetStatsDecimation``  | Get the scope decimation of the statistics.          |
++---------------------------------------+-----------------------------------+------------------------------------------------------+
+
+=======================================+===================================+======================================================+
+| | ``ANALOG:IN<n>:STATs?``             | ``rp_GetInStats``                 | | The fast analog input's statistics over the        |
+| | Example:                            |                                   | | monitor's last window:                             |
+| | ``ANALOG:IN1:STATs?`` >             |                                   | | ``mean_v,sd_v,min_v,max_v,window_s,age_s,``        |
+| | ``0.5001,0.00083,0.4952,0.5049,``   |                                   | | ``decimation``; the standard deviation about the   |
+| | ``1.074,0.31,1024``                 |                                   | | mean is the rms noise; ``age_s`` is the time since |
+|                                       |                                   | | the window ended (-1: no window yet).              |
++---------------------------------------+-----------------------------------+------------------------------------------------------+
+| ``ANALOG:STATs:DECimation <decimation>`` | ``rp_MonitorSetStatsDecimation`` | | Set the scope decimation of the statistics: the  |
+|                                       |                                   | | samples are averaged over it, so it sets the       |
+|                                       |                                   | | bandwidth (1024: 122 kSa/s, -3 dB at 54 kHz,       |
+|                                       |                                   | | 1 s windows; 8192: 6.7 kHz, 2 s; 65536: 0.85 kHz,  |
+|                                       |                                   | | 9 s; 64: 850 kHz). Global to both inputs; kept     |
+|                                       |                                   | | across restarts.                                   |
++---------------------------------------+-----------------------------------+------------------------------------------------------+
+| ``ANALOG:STATs:DECimation?``          | ``rp_MonitorGetStatsDecimation``  | Get the scope decimation of the statistics.          |
++---------------------------------------+-----------------------------------+------------------------------------------------------+
+
 ================
 Signal Generator
 ================
@@ -269,6 +314,26 @@ Parameter options:
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | ``PID:IN<n>:OUT<n>:RELock:INPut?``                | ``rp_PIDGetRelockInput``     | Get the analog input used for relocking the PID.          |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| | ``PID:IN<n>:OUT<n>:MONitor?``                   | ``rp_PIDGetMonitor``         | | The lock monitor's view of the PID in one reply:        |
+| | Example:                                        |                              | | ``locked,lock_age_s,servo_on,servo_age_s,``             |
+| | ``PID:IN1:OUT1:MON?`` >                         |                              | | ``unlocks_total,unlocked_total_s,``                     |
+| | ``1,4321.2,1,5000.1,17,3.2,3,0.9,``             |                              | | ``unlocks_since_servo,unlocked_since_servo_s,``         |
+| | ``0.4,0,1500.2,0.4,20``                         |                              | | ``longest_since_servo_s,drop_open,``                    |
+|                                                   |                              | | ``last_unlock_age_s,last_unlock_s,raw_unlock_edges``    |
+|                                                   |                              | | (1/0 for the flags; ages -1 = never). See the           |
+|                                                   |                              | | README's "Lock drop monitor".                           |
++---------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:UNLock:COUNt?``                | ``rp_PIDGetUnlockCount``     | | Lock drops since the lock monitor started               |
+|                                                   |                              | | (monotonic; loggers take the difference).               |
++---------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:UNLock:TIME?``                 | ``rp_PIDGetUnlockedTime``    | | Time in s spent in lock drops since the lock            |
+|                                                   |                              | | monitor started (monotonic, the open drop included).    |
++---------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| | ``PID:IN<n>:OUT<n>:UNLock:EVENts? [<after>]``   | ``rp_PIDGetUnlockEvents``    | | The drops with an index above ``<after>`` (default      |
+| | Example:                                        |                              | | 0) from the monitor's ring of the last 64 drops,        |
+| | ``PID:IN1:OUT1:UNL:EVEN? 5`` >                  |                              | | oldest first: ``n``, then ``index,age_s,duration_s``    |
+| | ``2,6,120.5,0.003,7,30.1,0.010``                |                              | | per drop.                                               |
++---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 
 ===============
 Output limiting
@@ -292,6 +357,23 @@ Parameter options:
 +---------------------------------+--------------------+--------------------------------------+
 | ``OUTput<n>:LIMit:MAX?``        | ``rp_LimitGetMax`` | Get the maximum output voltage.      |
 +---------------------------------+--------------------+--------------------------------------+
+
+============
+Lock monitor
+============
+
+The lock monitor service (see the README's "Lock drop monitor") counts lock drops and measures
+the input noise; its PID queries are in the PID table above and its input statistics in the analog
+table. Every query but ``LOCKbox:MONitor?`` fails with "Lock monitor not running" while the service
+is not running.
+
++-------------------------+--------------------------+--------------------------------------------------------------------+
+| SCPI                    | API                      | description                                                        |
++=========================+==========================+====================================================================+
+| ``LOCKbox:MONitor?``    | ``rp_MonitorGetHealth``  | | The lock monitor service's health:                               |
+|                         |                          | | ``alive,uptime_s,period_ms,max_gap_ms,late_polls,merge_ms``      |
+|                         |                          | | (a monitor that is not running answers ``0,-1,0,0,0,0``).        |
++-------------------------+--------------------------+--------------------------------------------------------------------+
 
 =====================
 Lockbox configuration

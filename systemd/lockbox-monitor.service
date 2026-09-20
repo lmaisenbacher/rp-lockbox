@@ -1,0 +1,21 @@
+[Unit]
+Description=Lock monitor for the Red Pitaya Lockbox (lock drops, input noise)
+# The SCPI server loads the bitstream and restores the saved lockbox
+# configuration; the monitor joins that running lockbox. PartOf restarts
+# the monitor with the SCPI server, so its counters start with the gateware.
+After=lockbox.service
+Requires=lockbox.service
+PartOf=lockbox.service
+
+[Service]
+Type=simple
+Restart=always
+Environment=LD_LIBRARY_PATH=/opt/redpitaya/lib
+ExecStart=/opt/redpitaya/bin/lockbox-monitor
+# The 1 kHz poll loop keeps its timing under load
+CPUSchedulingPolicy=fifo
+CPUSchedulingPriority=50
+LimitMEMLOCK=infinity
+
+[Install]
+WantedBy=multi-user.target

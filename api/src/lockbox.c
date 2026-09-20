@@ -29,6 +29,7 @@
 #include "gen_handler.h"
 #include "pid.h"
 #include "limit.h"
+#include "monitor.h"
 
 static char version[50];
 
@@ -36,9 +37,11 @@ static char version[50];
  * Global methods
  */
 
-int rp_Init()
+int rp_Attach()
 {
-    cmn_Init();
+    int result = cmn_Init();
+    if (result != RP_OK)
+        return result;
 
     calib_Init();
     hk_Init();
@@ -48,6 +51,15 @@ int rp_Init()
     // TODO: Place other module initializations here
     pid_Init();
     limit_Init();
+
+    return RP_OK;
+}
+
+int rp_Init()
+{
+    int result = rp_Attach();
+    if (result != RP_OK)
+        return result;
 
     // Set default configuration per handler
     rp_Reset();
@@ -73,6 +85,7 @@ int rp_Release()
     // TODO: Place other module releasing here (in reverse order)
     pid_Release();
     limit_Release();
+    mon_Release();
     return RP_OK;
 }
 
@@ -119,6 +132,7 @@ const char* rp_GetError(int errorCode) {
         case RP_EFWB:  return "Failed to write to the bus";
         case RP_EOCF:  return "Failed to open config file.";
         case RP_EICV:  return "Incompatible config file version";
+        case RP_EMON:  return "Lock monitor not running.";
         default:       return "Unknown error";
     }
 }
@@ -917,6 +931,10 @@ int rp_PIDGetLockStatus(rp_pid_t pid, bool *lock_status) {
     return pid_GetPIDLockStatus(pid, lock_status);
 }
 
+int rp_PIDGetLockHoldBits(uint8_t *locked, uint8_t *held) {
+    return pid_GetLockHoldBits(locked, held);
+}
+
 int rp_PIDSetRelockStepsize(rp_pid_t pid, float stepsize) {
     return pid_SetRelockStepsize(pid, stepsize);
 }
@@ -1087,6 +1105,85 @@ int rp_LoadLockboxConfig() {
     }
     return RP_OK;
 };
+
+/**
+ * Lock monitor
+ */
+int rp_PIDGetMonitor(rp_pid_t pid, rp_pid_monitor_t *out) {
+    return mon_GetPID(pid, out);
+}
+
+int rp_PIDGetUnlockCount(rp_pid_t pid, uint64_t *count) {
+    rp_pid_monitor_t m;
+    int result = mon_GetPID(pid, &m);
+    if (result == RP_OK)
+        *count = m.unlocks_total;
+    return result;
+}
+
+int rp_PIDGetUnlockedTime(rp_pid_t pid, double *seconds) {
+    rp_pid_monitor_t m;
+    int result = mon_GetPID(pid, &m);
+    if (result == RP_OK)
+        *seconds = m.unlocked_total_s;
+    return result;
+}
+
+int rp_PIDGetLockAge(rp_pid_t pid, bool *locked, double *age_s) {
+    rp_pid_monitor_t m;
+    int result = mon_GetPID(pid, &m);
+    if (result == RP_OK) {
+        *locked = m.locked;
+        *age_s = m.lock_age_s;
+    }
+    return result;
+}
+
+int rp_PIDGetServoStats(rp_pid_t pid, bool *servo_on, double *age_s, uint64_t *drops,
+                        double *unlocked_s, double *longest_s) {
+    rp_pid_monitor_t m;
+    int result = mon_GetPID(pid, &m);
+    if (result == RP_OK) {
+        *servo_on = m.servo_on;
+        *age_s = m.servo_age_s;
+        *drops = m.unlocks_since_servo;
+        *unlocked_s = m.unlocked_since_servo_s;
+        *longest_s = m.longest_since_servo_s;
+    }
+    return result;
+}
+
+int rp_PIDGetLastUnlock(rp_pid_t pid, double *age_s, double *duration_s) {
+    rp_pid_monitor_t m;
+    int result = mon_GetPID(pid, &m);
+    if (result == RP_OK) {
+        *age_s = m.last_unlock_age_s;
+        *duration_s = m.last_unlock_s;
+    }
+    return result;
+}
+
+int rp_PIDGetUnlockEvents(rp_pid_t pid, uint32_t after, rp_unlock_event_t *out, uint32_t *n) {
+    return mon_GetUnlockEvents(pid, after, out, n);
+}
+
+int rp_MonitorGetHealth(bool *alive, double *uptime_s, double *period_ms, double *max_gap_ms,
+                        uint64_t *late_polls, double *merge_ms) {
+    return mon_GetHealth(alive, uptime_s, period_ms, max_gap_ms, late_polls, merge_ms);
+}
+
+int rp_GetInStats(rp_channel_t channel, double *mean, double *sd, double *min, double *max,
+                  double *window_s, double *age_s, uint32_t *decimation) {
+    return mon_GetInStats(channel, mean, sd, min, max, window_s, age_s, decimation);
+}
+
+int rp_MonitorSetStatsDecimation(uint32_t decimation) {
+    return mon_SetStatsDecimation(decimation);
+}
+
+int rp_MonitorGetStatsDecimation(uint32_t *decimation) {
+    return mon_GetStatsDecimation(decimation);
+}
 
 float rp_CmnCnvCntToV(uint32_t field_len, uint32_t cnts, float adc_max_v, uint32_t calibScale, int calib_dc_off, float user_dc_off)
 {

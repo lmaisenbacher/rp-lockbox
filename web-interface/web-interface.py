@@ -45,7 +45,16 @@ ERROR_CODES = {
     22: "RP_EFWB. Extension module not connected.",
     23: "RP_EMNC. Failed to open config file.",
     24: "RP_EOCF. Incompatible config file version.",
-    25: "RP_EICV. Failed to Open EEPROM Devic."}
+    25: "RP_EICV. Failed to Open EEPROM Devic.",
+    26: "RP_EMON. Lock monitor not running."}
+
+#: Error code of a lock monitor that is not running (its readouts are
+#: shown as such, not logged as errors)
+RP_EMON = 26
+
+#: The scope decimations the lock monitor's input statistics accept, with
+#: the bandwidth (-3 dB of the averaging) each gives
+STATS_DECIMATIONS = {64: "850 kHz", 1024: "54 kHz", 8192: "6.7 kHz", 65536: "0.85 kHz"}
 
 PID_ID = {
     "PID_11": 0, # Input 1 -> Output 1
@@ -60,11 +69,115 @@ AIN_ID = {
     3: "AIN3"}
 
 def init_rp_library():
-    """Initialize the Red Pitaya lockbox library. Exit the program on failure."""
-    retval = RP_LIB.rp_Init()
+    """Initialize the Red Pitaya lockbox library. Exit the program on failure.
+
+    The web interface joins the lockbox the SCPI server set up, so it
+    attaches to the registers without resetting anything (`rp_Init` would
+    put the signal generators, the digital pins and the scope back to
+    their defaults)."""
+    retval = RP_LIB.rp_Attach()
     if retval != 0:
         LOG.error("Failed to initialize lockbox library. Error code: %s", ERROR_CODES[retval])
         sys.exit(-1)
+
+
+class PIDMonitor(ctypes.Structure):
+    """`rp_pid_monitor_t` of lockbox.h: one PID's lock monitoring."""
+    _fields_ = [
+        ("locked", ctypes.c_bool),
+        ("lock_age_s", ctypes.c_double),
+        ("servo_on", ctypes.c_bool),
+        ("servo_age_s", ctypes.c_double),
+        ("unlocks_total", ctypes.c_uint64),
+        ("unlocked_total_s", ctypes.c_double),
+        ("unlocks_since_servo", ctypes.c_uint64),
+        ("unlocked_since_servo_s", ctypes.c_double),
+        ("longest_since_servo_s", ctypes.c_double),
+        ("drop_open", ctypes.c_bool),
+        ("last_unlock_age_s", ctypes.c_double),
+        ("last_unlock_s", ctypes.c_double),
+        ("raw_unlock_edges", ctypes.c_uint64),
+    ]
+
+
+def pid_monitor(pid):
+    """The lock monitor's view of PID `pid` (0-3) as a dict, or None while
+    the monitor is not running."""
+    monitor = PIDMonitor()
+    retval = RP_LIB.rp_PIDGetMonitor(pid, ctypes.byref(monitor))
+    if retval == RP_EMON:
+        return None
+    if retval != 0:
+        LOG.error("Failed to get the lock monitoring of PID. Error code: %s", ERROR_CODES[retval])
+        return None
+    return {
+        "locked": monitor.locked,
+        "lock_age_s": monitor.lock_age_s,
+        "servo_on": monitor.servo_on,
+        "servo_age_s": monitor.servo_age_s,
+        "unlocks_total": monitor.unlocks_total,
+        "unlocked_total_s": monitor.unlocked_total_s,
+        "drops": monitor.unlocks_since_servo,
+        "unlocked_s": monitor.unlocked_since_servo_s,
+        "longest_s": monitor.longest_since_servo_s,
+        "drop_open": monitor.drop_open,
+        "last_unlock_age_s": monitor.last_unlock_age_s,
+        "last_unlock_s": monitor.last_unlock_s,
+    }
+
+
+def monitor_health():
+    """The lock monitor's health as a dict; `alive` False while it is not running."""
+    alive = ctypes.c_bool()
+    uptime_s = ctypes.c_double()
+    period_ms = ctypes.c_double()
+    max_gap_ms = ctypes.c_double()
+    late_polls = ctypes.c_uint64()
+    merge_ms = ctypes.c_double()
+    retval = RP_LIB.rp_MonitorGetHealth(
+        ctypes.byref(alive), ctypes.byref(uptime_s), ctypes.byref(period_ms),
+        ctypes.byref(max_gap_ms), ctypes.byref(late_polls), ctypes.byref(merge_ms))
+    if retval not in (0, RP_EMON):
+        LOG.error("Failed to get the lock monitor's health. Error code: %s", ERROR_CODES[retval])
+    return {
+        "alive": alive.value,
+        "uptime_s": uptime_s.value,
+        "period_ms": period_ms.value,
+        "max_gap_ms": max_gap_ms.value,
+        "late_polls": late_polls.value,
+        "merge_ms": merge_ms.value,
+    }
+
+
+def input_stats(channel):
+    """The lock monitor's noise statistics of fast input `channel` (0 or 1)
+    as a dict, or None while the monitor is not running."""
+    mean = ctypes.c_double()
+    sd = ctypes.c_double()
+    minimum = ctypes.c_double()
+    maximum = ctypes.c_double()
+    window_s = ctypes.c_double()
+    age_s = ctypes.c_double()
+    decimation = ctypes.c_uint32()
+    retval = RP_LIB.rp_GetInStats(
+        channel, ctypes.byref(mean), ctypes.byref(sd), ctypes.byref(minimum),
+        ctypes.byref(maximum), ctypes.byref(window_s), ctypes.byref(age_s),
+        ctypes.byref(decimation))
+    if retval == RP_EMON:
+        return None
+    if retval != 0:
+        LOG.error("Failed to get the input statistics. Error code: %s", ERROR_CODES[retval])
+        return None
+    return {
+        "mean_v": mean.value,
+        "sd_v": sd.value,
+        "min_v": minimum.value,
+        "max_v": maximum.value,
+        "window_s": window_s.value,
+        "age_s": age_s.value,
+        "decimation": decimation.value,
+        "bandwidth": STATS_DECIMATIONS.get(decimation.value, ""),
+    }
 
 @route('/')
 def index():
@@ -90,6 +203,14 @@ def jquery_js():
 def images(name):
     """Image files used by jQuery UI."""
     return static_file(name, root=os.path.join(BASEDIR, "images"))
+
+@route('/favicon.svg')
+@route('/favicon.ico')
+def favicon():
+    """The tab icon: the letters RPL on a colored square, in the style of
+    the lab's pydase servers (served at /favicon.ico too, for browsers that
+    ask there without a link tag)."""
+    return static_file("favicon.svg", root=BASEDIR, mimetype="image/svg+xml")
 
 @route("/_set_setpoint", method="POST")
 def set_setpoint():
@@ -551,6 +672,10 @@ def get_values():
             LOG.error("Failed to get lock status of PID. Error code: %s",
                       ERROR_CODES[retval])
 
+    # The lock monitor service's counters (None per entry while it is not running)
+    health = monitor_health()
+    alive = health["alive"]
+
     ain_voltage_values = {
         "ain0_voltage": ain_voltage[0].value,
         "ain1_voltage": ain_voltage[1].value,
@@ -563,9 +688,29 @@ def get_values():
         "pid_11_lock_status": lock_status[0].value,
         "pid_12_lock_status": lock_status[1].value,
         "pid_21_lock_status": lock_status[2].value,
-        "pid_22_lock_status": lock_status[3].value
+        "pid_22_lock_status": lock_status[3].value,
+        "monitor": health,
+        "pid_11_monitor": pid_monitor(0) if alive else None,
+        "pid_12_monitor": pid_monitor(1) if alive else None,
+        "pid_21_monitor": pid_monitor(2) if alive else None,
+        "pid_22_monitor": pid_monitor(3) if alive else None,
+        "in_1_stats": input_stats(0) if alive else None,
+        "in_2_stats": input_stats(1) if alive else None,
     }
     return json.dumps(ain_voltage_values)
+
+
+@route("/_set_stats_decimation", method="POST")
+def set_stats_decimation():
+    """Handle POST request for the scope decimation (bandwidth) of the lock
+    monitor's input noise statistics."""
+    decimation = int(request.forms.get("decimation"))
+    LOG.debug("stats decimation: %d", decimation)
+
+    retval = RP_LIB.rp_MonitorSetStatsDecimation(ctypes.c_uint32(decimation))
+    if retval != 0:
+        LOG.error("Failed to set the input statistics decimation. Error code: %s",
+                  ERROR_CODES[retval])
 
 
 @route("/_get_parameters")
@@ -778,7 +923,18 @@ def get_parameters():
         LOG.error("Failed to get if signal generator permanent offset is enabled. Error code: %s",
                   ERROR_CODES[retval])
 
+    # The lock monitor's input statistics decimation: 0 while the monitor
+    # is not running or has no window yet
+    stats_decimation = ctypes.c_uint32()
+    retval = RP_LIB.rp_MonitorGetStatsDecimation(ctypes.byref(stats_decimation))
+    if retval not in (0, RP_EMON):
+        LOG.error("Failed to get the input statistics decimation. Error code: %s",
+                  ERROR_CODES[retval])
+    if retval != 0:
+        stats_decimation.value = 0
+
     parameters = {
+        "stats_decimation": stats_decimation.value,
         "pid_11_setpoint": setpoint[0].value,
         "pid_12_setpoint": setpoint[1].value,
         "pid_21_setpoint": setpoint[2].value,
@@ -879,6 +1035,64 @@ class MockRPLib():
 
     def rp_Init(self):
         LOG.debug("rp_Init called")
+        return 0
+
+    def rp_Attach(self):
+        LOG.debug("rp_Attach called")
+        return 0
+
+    def rp_PIDGetLockStatus(self, pid, lock_status):
+        lock_status._obj.value = pid != 1
+        return 0
+
+    # The lock monitor: a running service with fixed numbers
+    mock_stats_decimation = 1024
+
+    def rp_MonitorGetHealth(self, alive, uptime_s, period_ms, max_gap_ms, late_polls, merge_ms):
+        alive._obj.value = True
+        uptime_s._obj.value = 98765.4
+        period_ms._obj.value = 1.0
+        max_gap_ms._obj.value = 2.3
+        late_polls._obj.value = 4
+        merge_ms._obj.value = 10.0
+        return 0
+
+    def rp_PIDGetMonitor(self, pid, monitor):
+        m = monitor._obj
+        m.locked = pid != 1
+        m.lock_age_s = 4321.0 + 100 * pid
+        m.servo_on = pid != 3
+        m.servo_age_s = 5000.0 if pid != 3 else -1.0
+        m.unlocks_total = 17 + pid
+        m.unlocked_total_s = 3.2
+        m.unlocks_since_servo = 3 if pid != 3 else 0
+        m.unlocked_since_servo_s = 0.9
+        m.longest_since_servo_s = 0.4
+        m.drop_open = pid == 1
+        m.last_unlock_age_s = 4321.0
+        m.last_unlock_s = 0.4
+        m.raw_unlock_edges = 20 + pid
+        return 0
+
+    def rp_GetInStats(self, channel, mean, sd, minimum, maximum, window_s, age_s, decimation):
+        mean._obj.value = 0.5 if channel == 0 else 0.25
+        sd._obj.value = 0.00083 if channel == 0 else 0.0021
+        minimum._obj.value = mean._obj.value - 0.004
+        maximum._obj.value = mean._obj.value + 0.004
+        window_s._obj.value = 1.074
+        age_s._obj.value = 0.3
+        decimation._obj.value = self.mock_stats_decimation
+        return 0
+
+    def rp_MonitorSetStatsDecimation(self, decimation):
+        LOG.debug("stats decimation: %d", decimation.value)
+        if decimation.value not in STATS_DECIMATIONS:
+            return 6
+        self.mock_stats_decimation = decimation.value
+        return 0
+
+    def rp_MonitorGetStatsDecimation(self, decimation):
+        decimation._obj.value = self.mock_stats_decimation
         return 0
 
     def rp_PIDSetSetpoint(self, pid, setpoint):

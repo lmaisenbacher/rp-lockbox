@@ -37,10 +37,11 @@ cd rp-lockbox
 ./install.sh
 ```
 
-Then, to stop the default Red Pitaya web server and instead start the lockbox SCPI command server and the web interface, run:
+Then, to stop the default Red Pitaya web server and instead start the lockbox SCPI command server, the lock monitor and the web interface, run:
 ```
 systemctl stop redpitaya_nginx
 systemctl start lockbox
+systemctl start lockbox-monitor
 systemctl start lockbox-web-interface
 ```
 
@@ -49,15 +50,20 @@ the following commands:
 ```
 systemctl disable redpitaya_nginx
 systemctl enable lockbox
+systemctl enable lockbox-monitor
 systemctl enable lockbox-web-interface
 ```
 
 The following commands revert to the default configuration:
 ```
 systemctl disable lockbox
+systemctl disable lockbox-monitor
 systemctl disable lockbox-web-interface
 systemctl enable redpitaya_nginx
 ```
+
+Note that starting `lockbox` loads the FPGA configuration, which resets the lockbox: a running lock
+is lost whenever the service (re)starts.
 
 ## Usage
 The lockbox can be configured using the included web interface which runs on the default HTTP port
@@ -88,6 +94,54 @@ or not.
 The voltage can, e.g., the signal from a photodetector monitoring the transmission of a cavity
 to whose resonance a laser is locked (or vice versa).
 The lock status can also be queried via SCPI (`PID:IN<n>:OUT<n>:LOCKED?`, see [SCPI commands](doc/SCPI_commands.rst)).
+
+### Lock drop monitor
+The lock status above is a live flag with no memory: a lock that drops and returns between two
+readings leaves no trace. The lock monitor service (`lockbox-monitor`, `monitor/`) fills that gap on
+the Red Pitaya's CPU. It samples the lock and hold flags of all four PID controllers every
+millisecond (one register read) and keeps, per PID:
+
+* the **mode**: the hold setting. Hold off is "servo on"; the web interface's "Toggle Lock/Scan"
+  button switches the hold, the integrator reset and the signal generator together. The monitor
+  records when the hold was last switched off (a servo already on when the monitor starts counts
+  as on since then).
+* the **status**: the lock flag, with the time the PID has been in its current locked or unlocked
+  state.
+* the **count**: the lock drops, i.e., locked-to-unlocked transitions of the flag while the hold is
+  off, with their durations. The count is kept both since the monitor started (a monotonic total
+  for loggers) and since the hold was last switched off ("drops since servo on"). The lock
+  acquisition after switching the hold off is not a drop; transitions while the hold is on are not
+  counted (during a scan the flag flickers as the scan crosses the resonance). A drop ends once the
+  flag has read locked for 10 ms in a row (`--merge-ms`), so the flicker while the relock feature
+  re-finds the resonance is one drop, not many. Drops are not counted during the first two seconds
+  after the monitor starts (`--grace-s`), while the SCPI server restores the saved configuration.
+
+The monitor also measures the **noise of the two fast analog inputs** (the error signals) with the
+FPGA's scope block: the input is averaged over the scope decimation (1024 by default, i.e., a
+bandwidth of about 54 kHz at 122 kSa/s) and the samples of about one second are pooled into their
+mean, standard deviation, minimum and maximum. The standard deviation about the mean is the input's
+rms noise. In lock the mean sits at the setpoint, so it is the rms error. The decimation, and with
+it the bandwidth, can be selected on the web interface ("Lock monitor" under Options) or via SCPI
+(`ANALOG:STATs:DECimation`, one of 64, 1024, 8192 or 65536); the monitor keeps the choice in
+`/home/redpitaya/lockbox-monitor.conf`. The averaging is a plain box filter, so this is an rms
+readout, not a spectrum. While the monitor runs it owns the scope: the `ACQ` SCPI commands
+interfere with it.
+
+The monitor publishes its state in a shared-memory block (`/dev/shm/lockbox-monitor`,
+[lockbox_monitor.h](api/include/redpitaya/lockbox_monitor.h)) that the API library reads
+(`rp_PIDGetMonitor` and the other functions of the "Lock monitor" section of
+[lockbox.h](api/include/redpitaya/lockbox.h)): the web interface shows the drops, the servo-on
+time, the lock state's age and the input noise in each PID's "Lock monitoring" table, and the SCPI
+server offers `PID:IN<n>:OUT<n>:MONitor?`, `PID:IN<n>:OUT<n>:UNLock:COUNt?`,
+`PID:IN<n>:OUT<n>:UNLock:TIME?`, `PID:IN<n>:OUT<n>:UNLock:EVENts?`, `ANALOG:IN<n>:STATs?` and
+`LOCKbox:MONitor?` (see [SCPI commands](doc/SCPI_commands.rst)). While the monitor is not running,
+these report the error "Lock monitor not running" (`RP_EMON`).
+
+The monitor is a systemd service (`systemd/lockbox-monitor.service`) tied to the `lockbox` service:
+it restarts with the SCPI server, so its counters start with the gateware. A process joining the
+running lockbox, like the monitor and the web interface, attaches to the registers with `rp_Attach`;
+`rp_Init` is for the SCPI server alone, because it resets the signal generators, the digital pins
+and the scope to their defaults before the saved configuration is restored.
 
 ### Relock
 Each of the PID controllers contains an automatic relock feature. When the feature is enabled and
@@ -134,6 +188,7 @@ rp-lockbox consists of three core components:
 1. The FPGA configuration ("gateware") (`lockbox.bit`). Cannot be build on the Red Pitaya itself and must be build on a desktop PC.
 2. An API library (`liblockbox.so`) for reading and modifying the FPGA registers. Can be compiled direclty on the Red Pitaya.
 3. The SCPI command server (`lockbox-server`). Can be compiled direclty on the Red Pitaya.
+4. The lock monitor daemon (`lockbox-monitor`). Can be compiled directly on the Red Pitaya.
 
 ### Build requirements
 Only Linux is supported as a build environment. Further build requirements for the different
@@ -173,7 +228,7 @@ To force the `make` command (e.g., after updating the source code), use the flag
 
 The generated bitfile is written to `fpga/prj/lockbox/out/red_pitaya.bit`.
 
-#### API library and SCPI server
+#### API library, SCPI server and lock monitor
 
 This process happens either on the Red Pitaya itself (recommended) or on another platform with the ARMv7 cross compiler toolchain present.
 
@@ -182,12 +237,26 @@ Check out the scpi-parser submodule:
 git submodule update --init
 ```
 
-Build the API library and SCPI server
+Build the API library, the SCPI server and the lock monitor
 ```
 make api
 make scpi
+make monitor
 ```
 To force the `make` command (e.g., after updating the source code), use the flag `-B`, e.g., `make -B api`.
+
+The lock monitor's lock-drop bookkeeping and its shared block have tests that run on any Linux host
+with gcc (no Red Pitaya needed): `make monitor-test` builds the daemon against a stand-in for the API
+library, feeds it a scripted sequence of lock flags and reads the result back through the library's
+reader. `monitor/test/readmon` also builds on the Red Pitaya (`make -C monitor/test readmon`) as an
+inspection tool for the running monitor.
+
+Note that the top-level `make clean` also cleans the FPGA project, which deletes the committed
+bitfile and reports in `fpga/prj/lockbox/out/`; restore them with `git checkout -- fpga/prj/lockbox/out/`.
+
+To install a build on the Red Pitaya over the running installation and restart the services, run
+`scripts/update.sh` from the checkout (at a relock window: restarting `lockbox` reloads the
+bitstream), then `systemctl enable lockbox-monitor` once.
 
 #### Make compressed archive
 

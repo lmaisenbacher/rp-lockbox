@@ -416,34 +416,18 @@ int pid_GetResetWhenRailed(rp_pid_t pid, bool *enabled) {
 }
 
 int pid_SetHold(rp_pid_t pid, bool enable) {
-    if(enable) {
-        switch(pid) {
-            case RP_PID_11: return cmn_SetBits(&pid_reg->conf, 0x1 << 12, PID_CONF_MASK);
-            case RP_PID_12: return cmn_SetBits(&pid_reg->conf, 0x1 << 13, PID_CONF_MASK);
-            case RP_PID_21: return cmn_SetBits(&pid_reg->conf, 0x1 << 14, PID_CONF_MASK);
-            case RP_PID_22: return cmn_SetBits(&pid_reg->conf, 0x1 << 15, PID_CONF_MASK);
-            default: return RP_EPN;
-        }
-    }
-    else {
-        switch(pid) {
-            case RP_PID_11: return cmn_UnsetBits(&pid_reg->conf, 0x1 << 12, PID_CONF_MASK);
-            case RP_PID_12: return cmn_UnsetBits(&pid_reg->conf, 0x1 << 13, PID_CONF_MASK);
-            case RP_PID_21: return cmn_UnsetBits(&pid_reg->conf, 0x1 << 14, PID_CONF_MASK);
-            case RP_PID_22: return cmn_UnsetBits(&pid_reg->conf, 0x1 << 15, PID_CONF_MASK);
-            default: return RP_EPN;
-        }
-    }
+    if(pid > RP_PID_22)
+        return RP_EPN;
+    if(enable)
+        return cmn_SetBits(&pid_reg->conf, 0x1 << (PID_CONF_HOLD_SHIFT + pid), PID_CONF_MASK);
+    else
+        return cmn_UnsetBits(&pid_reg->conf, 0x1 << (PID_CONF_HOLD_SHIFT + pid), PID_CONF_MASK);
 }
 
 int pid_GetHold(rp_pid_t pid, bool *enabled) {
-    switch(pid) {
-        case RP_PID_11: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 12, PID_CONF_MASK, enabled);
-        case RP_PID_12: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 13, PID_CONF_MASK, enabled);
-        case RP_PID_21: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 14, PID_CONF_MASK, enabled);
-        case RP_PID_22: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 15, PID_CONF_MASK, enabled);
-        default: return RP_EPN;
-    }
+    if(pid > RP_PID_22)
+        return RP_EPN;
+    return cmn_AreBitsSet(pid_reg->conf, 0x1 << (PID_CONF_HOLD_SHIFT + pid), PID_CONF_MASK, enabled);
 }
 
 int pid_SetPIDRelock(rp_pid_t pid, bool enable) {
@@ -509,13 +493,19 @@ int pid_GetPIDEnable(rp_pid_t pid, bool *enabled) {
 }
 
 int pid_GetPIDLockStatus(rp_pid_t pid, bool *lock_status) {
-    switch(pid) {
-        case RP_PID_11: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 24, PID_CONF_MASK, lock_status);
-        case RP_PID_12: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 25, PID_CONF_MASK, lock_status);
-        case RP_PID_21: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 26, PID_CONF_MASK, lock_status);
-        case RP_PID_22: return cmn_AreBitsSet(pid_reg->conf, 0x1 << 27, PID_CONF_MASK, lock_status);
-        default: return RP_EPN;
-    }
+    if(pid > RP_PID_22)
+        return RP_EPN;
+    return cmn_AreBitsSet(pid_reg->conf, 0x1 << (PID_CONF_LOCKED_SHIFT + pid), PID_CONF_MASK, lock_status);
+}
+
+int pid_GetLockHoldBits(uint8_t *locked, uint8_t *held) {
+    // One read of the configuration word: the four lock flags and the
+    // four hold flags come from the same instant (the lock monitor polls
+    // this once per millisecond)
+    uint32_t conf = pid_reg->conf;
+    *locked = (conf >> PID_CONF_LOCKED_SHIFT) & 0xF;
+    *held = (conf >> PID_CONF_HOLD_SHIFT) & 0xF;
+    return RP_OK;
 }
 
 int pid_SetRelockStepsize(rp_pid_t pid, float stepsize) {

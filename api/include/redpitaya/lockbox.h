@@ -87,6 +87,9 @@ extern "C" {
 #define RP_EOCF   24
 /** Incompatible config file version */
 #define RP_EICV   25
+/** Lock monitor not running (the lockbox-monitor service's shared block is
+ * absent, stale, or of another layout) */
+#define RP_EMON   26
 
 #define SPECTR_OUT_SIG_LEN (2*1024)
 
@@ -302,6 +305,36 @@ typedef struct {
     rp_waveform_t gen_waveform[2];
 } rp_lockbox_params_t;
 
+/**
+ * One PID controller's lock monitoring, as the lockbox-monitor service
+ * keeps it (see rp_PIDGetMonitor). Times are seconds; an age of -1 means
+ * "never" (no drop yet, or the servo is off).
+ */
+typedef struct {
+    bool locked;                  //!< Lock state, merged: unlocked from a drop's start to its close
+    double lock_age_s;            //!< Time in the current locked/unlocked state
+    bool servo_on;                //!< Hold off (the Lock side of the web page's Toggle Lock/Scan)
+    double servo_age_s;           //!< Time since the hold went off; -1 while the hold is on
+    uint64_t unlocks_total;       //!< Lock drops since the monitor started
+    double unlocked_total_s;      //!< Time spent in lock drops since the monitor started
+    uint64_t unlocks_since_servo; //!< Lock drops since the hold went off
+    double unlocked_since_servo_s;//!< Time spent in lock drops since the hold went off
+    double longest_since_servo_s; //!< Longest drop since the hold went off
+    bool drop_open;               //!< A lock drop is in progress
+    double last_unlock_age_s;     //!< Time since the latest drop began; -1 if none yet
+    double last_unlock_s;         //!< Duration of the latest drop (so far, if open); -1 if none yet
+    uint64_t raw_unlock_edges;    //!< Falling edges of the lock flag before merging
+} rp_pid_monitor_t;
+
+/**
+ * One lock drop from the monitor's per-PID event ring (see rp_PIDGetUnlockEvents).
+ */
+typedef struct {
+    uint32_t index;      //!< 1-based, increasing per PID since the monitor started
+    double age_s;        //!< Time since the drop began
+    double duration_s;   //!< How long the lock was lost
+} rp_unlock_event_t;
+
 
 /** @name General
  */
@@ -309,11 +342,24 @@ typedef struct {
 
 
 /**
- * Initializes the library. It must be called first, before any other library method.
+ * Initializes the library and RESETS the lockbox: the digital pins, the
+ * slow analog outputs, the signal generators (disabled, 1 kHz sine, 1 V,
+ * 0 V offset) and the scope go to their defaults. For the SCPI server,
+ * which restores the saved configuration afterwards; a process joining a
+ * running lockbox uses rp_Attach.
  * @return If the function is successful, the return value is RP_OK.
  * If the function is unsuccessful, the return value is any of RP_E* values that indicate an error.
  */
 int rp_Init();
+
+/**
+ * Maps the lockbox's registers without changing anything: for the web
+ * interface, the lock monitor, and any other process that joins a lockbox
+ * the SCPI server already set up. Same use as rp_Init otherwise.
+ * @return If the function is successful, the return value is RP_OK.
+ * If the function is unsuccessful, the return value is any of RP_E* values that indicate an error.
+ */
+int rp_Attach();
 
 int rp_CalibInit();
 
@@ -1586,6 +1632,19 @@ int rp_PIDGetEnable(rp_pid_t pid, bool *enabled);
 int rp_PIDGetLockStatus(rp_pid_t pid, bool *lock_status);
 
 /*
+ * Get the lock status and the hold setting of all four PIDs from ONE read
+ * of the configuration register, so the eight flags belong to the same
+ * instant (what the lock monitor samples every millisecond).
+ * @param locked Pointer where the lock flags will be returned, bit i for
+ * the PID with rp_pid_t value i.
+ * @param held Pointer where the hold flags will be returned, same layout.
+ * @return If the function is successful, the return value is RP_OK.
+ * If the function is unsuccessful, the return value is any of RP_E* values that
+ * indicate an error.
+ */
+int rp_PIDGetLockHoldBits(uint8_t *locked, uint8_t *held);
+
+/*
  * Set the relock stepsize of the specified PID using the ADC calibration values
  * stored in EEPROM.
  * @param pid The PID to use (see rp_pid_t documentation for details).
@@ -1744,6 +1803,99 @@ int rp_SaveLockboxConfig();
  * indicate an error.
  */
 int rp_LoadLockboxConfig();
+
+/** @name Lock monitor
+ * Readers of the lockbox-monitor service's shared block (see
+ * lockbox_monitor.h). Every function returns RP_EMON while the service is
+ * not running - its block is absent, its last poll is older than two
+ * seconds, or it was built against another layout. The scalar variants
+ * exist for ctypes callers (the web interface).
+ */
+///@{
+
+/*
+ * Get one PID's lock monitoring in one call.
+ * @param pid The PID to use (see rp_pid_t documentation for details).
+ * @param out Pointer to the structure that will be filled.
+ * @return RP_OK, RP_EMON while the monitor is not running, RP_EPN for a
+ * bad PID.
+ */
+int rp_PIDGetMonitor(rp_pid_t pid, rp_pid_monitor_t *out);
+
+/*
+ * Lock drops of the specified PID since the monitor started (monotonic:
+ * loggers take the difference between polls).
+ */
+int rp_PIDGetUnlockCount(rp_pid_t pid, uint64_t *count);
+
+/*
+ * Time in s the specified PID spent in lock drops since the monitor
+ * started (monotonic, the open drop included).
+ */
+int rp_PIDGetUnlockedTime(rp_pid_t pid, double *seconds);
+
+/*
+ * The specified PID's merged lock state and the time in s it has been in it.
+ */
+int rp_PIDGetLockAge(rp_pid_t pid, bool *locked, double *age_s);
+
+/*
+ * The specified PID's servo mode (hold off) with the time in s since the
+ * hold went off (-1 while on), and the drops, the time unlocked and the
+ * longest drop since then.
+ */
+int rp_PIDGetServoStats(rp_pid_t pid, bool *servo_on, double *age_s, uint64_t *drops,
+                        double *unlocked_s, double *longest_s);
+
+/*
+ * The specified PID's latest drop: time in s since it began and its
+ * duration in s (so far, while it is open); both -1 if none yet.
+ */
+int rp_PIDGetLastUnlock(rp_pid_t pid, double *age_s, double *duration_s);
+
+/*
+ * The specified PID's lock drops with an index above `after`, oldest
+ * first, from the monitor's ring of the last LOCKBOX_MONITOR_EVENTS drops.
+ * @param out Array of at least LOCKBOX_MONITOR_EVENTS entries.
+ * @param n Pointer where the number of entries written will be returned.
+ */
+int rp_PIDGetUnlockEvents(rp_pid_t pid, uint32_t after, rp_unlock_event_t *out, uint32_t *n);
+
+/*
+ * The monitor's health: alive, its uptime in s, its poll period and the
+ * longest gap between two polls in ms, the number of polls later than two
+ * periods, and the lock time in ms that closes a drop.
+ */
+int rp_MonitorGetHealth(bool *alive, double *uptime_s, double *period_ms, double *max_gap_ms,
+                        uint64_t *late_polls, double *merge_ms);
+
+/*
+ * The noise statistics of the specified fast analog input over the
+ * monitor's last window: mean, standard deviation about that mean, minimum
+ * and maximum in V, the window length in s, the time in s since the window
+ * ended (-1 while no window exists yet), and the scope decimation the
+ * samples were averaged over.
+ */
+int rp_GetInStats(rp_channel_t channel, double *mean, double *sd, double *min, double *max,
+                  double *window_s, double *age_s, uint32_t *decimation);
+
+/*
+ * Ask the monitor to measure the input statistics at another scope
+ * decimation (64, 1024, 8192 or 65536 - the averaging over that many
+ * samples sets the bandwidth). Takes effect at the next window; the
+ * monitor keeps the value across restarts.
+ * @return RP_OK, RP_EOOR for another value, RP_EMON while the monitor is
+ * not running.
+ */
+int rp_MonitorSetStatsDecimation(uint32_t decimation);
+
+/*
+ * The scope decimation the input statistics currently use (0 while no
+ * window exists yet or the statistics are switched off).
+ */
+int rp_MonitorGetStatsDecimation(uint32_t *decimation);
+
+///@}
 
 float rp_CmnCnvCntToV(uint32_t field_len, uint32_t cnts, float adc_max_v, uint32_t calibScale, int calib_dc_off, float user_dc_off);
 

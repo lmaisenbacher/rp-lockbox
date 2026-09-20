@@ -23,5 +23,8 @@ scpi_result_t RP_AnalogPinValueQ(scpi_t * context);
 scpi_result_t RP_AnalogPinValue(scpi_t * context);
 scpi_result_t RP_AnalogInVoltageQ(scpi_t * context);
 scpi_result_t RP_AnalogOutVoltageQ(scpi_t * context);
+scpi_result_t RP_AnalogInStatsQ(scpi_t * context);
+scpi_result_t RP_AnalogStatsDecimation(scpi_t * context);
+scpi_result_t RP_AnalogStatsDecimationQ(scpi_t * context);
 
 #endif /* APIN_H_ */

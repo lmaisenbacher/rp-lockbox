@@ -6,7 +6,7 @@ TARBALL = rp-lockbox.tar.gz
 VERSION ?= $(shell cat VERSION)
 REVISION ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
 
-all: api scpi fpga
+all: api scpi monitor fpga
 
 $(INSTALL_DIR):
 	mkdir -p $@
@@ -30,6 +30,20 @@ scpi:
 	$(MAKE) -C $(SCPI_SERVER_DIR) VERSION=$(VERSION) REVISION=$(REVISION)
 
 ################################################################################
+# Lock monitor daemon (links the API library: build `api` first)
+################################################################################
+MONITOR_DIR = monitor
+
+.PHONY: monitor
+monitor:
+	$(MAKE) -C $(MONITOR_DIR) VERSION=$(VERSION) REVISION=$(REVISION)
+
+# Host tests of the lock monitor (any Linux with gcc)
+.PHONY: monitor-test
+monitor-test:
+	$(MAKE) -C $(MONITOR_DIR) test
+
+################################################################################
 # FPGA bitfile
 ################################################################################
 FPGA_DIR = fpga
@@ -46,6 +60,7 @@ fpga:
 install:
 	$(MAKE) -C $(LIBLOCKBOX_DIR) install INSTALL_DIR=$(abspath $(INSTALL_DIR))
 	$(MAKE) -C $(SCPI_SERVER_DIR) install INSTALL_DIR=$(abspath $(INSTALL_DIR))
+	$(MAKE) -C $(MONITOR_DIR) install INSTALL_DIR=$(abspath $(INSTALL_DIR))
 	$(MAKE) -C $(FPGA_DIR) install INSTALL_DIR=$(abspath $(INSTALL_DIR))
 
 ################################################################################
@@ -70,5 +85,6 @@ $(TARBALL): install
 clean:
 	$(MAKE) -C $(LIBLOCKBOX_DIR) clean
 	$(MAKE) -C $(SCPI_SERVER_DIR) clean
+	$(MAKE) -C $(MONITOR_DIR) clean
 	$(MAKE) -C $(FPGA_DIR) clean
 	rm -rf rp-lockbox.tar.xz

@@ -13,6 +13,7 @@
 
 #include "pid.h"
 #include "../../api/src/pid.h"
+#include "redpitaya/lockbox_monitor.h"
 
 #include "common.h"
 #include "scpi/parser.h"
@@ -939,5 +940,158 @@ scpi_result_t RP_PIDRelockInputQ(scpi_t *context) {
     SCPI_ResultMnemonic(context, pin_name);
 
     RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:RELock:INPut? Successfully returned input pin value to client.\n");
+    return SCPI_RES_OK;
+}
+
+/*
+ * Lock monitor queries (the lockbox-monitor service's counters; every one
+ * fails with RP_EMON while the service is not running)
+ */
+
+scpi_result_t RP_PIDMonitorQ(scpi_t *context) {
+    int result;
+    rp_pid_t pid;
+    rp_pid_monitor_t m;
+
+    /* Parse PID index */
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:MONitor? Failed to parse input/output choice: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDGetMonitor(pid, &m);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:MONitor? Failed to read the lock monitor: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    /* locked,lock_age_s,servo_on,servo_age_s,unlocks_total,unlocked_total_s,
+     * unlocks_since_servo,unlocked_since_servo_s,longest_since_servo_s,
+     * drop_open,last_unlock_age_s,last_unlock_s,raw_unlock_edges */
+    SCPI_ResultBool(context, m.locked);
+    SCPI_ResultDouble(context, m.lock_age_s);
+    SCPI_ResultBool(context, m.servo_on);
+    SCPI_ResultDouble(context, m.servo_age_s);
+    SCPI_ResultUInt64Base(context, m.unlocks_total, 10);
+    SCPI_ResultDouble(context, m.unlocked_total_s);
+    SCPI_ResultUInt64Base(context, m.unlocks_since_servo, 10);
+    SCPI_ResultDouble(context, m.unlocked_since_servo_s);
+    SCPI_ResultDouble(context, m.longest_since_servo_s);
+    SCPI_ResultBool(context, m.drop_open);
+    SCPI_ResultDouble(context, m.last_unlock_age_s);
+    SCPI_ResultDouble(context, m.last_unlock_s);
+    SCPI_ResultUInt64Base(context, m.raw_unlock_edges, 10);
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:MONitor? Successfully returned the lock monitoring.");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_PIDUnlockCountQ(scpi_t *context) {
+    int result;
+    rp_pid_t pid;
+    uint64_t count;
+
+    /* Parse PID index */
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:UNLock:COUNt? Failed to parse input/output choice: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDGetUnlockCount(pid, &count);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:UNLock:COUNt? Failed to read the lock monitor: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    SCPI_ResultUInt64Base(context, count, 10);
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:UNLock:COUNt? Successfully returned the lock drop count.");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_PIDUnlockTimeQ(scpi_t *context) {
+    int result;
+    rp_pid_t pid;
+    double seconds;
+
+    /* Parse PID index */
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:UNLock:TIME? Failed to parse input/output choice: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDGetUnlockedTime(pid, &seconds);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:UNLock:TIME? Failed to read the lock monitor: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    SCPI_ResultDouble(context, seconds);
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:UNLock:TIME? Successfully returned the unlocked time.");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_PIDUnlockEventsQ(scpi_t *context) {
+    int result;
+    rp_pid_t pid;
+    uint32_t after = 0;
+    rp_unlock_event_t events[LOCKBOX_MONITOR_EVENTS];
+    uint32_t n;
+
+    /* Parse PID index */
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:UNLock:EVENts? Failed to parse input/output choice: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    /* Optional first parameter: return the drops with an index above it */
+    if(!SCPI_ParamUInt32(context, &after, false)) {
+        after = 0;
+    }
+
+    result = rp_PIDGetUnlockEvents(pid, after, events, &n);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:UNLock:EVENts? Failed to read the lock monitor: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    /* n, then index,age_s,duration_s per drop, oldest first */
+    SCPI_ResultUInt32Base(context, n, 10);
+    for(uint32_t i = 0; i < n; i++) {
+        SCPI_ResultUInt32Base(context, events[i].index, 10);
+        SCPI_ResultDouble(context, events[i].age_s);
+        SCPI_ResultDouble(context, events[i].duration_s);
+    }
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:UNLock:EVENts? Successfully returned the lock drops.");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_LockboxMonitorQ(scpi_t *context) {
+    bool alive;
+    double uptime_s, period_ms, max_gap_ms, merge_ms;
+    uint64_t late_polls;
+
+    int result = rp_MonitorGetHealth(&alive, &uptime_s, &period_ms, &max_gap_ms, &late_polls, &merge_ms);
+    if(result != RP_OK && result != RP_EMON) {
+        RP_LOG(LOG_ERR, "*LOCKbox:MONitor? Failed to read the lock monitor: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    /* alive,uptime_s,period_ms,max_gap_ms,late_polls,merge_ms - a monitor
+     * that is not running answers 0,-1,0,0,0,0 instead of an error */
+    SCPI_ResultBool(context, alive);
+    SCPI_ResultDouble(context, uptime_s);
+    SCPI_ResultDouble(context, period_ms);
+    SCPI_ResultDouble(context, max_gap_ms);
+    SCPI_ResultUInt64Base(context, late_polls, 10);
+    SCPI_ResultDouble(context, merge_ms);
+
+    RP_LOG(LOG_DEBUG, "*LOCKbox:MONitor? Successfully returned the lock monitor's health.");
     return SCPI_RES_OK;
 }
