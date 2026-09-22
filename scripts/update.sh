@@ -6,7 +6,8 @@
 # RUN IT FROM A ROOT LOGIN SHELL:
 #
 #     sudo -i
-#     cd ~unitrap/rp-lockbox && scripts/update.sh
+#     cd rp-lockbox          # or wherever the checkout is
+#     scripts/update.sh
 #
 # like the other install scripts. The installation directories are on
 # read-only file systems (/opt/redpitaya is its own vfat partition), and the
@@ -17,12 +18,15 @@
 # The lock lives in the gateware and survives a restart of the software
 # alone: when the bitfile in the tree is the one already installed, the FPGA
 # is not reprogrammed (a runtime drop-in empties the lockbox service's
-# ExecStartPre for the starts made here) and the lock is kept. The SCPI
-# server rewrites the PID registers from the saved pid_settings.conf at its
-# start, so SAVE THE PARAMETERS first (web page, or LOCKbox:CONFig:SAVE) if
-# they changed since the last save. A bitfile that differs from the
-# installed one is installed and loaded, which drops the lock;
-# --reload-fpga forces that.
+# ExecStartPre for the starts made here) and the lock is kept. A bitfile
+# that differs from the installed one is installed and loaded, which drops
+# the lock; --reload-fpga forces that.
+#
+# EVERY path restarts the SCPI server, and the server rewrites the PID
+# registers from the saved pid_settings.conf at its start: whatever was
+# changed since the last save is lost. So the script states what this run
+# will do and waits for a confirmation, leaving time to save the parameters
+# (web page, or LOCKbox:CONFig:SAVE) and start again; -y skips the question.
 set -e
 cd "$(dirname "$0")/.."
 
@@ -57,7 +61,7 @@ trap on_exit EXIT
 
 if [ "$(id -u)" -ne 0 ]; then
     echo "update.sh: run this as root, from a login shell: sudo -i, then" >&2
-    echo "           cd ~unitrap/rp-lockbox && scripts/update.sh" >&2
+    echo "           scripts/update.sh in the checkout" >&2
     exit 1
 fi
 
@@ -69,6 +73,25 @@ for helper in rw ro; do
     fi
 done
 
+confirm() {
+    local answer
+    if [ "$assume_yes" -eq 1 ]; then
+        return 0
+    fi
+    if [ ! -t 0 ]; then
+        echo "update.sh: no terminal to ask - pass -y to run it anyway" >&2
+        exit 1
+    fi
+    while true; do
+        printf '  [c] continue, [q] quit: '
+        read -r answer || answer=q
+        case "$answer" in
+            c|C|'') return 0 ;;
+            q|Q) echo "update.sh: nothing was changed"; exit 0 ;;
+        esac
+    done
+}
+
 for f in "$BIT" api/lib/liblockbox.so scpi-server/lockbox-server monitor/lockbox-monitor; do
     if [ ! -f "$f" ]; then
         echo "update.sh: $f is missing - build first (make api scpi monitor)" >&2
@@ -77,23 +100,30 @@ for f in "$BIT" api/lib/liblockbox.so scpi-server/lockbox-server monitor/lockbox
 done
 
 reload=0
-if [ "$1" = "--reload-fpga" ] || [ ! -f "$INSTALLED_BIT" ] || ! cmp -s "$BIT" "$INSTALLED_BIT"; then
+assume_yes=0
+for arg in "$@"; do
+    case "$arg" in
+        --reload-fpga) reload=1 ;;
+        -y|--yes) assume_yes=1 ;;
+        *) echo "update.sh: unknown argument '$arg'" >&2; exit 1 ;;
+    esac
+done
+if [ ! -f "$INSTALLED_BIT" ] || ! cmp -s "$BIT" "$INSTALLED_BIT"; then
     reload=1
 fi
 
-# Which path this run takes, before it takes it: the lock survives the
-# software restart, not a reprogram of the gateware
+# What this run will do, before it does it
+echo "update.sh: about to install and restart the lockbox software."
 if [ $reload -eq 1 ]; then
-    echo "update.sh: the bitfile differs from the installed one - the FPGA"
-    echo "           is reprogrammed and THE LOCK WILL DROP"
+    echo "  - the bitfile differs from the installed one: the FPGA is"
+    echo "    reprogrammed and THE LOCK WILL DROP"
 else
-    echo "update.sh: the bitfile is the installed one - the FPGA is left"
-    echo "           alone and the lock is kept"
+    echo "  - the bitfile is the installed one: the FPGA is left alone and"
+    echo "    the lock is kept"
 fi
-echo "update.sh: the SCPI server rewrites the PID registers from"
-echo "           $SETTINGS at its start, so what was last SAVED is what"
-echo "           the lockbox runs afterwards"
-
+echo "  - the SCPI server restores $SETTINGS"
+echo "    at its start: PID settings changed since the last save are lost"
+confirm
 # The drop-in goes in BEFORE anything is stopped, so that every start from
 # here on - this script's, or the recovery of a failed run - keeps the lock
 if [ $reload -eq 0 ]; then

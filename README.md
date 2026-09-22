@@ -100,18 +100,18 @@ to whose resonance a laser is locked (or vice versa).
 The lock status can also be queried via SCPI (`PID:IN<n>:OUT<n>:LOCKED?`, see [SCPI commands](doc/SCPI_commands.rst)).
 
 ### Lockbox monitor: lock drops and input noise
-The lock status above is a live flag with no memory: a drop between two readings leaves no trace.
-The `lockbox-monitor` service (`monitor/`) samples the lock and hold flags of all four PID
+The lock status above is a register bit, set by the gateware as long as the input is inside the
+window.
+The `lockbox-monitor` service (`monitor/`) samples the lock and hold bits of all four PID
 controllers every millisecond and keeps, per PID, the lock state with its age, the time since the
 servo was switched on (i.e., the hold switched off), and the lock drops with their durations,
-counted while the servo is on, in total and since it was switched on. A drop ends once the flag has
+counted while the servo is on, in total and since it was switched on. A drop ends once the bit has
 read locked for 10 ms in a row, so the flicker while the relock feature re-finds the resonance
 counts as one drop, not many.
 
-The monitor also measures the noise of the two fast analog inputs over about a second: the standard
-deviation about the mean is the rms noise, and in lock the rms error. Its bandwidth (the scope
-decimation, 54 kHz by default) is selectable under Options on the web page and over SCPI. While the
-monitor runs it owns the scope, so the `ACQ` commands interfere with it.
+The monitor also measures the ac rms noise of the two fast analog inputs.
+Its bandwidth (the scope decimation, 54 kHz by default) is selectable under Options on the web page
+and over SCPI.
 
 The web interface shows both per PID, and SCPI offers `PID:IN<n>:OUT<n>:MONitor?`,
 `ANALOG:IN<n>:STATs?` and the related commands (see [SCPI commands](doc/SCPI_commands.rst)); while
@@ -225,16 +225,24 @@ library, feeds it a scripted sequence of lock flags and reads the result back th
 reader. `monitor/test/readmon` also builds on the Red Pitaya (`make -C monitor/test readmon`) as an
 inspection tool for the running monitor.
 
-Note that the top-level `make clean` also cleans the FPGA project, which deletes the committed
-bitfile and reports in `fpga/prj/lockbox/out/`; restore them with `git checkout -- fpga/prj/lockbox/out/`.
+`make clean` leaves the FPGA project alone, since its output directory holds the committed bitfile
+and synthesis reports; `make clean-fpga` cleans it, and `git checkout -- fpga/prj/lockbox/out/`
+restores what was committed.
 
-To install a build on the Red Pitaya over the running installation and restart the services, run
-`scripts/update.sh` from a root login shell, as the other install scripts (`sudo -i`, then
-`cd ~unitrap/rp-lockbox && scripts/update.sh`). The lock lives in the gateware, so when the bitfile in the tree is the
-one already installed the script restarts the software without reprogramming the FPGA and the lock
-is kept; since the SCPI server restores the saved `pid_settings.conf` at its start, save the
-parameters first (web page, or `LOCKbox:CONFig:SAVE`) if they changed since the last save. A
-different bitfile is installed and loaded, which drops the lock (`--reload-fpga` forces that).
+To install a build over the running installation and restart the services, run `scripts/update.sh`
+from a root login shell, like the install script above:
+```
+sudo -i
+cd rp-lockbox
+scripts/update.sh
+```
+where `cd rp-lockbox` assumes the checkout sits where the installation above put it; use its path
+otherwise. The script states what the run will do and waits for a confirmation. The lock lives in
+the gateware, so when the bitfile in the tree is the one already installed the software is
+restarted without reprogramming the FPGA and the lock is kept; a different bitfile is installed and
+loaded, which drops the lock (`--reload-fpga` forces that). The SCPI server restores the saved
+`pid_settings.conf` at its start, so save the parameters first (web page, or
+`LOCKbox:CONFig:SAVE`) if they changed since the last save.
 
 #### Make compressed archive
 

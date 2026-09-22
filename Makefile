@@ -82,9 +82,17 @@ $(TARBALL): install
 ################################################################################
 # Cleanup
 ################################################################################
+# The FPGA project is NOT cleaned here: its output directory holds the
+# committed bitfile and synthesis reports, which only the Vivado build (on
+# the one machine that has it) can produce again. `make clean-fpga` cleans
+# it deliberately, and `git checkout -- fpga/prj/lockbox/out/` restores what
+# was committed.
+.PHONY: clean clean-fpga
 clean:
 	$(MAKE) -C $(LIBLOCKBOX_DIR) clean
 	$(MAKE) -C $(SCPI_SERVER_DIR) clean
 	$(MAKE) -C $(MONITOR_DIR) clean
-	$(MAKE) -C $(FPGA_DIR) clean
 	rm -rf rp-lockbox.tar.xz
+
+clean-fpga:
+	$(MAKE) -C $(FPGA_DIR) clean
