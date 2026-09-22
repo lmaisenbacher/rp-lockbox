@@ -198,8 +198,8 @@ Build the FPGA gateware
 make fpga
 ```
 
-The bitfile is committed, and `make fpga` leaves it alone: after editing the sources, force the
-synthesis with `make -B fpga`.
+The built bitfile is committed, and `make fpga` leaves it alone while it is there. To synthesize
+again after editing the sources, run `make -B fpga`.
 
 The generated bitfile is written to `fpga/prj/lockbox/out/red_pitaya.bit`.
 
