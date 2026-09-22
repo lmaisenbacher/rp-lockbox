@@ -1021,6 +1021,7 @@
 				$("#checkbox_sg_2_enabled").not(":focus").prop("checked", data.sg_2_enabled);
 				$("#checkbox_sg_1_poffset_enabled").not(":focus").prop("checked", data.sg_1_poffset_enabled);
 				$("#checkbox_sg_2_poffset_enabled").not(":focus").prop("checked", data.sg_2_poffset_enabled);
+                $("#software_version").val(data.version);
                 // The lockbox monitor's input noise bandwidth (0 = no monitor)
                 if (data.stats_decimation) {
                     $("#stats_decimation").not(":focus").val(String(data.stats_decimation));
@@ -2091,6 +2092,16 @@
             <fieldset class="options-item">
                     <legend><h2>Load</h2></legend>
                     <button id= "load_pams" class="button">Load parameters from SD card</button>
+            </fieldset>
+
+            <fieldset class="options-item">
+                <legend><h2>Software</h2></legend>
+                <table>
+                    <tr>
+                        <td><a>Version</a></td>
+                        <td><output id="software_version">-</output></td>
+                    </tr>
+                </table>
             </fieldset>
 
             <fieldset class="options-item">

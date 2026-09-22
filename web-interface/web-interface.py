@@ -75,10 +75,26 @@ def init_rp_library():
     attaches to the registers without resetting anything (`rp_Init` would
     put the signal generators, the digital pins and the scope back to
     their defaults)."""
+    RP_LIB.rp_GetVersion.restype = ctypes.c_char_p
     retval = RP_LIB.rp_Attach()
     if retval != 0:
         LOG.error("Failed to initialize lockbox library. Error code: %s", ERROR_CODES[retval])
         sys.exit(-1)
+
+
+def software_version():
+    """The lockbox software's release version and the git revision it was
+    built from, "1.3.0 (58411ac)": the same string `*IDN?` reports, read
+    from the library this page and the SCPI server share. It cannot
+    change while the process runs, so it is read once."""
+    try:
+        version = RP_LIB.rp_GetVersion()
+    except Exception as err:                # a library without the symbol
+        LOG.error("Failed to read the software version. Error: %s", err)
+        return "unknown"
+    if isinstance(version, bytes):
+        version = version.decode("ascii", "replace")
+    return str(version)
 
 
 class PIDMonitor(ctypes.Structure):
@@ -934,6 +950,7 @@ def get_parameters():
         stats_decimation.value = 0
 
     parameters = {
+        "version": VERSION,
         "stats_decimation": stats_decimation.value,
         "pid_11_setpoint": setpoint[0].value,
         "pid_12_setpoint": setpoint[1].value,
@@ -1040,6 +1057,9 @@ class MockRPLib():
     def rp_Attach(self):
         LOG.debug("rp_Attach called")
         return 0
+
+    def rp_GetVersion(self):
+        return b"0.00-0000 (mock)"
 
     def rp_PIDGetLockStatus(self, pid, lock_status):
         lock_status._obj.value = pid != 1
@@ -1310,5 +1330,9 @@ except OSError as err:
     RP_LIB = MockRPLib()
 else:
     init_rp_library()
+
+#: The running software's version, for the page's Options panel
+VERSION = software_version()
+LOG.info("rp-lockbox %s", VERSION)
 
 run(host="0.0.0.0", port=80, quiet=True)
