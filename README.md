@@ -195,13 +195,11 @@ where `<VIVDA_PATH>` is the path were Vivado is installed, typically `/opt/Xilin
 
 Build the FPGA gateware
 ```
-make fpga
+make -B fpga
 ```
-
-The built bitfile is committed, and `make fpga` leaves it alone while it is there. To synthesize
-again after editing the sources, run `make -B fpga`.
-
-The generated bitfile is written to `fpga/prj/lockbox/out/red_pitaya.bit`.
+The bitfile of the last build is committed in the repository. Plain `make fpga` therefore does
+nothing, and `-B` runs the synthesis anyway. The new bitfile lands in
+`fpga/prj/lockbox/out/red_pitaya.bit` and belongs in the commit that changed the sources.
 
 #### API library, SCPI server and lockbox monitor
 
