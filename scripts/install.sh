@@ -1,4 +1,18 @@
 #!/bin/bash
+# Install the release archive over the running installation.
+# Run from a root login shell (sudo -i): `rw` and `ro` remount the
+# read-only installation directories (/opt/redpitaya is its own vfat
+# partition) and are on root's PATH, not on the one `sudo <script>`
+# hands out.
+set -e
+for helper in rw ro; do
+    if ! command -v "$helper" >/dev/null 2>&1; then
+        echo "$(basename "$0"): '$helper' is not on the PATH - run this from" >&2
+        echo "           a root login shell: sudo -i" >&2
+        exit 1
+    fi
+done
+
 rw
 cp fpga/lockbox.bit /opt/redpitaya/fpga/
 cp lib/liblockbox.so /opt/redpitaya/lib/
