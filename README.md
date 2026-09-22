@@ -198,7 +198,8 @@ Build the FPGA gateware
 make fpga
 ```
 
-To force the `make` command (e.g., after updating the source code), use the flag `-B`, e.g., `make -B api`.
+The bitfile is committed, and `make fpga` leaves it alone: after editing the sources, force the
+synthesis with `make -B fpga`.
 
 The generated bitfile is written to `fpga/prj/lockbox/out/red_pitaya.bit`.
 
@@ -219,7 +220,7 @@ make monitor
 ```
 These are incremental: a changed source rebuilds its object, and a changed `VERSION` or commit
 rebuilds the object that reports them, so a build always says what it is (`*IDN?`, and Options >
-Software on the web page). `make -B api` forces a rebuild from scratch.
+Software on the web page).
 
 The lockbox monitor's lock-drop bookkeeping and its shared block have tests that run on any Linux host
 with gcc (no Red Pitaya needed): `make monitor-test` builds the daemon against a stand-in for the API
