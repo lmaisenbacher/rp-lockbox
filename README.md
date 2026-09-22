@@ -100,54 +100,22 @@ to whose resonance a laser is locked (or vice versa).
 The lock status can also be queried via SCPI (`PID:IN<n>:OUT<n>:LOCKED?`, see [SCPI commands](doc/SCPI_commands.rst)).
 
 ### Lockbox monitor: lock drops and input noise
-The lock status above is a live flag with no memory: a lock that drops and returns between two
-readings leaves no trace. The lockbox monitor service (`lockbox-monitor`, `monitor/`) fills that gap on
-the Red Pitaya's CPU. It samples the lock and hold flags of all four PID controllers every
-millisecond (one register read) and keeps, per PID:
+The lock status above is a live flag with no memory: a drop between two readings leaves no trace.
+The `lockbox-monitor` service (`monitor/`) samples the lock and hold flags of all four PID
+controllers every millisecond and keeps, per PID, the lock state with its age, the time since the
+servo was switched on (i.e., the hold switched off), and the lock drops with their durations,
+counted while the servo is on, in total and since it was switched on. A drop ends once the flag has
+read locked for 10 ms in a row, so the flicker while the relock feature re-finds the resonance
+counts as one drop, not many.
 
-* the **mode**: the hold setting. Hold off is "servo on"; the web interface's "Toggle Lock/Scan"
-  button switches the hold, the integrator reset and the signal generator together. The monitor
-  records when the hold was last switched off (a servo already on when the monitor starts counts
-  as on since then).
-* the **status**: the lock flag, with the time the PID has been in its current locked or unlocked
-  state.
-* the **count**: the lock drops, i.e., locked-to-unlocked transitions of the flag while the hold is
-  off, with their durations. The count is kept both since the monitor started (a monotonic total
-  for loggers) and since the hold was last switched off ("unlocks since servo on" on the web page). The lock
-  acquisition after switching the hold off is not a drop; transitions while the hold is on are not
-  counted (during a scan the flag flickers as the scan crosses the resonance). A drop ends once the
-  flag has read locked for 10 ms in a row (`--merge-ms`), so the flicker while the relock feature
-  re-finds the resonance is one drop, not many. Drops are not counted during the first two seconds
-  after the monitor starts (`--grace-s`), while the SCPI server restores the saved configuration.
+The monitor also measures the noise of the two fast analog inputs over about a second: the standard
+deviation about the mean is the rms noise, and in lock the rms error. Its bandwidth (the scope
+decimation, 54 kHz by default) is selectable under Options on the web page and over SCPI. While the
+monitor runs it owns the scope, so the `ACQ` commands interfere with it.
 
-The monitor also measures the **noise of the two fast analog inputs** (the error signals) with the
-FPGA's scope block: the input is averaged over the scope decimation (1024 by default, i.e., a
-bandwidth of about 54 kHz at 122 kSa/s) and the samples of about one second are pooled into their
-mean, standard deviation, minimum and maximum. The standard deviation about the mean is the input's
-rms noise. In lock the mean sits at the setpoint, so it is the rms error. The decimation, and with
-it the bandwidth, can be selected on the web interface ("Lockbox monitor" under Options) or via SCPI
-(`ANALOG:STATs:DECimation`, one of 64, 1024, 8192 or 65536); the monitor keeps the choice in
-`/home/redpitaya/lockbox-monitor.conf`. The averaging is a plain box filter, so this is an rms
-readout, not a spectrum. While the monitor runs it owns the scope: the `ACQ` SCPI commands
-interfere with it.
-
-The monitor publishes its state in a shared-memory block (`/dev/shm/lockbox-monitor`,
-[lockbox_monitor.h](api/include/redpitaya/lockbox_monitor.h)) that the API library reads
-(`rp_PIDGetMonitor` and the other functions of the "Lockbox monitor" section of
-[lockbox.h](api/include/redpitaya/lockbox.h)): the web interface shows the drops, the servo-on
-time, the lock state's age and the input noise in each PID's "Lock monitoring" table, and the SCPI
-server offers `PID:IN<n>:OUT<n>:MONitor?`, `PID:IN<n>:OUT<n>:UNLock:COUNt?`,
-`PID:IN<n>:OUT<n>:UNLock:TIME?`, `PID:IN<n>:OUT<n>:UNLock:EVENts?`, `ANALOG:IN<n>:STATs?` and
-`LOCKbox:MONitor?` (see [SCPI commands](doc/SCPI_commands.rst)). While the monitor is not running,
-these report the error "Lockbox monitor not running" (`RP_EMON`).
-
-The monitor is a systemd service (`systemd/lockbox-monitor.service`) tied to the `lockbox` service,
-as is the web interface: both start with the SCPI server and stop before it (re)loads the FPGA,
-because a process touching the registers during the load stalls the bus and hangs the board; the
-monitor's counters thus start with the gateware. A process joining the
-running lockbox, like the monitor and the web interface, attaches to the registers with `rp_Attach`;
-`rp_Init` is for the SCPI server alone, because it resets the signal generators, the digital pins
-and the scope to their defaults before the saved configuration is restored.
+The web interface shows both per PID, and SCPI offers `PID:IN<n>:OUT<n>:MONitor?`,
+`ANALOG:IN<n>:STATs?` and the related commands (see [SCPI commands](doc/SCPI_commands.rst)); while
+the service is not running they report the error "Lockbox monitor not running".
 
 ### Relock
 Each of the PID controllers contains an automatic relock feature. When the feature is enabled and
