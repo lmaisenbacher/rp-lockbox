@@ -58,7 +58,7 @@ OBJS = $(patsubst %$(OBJEXT), $(OBJECTS_DIR)/%$(OBJEXT), $(OBJECTS))
 # GCC compiling & linking flags
 CFLAGS  = -std=gnu99 -Wall -Werror -fPIC -Ikiss_fft -Os -s
 CFLAGS += -DVERSION=$(VERSION) -DREVISION=$(REVISION)
-CFLAGS += -I../include
+CFLAGS += -I../include -I$(OBJECTS_DIR)
 LDFLAGS=-shared -Wl,--version-script=exportmap
 
 # Additional libraries which needs to be dynamically linked to the executable
@@ -83,6 +83,28 @@ $(OBJECTS_DIR)/%.o:$(SOURCE_DIR)/%.c
 	@mkdir -p $(@D)
 	$(CC) -c $(CFLAGS) $< -o $@
 
+# The version and the revision are COMPILED INTO lockbox.o (rp_GetVersion
+# reports them, and the SCPI server and the web interface read it from
+# there). Nothing in the dependency graph knows when they change, so a
+# plain make would keep an object built from an older VERSION or commit
+# and the library would misreport what it is. They are written into a
+# generated header instead, rewritten ONLY when its content changes: an
+# ordinary build stays incremental, and a new version or commit rebuilds
+# the one file that carries it.
+BUILD_INFO = $(OBJECTS_DIR)/build_info.h
+
+$(BUILD_INFO): FORCE
+	@mkdir -p $(@D)
+	@printf '#define BUILD_VERSION_STR "%s"\n#define BUILD_REVISION_STR "%s"\n' \
+		'$(VERSION)' '$(REVISION)' > $@.tmp
+	@cmp -s $@.tmp $@ || mv $@.tmp $@
+	@rm -f $@.tmp
+
+$(OBJECTS_DIR)/lockbox.o: $(BUILD_INFO)
+
+.PHONY: FORCE
+FORCE:
+
 # Makefile target with rules how to link executable for each target from
 # $(SHARED_LIB) list.
 $(SHARED_LIB): $(OBJS)
@@ -95,7 +117,7 @@ $(STATIC_LIB): $(OBJS)
 
 # Clean target - when called it cleans all object files and executables.
 clean:
-	rm -f $(TARGET) $(OBJECTS_DIR)/*.o
+	rm -f $(TARGET) $(OBJECTS_DIR)/*.o $(BUILD_INFO)
 
 # Install target - creates 'bin/' sub-directory in $(INSTALL_DIR) and copies all
 # executables to that location.

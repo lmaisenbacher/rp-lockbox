@@ -217,7 +217,9 @@ make api
 make scpi
 make monitor
 ```
-To force the `make` command (e.g., after updating the source code), use the flag `-B`, e.g., `make -B api`.
+These are incremental: a changed source rebuilds its object, and a changed `VERSION` or commit
+rebuilds the object that reports them, so a build always says what it is (`*IDN?`, and Options >
+Software on the web page). `make -B api` forces a rebuild from scratch.
 
 The lockbox monitor's lock-drop bookkeeping and its shared block have tests that run on any Linux host
 with gcc (no Red Pitaya needed): `make monitor-test` builds the daemon against a stand-in for the API

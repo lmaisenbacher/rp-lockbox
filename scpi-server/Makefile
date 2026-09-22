@@ -14,9 +14,17 @@ LIBSCPI=scpi-parser/libscpi/dist/libscpi.a
 SCPISRV=lockbox-server
 ARTIFACTS= $(LIBSCPI) $(SCPISRV)
 
-all: $(LIBSCPI) $(SCPISRV)
+# The server's recursion is unconditional: the sub-make in src/ decides
+# what is out of date. As a file target with no prerequisites the server
+# was rebuilt only when it was missing, so an ordinary make ignored
+# changed sources (and a changed VERSION or commit) and a build needed -B.
+# libscpi stays a file target: it is a submodule that changes only when
+# the submodule does.
+.PHONY: all server
 
-$(SCPISRV):
+all: $(LIBSCPI) server
+
+server:
 	$(MAKE) -C src
 
 $(LIBSCPI):

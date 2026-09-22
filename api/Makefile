@@ -1,15 +1,12 @@
 # Makefile for the Red Pitaya lockbox library (liblockbox).
 
-# Versioning system
-# BUILD_NUMBER ?= 0
-# REVISION ?= devbuild
-# VER:=$(shell cat info/info.json | grep version | sed -e 's/.*:\ *\"//' | sed -e 's/-.*//')
+# The recursion is unconditional: the sub-make in src/ decides what is out
+# of date. As a file target with no prerequisites the library was rebuilt
+# only when it was missing, so an ordinary make ignored changed sources
+# (and a changed VERSION or commit) and a build needed -B.
+.PHONY: all clean install
 
-LIBLOCKBOX=lib/liblockbox.so
-
-all: $(LIBLOCKBOX)
-
-$(LIBLOCKBOX):
+all:
 	$(MAKE) -C src
 
 clean:
