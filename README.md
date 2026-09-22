@@ -197,9 +197,8 @@ Build the FPGA gateware
 ```
 make -B fpga
 ```
-The bitfile of the last build is committed in the repository. Plain `make fpga` therefore does
-nothing, and `-B` runs the synthesis anyway. The new bitfile lands in
-`fpga/prj/lockbox/out/red_pitaya.bit` and belongs in the commit that changed the sources.
+The bitfile is committed in the repository, so it is built only when the sources change. The new
+one lands in `fpga/prj/lockbox/out/red_pitaya.bit` and belongs in the commit that changed them.
 
 #### API library, SCPI server and lockbox monitor
 
