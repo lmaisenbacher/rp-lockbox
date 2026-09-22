@@ -5,6 +5,12 @@
 # partition) and are on root's PATH, not on the one `sudo <script>`
 # hands out.
 set -e
+if [ "$(id -u)" -ne 0 ]; then
+    echo "install_make.sh: run this as root, from a login shell: sudo -i, then" >&2
+    echo "           scripts/install_make.sh" >&2
+    exit 1
+fi
+
 for helper in rw ro; do
     if ! command -v "$helper" >/dev/null 2>&1; then
         echo "$(basename "$0"): '$helper' is not on the PATH - run this from" >&2

@@ -55,6 +55,12 @@ on_exit() {
 }
 trap on_exit EXIT
 
+if [ "$(id -u)" -ne 0 ]; then
+    echo "update.sh: run this as root, from a login shell: sudo -i, then" >&2
+    echo "           cd ~unitrap/rp-lockbox && scripts/update.sh" >&2
+    exit 1
+fi
+
 for helper in rw ro; do
     if ! command -v "$helper" >/dev/null 2>&1; then
         echo "update.sh: '$helper' is not on the PATH - run this from a root" >&2
