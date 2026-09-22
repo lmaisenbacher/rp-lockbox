@@ -257,7 +257,9 @@ Note that the top-level `make clean` also cleans the FPGA project, which deletes
 bitfile and reports in `fpga/prj/lockbox/out/`; restore them with `git checkout -- fpga/prj/lockbox/out/`.
 
 To install a build on the Red Pitaya over the running installation and restart the services, run
-`scripts/update.sh` as root. The lock lives in the gateware, so when the bitfile in the tree is the
+`scripts/update.sh` from a root login shell (`sudo -i`, then `cd ~unitrap/rp-lockbox && scripts/update.sh`),
+as for the other install scripts: they use the `rw`/`ro` helpers to remount the installation
+directories, and those are on root's PATH but not on the one `sudo <script>` hands out. The lock lives in the gateware, so when the bitfile in the tree is the
 one already installed the script restarts the software without reprogramming the FPGA and the lock
 is kept; since the SCPI server restores the saved `pid_settings.conf` at its start, save the
 parameters first (web page, or `LOCKbox:CONFig:SAVE`) if they changed since the last save. A
