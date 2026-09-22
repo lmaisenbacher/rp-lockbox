@@ -30,7 +30,7 @@ where `<RPHOSTNAME>` is the host name (or IP) of the Red Pitaya.
 
 Connect to the Linux system running on the Red Pitaya using [SSH](https://redpitaya.readthedocs.io/en/latest/developerGuide/os/ssh/ssh.html).
 
-(On the Red Pitaya) unpack the tarball and run the install script from a root login shell:
+(On the Red Pitaya) unpack the tarball and run the install script from a root shell:
 ```
 sudo -i
 tar xf rp-lockbox.tar.gz
@@ -261,7 +261,7 @@ Note that the top-level `make clean` also cleans the FPGA project, which deletes
 bitfile and reports in `fpga/prj/lockbox/out/`; restore them with `git checkout -- fpga/prj/lockbox/out/`.
 
 To install a build on the Red Pitaya over the running installation and restart the services, run
-`scripts/update.sh` from a root login shell, as the other install scripts (`sudo -i`, then
+`scripts/update.sh` from a root shell, as the other install scripts (`sudo -i`, then
 `cd ~unitrap/rp-lockbox && scripts/update.sh`). The lock lives in the gateware, so when the bitfile in the tree is the
 one already installed the script restarts the software without reprogramming the FPGA and the lock
 is kept; since the SCPI server restores the saved `pid_settings.conf` at its start, save the

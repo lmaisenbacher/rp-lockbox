@@ -3,7 +3,7 @@
 # and restart the services. Installs what was last BUILT in the tree:
 # rebuild after a branch change.
 #
-# RUN IT FROM A ROOT LOGIN SHELL:
+# RUN IT FROM A ROOT SHELL:
 #
 #     sudo -i
 #     cd ~unitrap/rp-lockbox && scripts/update.sh
@@ -58,7 +58,7 @@ trap on_exit EXIT
 for helper in rw ro; do
     if ! command -v "$helper" >/dev/null 2>&1; then
         echo "update.sh: '$helper' is not on the PATH - run this from a root" >&2
-        echo "           login shell: sudo -i, then scripts/update.sh" >&2
+        echo "           shell: sudo -i, then scripts/update.sh" >&2
         exit 1
     fi
 done
