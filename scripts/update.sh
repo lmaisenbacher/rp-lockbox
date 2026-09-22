@@ -1,18 +1,28 @@
 #!/bin/bash
 # Install the build products of this checkout over the running installation
-# and restart the services. Run as root (the root file system is remounted
-# writable for the copies; the targets are /opt/redpitaya and
-# /etc/systemd/system). Installs what was last BUILT in the tree: rebuild
-# after a branch change.
+# and restart the services. Installs what was last BUILT in the tree:
+# rebuild after a branch change.
+#
+# RUN IT FROM A ROOT LOGIN SHELL:
+#
+#     sudo -i
+#     cd ~unitrap/rp-lockbox && scripts/update.sh
+#
+# like the other install scripts. The installation directories are on
+# read-only file systems (/opt/redpitaya is its own vfat partition), and the
+# `rw`/`ro` helpers that remount them are on root's PATH but not on the one
+# `sudo <script>` hands out, so the script checks for them and stops before
+# touching anything if they are missing.
 #
 # The lock lives in the gateware and survives a restart of the software
 # alone: when the bitfile in the tree is the one already installed, the FPGA
 # is not reprogrammed (a runtime drop-in empties the lockbox service's
-# ExecStartPre for this one start) and the lock is kept. The SCPI server
-# rewrites the PID registers from the saved pid_settings.conf at its start,
-# so SAVE THE PARAMETERS first (web page, or LOCKbox:CONFig:SAVE) if they
-# changed since the last save. A bitfile that differs from the installed one
-# is installed and loaded, which drops the lock; --reload-fpga forces that.
+# ExecStartPre for the starts made here) and the lock is kept. The SCPI
+# server rewrites the PID registers from the saved pid_settings.conf at its
+# start, so SAVE THE PARAMETERS first (web page, or LOCKbox:CONFig:SAVE) if
+# they changed since the last save. A bitfile that differs from the
+# installed one is installed and loaded, which drops the lock;
+# --reload-fpga forces that.
 set -e
 cd "$(dirname "$0")/.."
 
@@ -20,25 +30,38 @@ BIT=fpga/prj/lockbox/out/red_pitaya.bit
 INSTALLED_BIT=/opt/redpitaya/fpga/lockbox.bit
 SETTINGS=/opt/redpitaya/pid_settings.conf
 DROPIN_DIR=/run/systemd/system/lockbox.service.d
+SERVICES="lockbox lockbox-monitor lockbox-web-interface"
 
-# The root file system is mounted read-only. `rw` and `ro` are shell
-# FUNCTIONS of the interactive profile and are not defined in a script run
-# under sudo, so the remounts are spelled out; the read-only state is
-# restored only if that is how the file system was found.
-root_was_ro=0
-case ",$(findmnt -no OPTIONS / 2>/dev/null)," in
-    *,ro,*) root_was_ro=1 ;;
-esac
+#: Whether the services are stopped and not yet started again
+stopped=0
 
-remount_rw() {
-    mount -o remount,rw /
-}
-
-remount_ro() {
-    if [ "$root_was_ro" -eq 1 ]; then
-        mount -o remount,ro /
+on_exit() {
+    status=$?
+    if [ $status -ne 0 ]; then
+        echo "update.sh: failed (exit $status)" >&2
+        if [ $stopped -eq 1 ]; then
+            # Never leave the lockbox without its software: the starts
+            # below keep the lock, the drop-in is still in place
+            echo "update.sh: starting the services again" >&2
+            for s in $SERVICES; do
+                systemctl start "$s" || true
+            done
+        fi
     fi
+    # The keep-lock drop-in is for this script's starts only: the next
+    # start (a reboot, a manual restart) reprograms the FPGA as usual
+    rm -rf "$DROPIN_DIR"
+    systemctl daemon-reload 2>/dev/null || true
 }
+trap on_exit EXIT
+
+for helper in rw ro; do
+    if ! command -v "$helper" >/dev/null 2>&1; then
+        echo "update.sh: '$helper' is not on the PATH - run this from a root" >&2
+        echo "           login shell: sudo -i, then scripts/update.sh" >&2
+        exit 1
+    fi
+done
 
 for f in "$BIT" api/lib/liblockbox.so scpi-server/lockbox-server monitor/lockbox-monitor; do
     if [ ! -f "$f" ]; then
@@ -65,10 +88,20 @@ echo "update.sh: the SCPI server rewrites the PID registers from"
 echo "           $SETTINGS at its start, so what was last SAVED is what"
 echo "           the lockbox runs afterwards"
 
+# The drop-in goes in BEFORE anything is stopped, so that every start from
+# here on - this script's, or the recovery of a failed run - keeps the lock
+if [ $reload -eq 0 ]; then
+    mkdir -p "$DROPIN_DIR"
+    printf '[Service]\nExecStartPre=\n' > "$DROPIN_DIR/keep-lock.conf"
+    systemctl daemon-reload
+fi
+
 systemctl stop lockbox-web-interface
 systemctl stop lockbox-monitor 2>/dev/null || true
 systemctl stop lockbox
-remount_rw
+stopped=1
+
+rw
 if [ $reload -eq 1 ]; then
     cp "$BIT" "$INSTALLED_BIT"
 fi
@@ -79,22 +112,12 @@ cp -r web-interface /opt/redpitaya/
 cp systemd/lockbox.service /etc/systemd/system/
 cp systemd/lockbox-monitor.service /etc/systemd/system/
 cp systemd/lockbox-web-interface.service /etc/systemd/system/
-remount_ro
-if [ $reload -eq 0 ]; then
-    mkdir -p "$DROPIN_DIR"
-    printf '[Service]\nExecStartPre=\n' > "$DROPIN_DIR/keep-lock.conf"
-fi
+ro
+
 systemctl daemon-reload
 systemctl enable lockbox-monitor >/dev/null 2>&1
 systemctl start lockbox
 systemctl start lockbox-monitor
 systemctl start lockbox-web-interface
+stopped=0
 echo "update.sh: installed, services started"
-if [ $reload -eq 0 ]; then
-    # The next start of lockbox (a reboot, a manual restart) reprograms as usual
-    rm -r "$DROPIN_DIR"
-    systemctl daemon-reload
-    echo "Installed without reprogramming the FPGA (bitfile unchanged): the lock is kept."
-else
-    echo "Installed and reprogrammed the FPGA: the lock was dropped, relock."
-fi
