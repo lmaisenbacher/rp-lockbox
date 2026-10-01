@@ -1,8 +1,8 @@
 Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2017.2 (lin64) Build 1909853 Thu Jun 15 18:39:10 MDT 2017
-| Date             : Thu Oct  1 09:48:06 2026
-| Host             : unitrap-ubuntu running 64-bit Ubuntu 20.04.5 LTS
+| Date             : Thu Oct  1 16:20:07 2026
+| Host             : X1Gen13 running 64-bit Ubuntu 16.04.7 LTS
 | Command          : report_power -file out/post_route_power.rpt
 | Design           : red_pitaya_top
 | Device           : xc7z010clg400-1
@@ -30,12 +30,12 @@ Table of Contents
 ----------
 
 +--------------------------+-------+
-| Total On-Chip Power (W)  | 2.085 |
-| Dynamic (W)              | 1.942 |
+| Total On-Chip Power (W)  | 2.080 |
+| Dynamic (W)              | 1.937 |
 | Device Static (W)        | 0.143 |
 | Effective TJA (C/W)      | 11.5  |
-| Max Ambient (C)          | 60.9  |
-| Junction Temperature (C) | 49.1  |
+| Max Ambient (C)          | 61.0  |
+| Junction Temperature (C) | 49.0  |
 | Confidence Level         | Low   |
 | Setting File             | ---   |
 | Simulation Activity File | ---   |
@@ -49,24 +49,24 @@ Table of Contents
 +--------------------------+-----------+----------+-----------+-----------------+
 | On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
 +--------------------------+-----------+----------+-----------+-----------------+
-| Clocks                   |     0.044 |       14 |       --- |             --- |
-| Slice Logic              |     0.051 |    23620 |       --- |             --- |
-|   LUT as Logic           |     0.042 |     9102 |     17600 |           51.72 |
-|   CARRY4                 |     0.005 |     1163 |      4400 |           26.43 |
-|   Register               |     0.003 |    10259 |     35200 |           29.14 |
+| Clocks                   |     0.045 |       14 |       --- |             --- |
+| Slice Logic              |     0.051 |    23617 |       --- |             --- |
+|   LUT as Logic           |     0.042 |     9100 |     17600 |           51.70 |
+|   CARRY4                 |     0.005 |     1127 |      4400 |           25.61 |
+|   Register               |     0.003 |    10446 |     35200 |           29.68 |
 |   LUT as Distributed RAM |    <0.001 |      160 |      6000 |            2.67 |
-|   F7/F8 Muxes            |    <0.001 |      365 |     17600 |            2.07 |
 |   LUT as Shift Register  |    <0.001 |       13 |      6000 |            0.22 |
+|   F7/F8 Muxes            |    <0.001 |      349 |     17600 |            1.98 |
 |   Others                 |     0.000 |      243 |       --- |             --- |
-| Signals                  |     0.086 |    20060 |       --- |             --- |
-| Block RAM                |     0.060 |       30 |        60 |           50.00 |
+| Signals                  |     0.086 |    19635 |       --- |             --- |
+| Block RAM                |     0.051 |       30 |        60 |           50.00 |
 | PLL                      |     0.097 |        1 |         2 |           50.00 |
-| DSPs                     |     0.063 |       62 |        80 |           77.50 |
-| I/O                      |     0.246 |       91 |       100 |           91.00 |
+| DSPs                     |     0.061 |       58 |        80 |           72.50 |
+| I/O                      |     0.250 |       91 |       100 |           91.00 |
 | XADC                     |     0.002 |        1 |       --- |             --- |
 | PS7                      |     1.292 |        1 |       --- |             --- |
 | Static Power             |     0.143 |          |           |                 |
-| Total                    |     2.085 |          |           |                 |
+| Total                    |     2.080 |          |           |                 |
 +--------------------------+-----------+----------+-----------+-----------------+
 
 
@@ -76,16 +76,16 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) |
 +-----------+-------------+-----------+-------------+------------+
-| Vccint    |       1.000 |     0.318 |       0.309 |      0.010 |
+| Vccint    |       1.000 |     0.309 |       0.300 |      0.010 |
 | Vccaux    |       1.800 |     0.068 |       0.056 |      0.012 |
-| Vcco33    |       3.300 |     0.071 |       0.070 |      0.001 |
+| Vcco33    |       3.300 |     0.073 |       0.072 |      0.001 |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |
 | Vcco18    |       1.800 |     0.002 |       0.001 |      0.001 |
 | Vcco15    |       1.500 |     0.000 |       0.000 |      0.000 |
 | Vcco135   |       1.350 |     0.000 |       0.000 |      0.000 |
 | Vcco12    |       1.200 |     0.000 |       0.000 |      0.000 |
 | Vccaux_io |       1.800 |     0.000 |       0.000 |      0.000 |
-| Vccbram   |       1.000 |     0.008 |       0.005 |      0.003 |
+| Vccbram   |       1.000 |     0.007 |       0.004 |      0.003 |
 | MGTAVcc   |       1.000 |     0.000 |       0.000 |      0.000 |
 | MGTAVtt   |       1.200 |     0.000 |       0.000 |      0.000 |
 | MGTVccaux |       1.800 |     0.000 |       0.000 |      0.000 |
@@ -159,10 +159,10 @@ Table of Contents
 +---------------------------------+-----------+
 | Name                            | Power (W) |
 +---------------------------------+-----------+
-| red_pitaya_top                  |     1.942 |
+| red_pitaya_top                  |     1.937 |
 |   i_ams                         |     0.004 |
-|   i_asg                         |     0.057 |
-|     ch[0]                       |     0.028 |
+|   i_asg                         |     0.055 |
+|     ch[0]                       |     0.026 |
 |     ch[1]                       |     0.026 |
 |   i_hk                          |    <0.001 |
 |   i_iobufn[0]                   |     0.000 |
@@ -184,11 +184,11 @@ Table of Contents
 |   i_limit                       |     0.004 |
 |     limit_a                     |     0.001 |
 |     limit_b                     |     0.001 |
-|   i_pid                         |     0.159 |
+|   i_pid                         |     0.161 |
 |     g_pid[0].i_kg_products      |     0.007 |
-|     g_pid[0].i_pid              |     0.022 |
+|     g_pid[0].i_pid              |     0.023 |
 |     g_pid[0].i_relock           |    <0.001 |
-|     g_pid[1].i_kg_products      |     0.008 |
+|     g_pid[1].i_kg_products      |     0.007 |
 |     g_pid[1].i_pid              |     0.023 |
 |     g_pid[1].i_relock           |    <0.001 |
 |     g_pid[2].i_kg_products      |     0.007 |
@@ -197,9 +197,9 @@ Table of Contents
 |     g_pid[3].i_kg_products      |     0.008 |
 |     g_pid[3].i_pid              |     0.023 |
 |     g_pid[3].i_relock           |    <0.001 |
-|   i_scope                       |     0.061 |
-|     i_dfilt1_cha                |     0.011 |
-|     i_dfilt1_chb                |     0.010 |
+|   i_scope                       |     0.052 |
+|     i_dfilt1_cha                |     0.009 |
+|     i_dfilt1_chb                |     0.009 |
 |     i_wr0                       |     0.005 |
 |     i_wr1                       |     0.005 |
 |   pll                           |     0.097 |

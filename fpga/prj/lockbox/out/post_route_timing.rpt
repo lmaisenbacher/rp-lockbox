@@ -1,8 +1,8 @@
 Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2017.2 (lin64) Build 1909853 Thu Jun 15 18:39:10 MDT 2017
-| Date         : Thu Oct  1 09:47:47 2026
-| Host         : unitrap-ubuntu running 64-bit Ubuntu 20.04.5 LTS
+| Date         : Thu Oct  1 16:20:02 2026
+| Host         : X1Gen13 running 64-bit Ubuntu 16.04.7 LTS
 | Command      : report_timing -file out/post_route_timing.rpt -sort_by group -max_paths 100 -path_type summary
 | Design       : red_pitaya_top
 | Device       : 7z010-clg400
@@ -13,481 +13,497 @@ Timing Report
 
 Startpoint                     Endpoint                       Slack(ns)     
 ----------------------------------------------------------------------------
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[21]
-                                                              -1.773        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[24]
-                                                              -1.714        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[25]
-                                                              -1.714        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[26]
-                                                              -1.714        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[27]
-                                                              -1.714        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[22]
-                                                              -1.678        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[23]
-                                                              -1.678        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[18]
-                                                              -1.582        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[28]
-                                                              -1.547        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[29]
-                                                              -1.547        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[20]
-                                                              -1.530        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[24]
-                                                              -1.508        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[25]
-                                                              -1.508        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[26]
-                                                              -1.508        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[27]
-                                                              -1.508        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[19]
-                                                              -1.488        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[22]
-                                                              -1.481        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[10]
-                                                              -1.477        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[23]
-                                                              -1.474        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[17]
-                                                              -1.459        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[11]
-                                                              -1.440        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[12]
-                                                              -1.435        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[7]
-                                                              -1.428        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[16]
-                                                              -1.410        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[15]
-                                                              -1.397        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[13]
-                                                              -1.378        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[21]
-                                                              -1.377        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[8]
-                                                              -1.369        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[5]
-                                                              -1.356        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[14]
-                                                              -1.344        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[28]
-                                                              -1.340        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[29]
-                                                              -1.340        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[1]
-                                                              -1.317        
-sys_bus_interconnect/i_pipe/for_bus[3].s_wdata_o_reg[100]/C
-                               i_pid/g_set_reg[7].holdoff_reg[7][4]/D
-                                                              -1.315        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[9]
-                                                              -1.310        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[20]
-                                                              -1.257        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[19]
-                                                              -1.233        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[17]
-                                                              -1.223        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[13]
-                                                              -1.220        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[6]
-                                                              -1.217        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[4]
-                                                              -1.193        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[3]
-                                                              -1.175        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[14]
-                                                              -1.158        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[12]
-                                                              -1.132        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[5]
-                                                              -1.120        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[18]
-                                                              -1.118        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[11]
-                                                              -1.109        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[15]
-                                                              -1.107        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[2]
-                                                              -1.089        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[16]
-                                                              -1.089        
-sys_bus_interconnect/i_pipe/for_bus[3].s_wdata_o_reg[100]/C
-                               i_pid/g_set_reg[3].holdoff_reg[3][4]/D
-                                                              -1.041        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[10]
-                                                              -1.029        
-i_pid/g_pid[1].i_pid/kii_mult_reg/CLK
-                               i_pid/g_pid[1].i_pid/iint_reg_reg[31]/R
-                                                              -1.023        
-i_pid/g_pid[1].i_pid/kii_mult_reg/CLK
-                               i_pid/g_pid[1].i_pid/iint_reg_reg[41]/R
-                                                              -1.023        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[8]
-                                                              -1.005        
-adc_rstn_reg/C                 i_pid/g_pid_reg[1].relock_stepsize_reg[1][1]/R
-                                                              -0.996        
-adc_rstn_reg/C                 i_pid/g_pid_reg[1].relock_stepsize_reg[1][3]/R
-                                                              -0.996        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[4]
-                                                              -0.995        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[7]
-                                                              -0.994        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[9]
-                                                              -0.967        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/r3_reg_dsp2_reg[22]/D
-                                                              -0.942        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/aa_mult/A[0]
-                                                              -0.940        
-i_scope/set_a_filt_aa_reg[7]_replica/C
-                               i_scope/i_dfilt1_cha/r3_reg_dsp2_reg[21]/D
-                                                              -0.934        
-i_pid/g_pid[1].i_pid/kii_mult_reg/CLK
-                               i_pid/g_pid[1].i_pid/iint_reg_reg[34]/R
-                                                              -0.928        
-i_pid/g_pid[1].i_pid/kii_mult_reg/CLK
-                               i_pid/g_pid[1].i_pid/iint_reg_reg[38]/R
-                                                              -0.928        
-i_pid/g_pid[1].i_pid/kii_mult_reg/CLK
-                               i_pid/g_pid[1].i_pid/iint_reg_reg[30]/R
-                                                              -0.878        
-i_pid/g_pid[1].i_pid/kii_mult_reg/CLK
-                               i_pid/g_pid[1].i_pid/iint_reg_reg[32]/R
-                                                              -0.878        
-i_pid/g_pid[1].i_pid/kii_mult_reg/CLK
-                               i_pid/g_pid[1].i_pid/iint_reg_reg[33]/R
-                                                              -0.878        
-i_pid/g_pid[1].i_pid/kii_mult_reg/CLK
-                               i_pid/g_pid[1].i_pid/iint_reg_reg[40]/R
-                                                              -0.878        
-adc_rstn_reg/C                 i_pid/g_pid_reg[2].relock_stepsize_reg[2][11]/R
-                                                              -0.866        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[6]
-                                                              -0.860        
-adc_rstn_reg/C                 i_pid/g_pid_reg[2].relock_stepsize_reg[2][3]/R
-                                                              -0.859        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[1]
-                                                              -0.853        
-i_pid/g_pid[1].i_pid/kii_mult_reg/CLK
-                               i_pid/g_pid[1].i_pid/iint_reg_reg[29]/R
-                                                              -0.839        
-i_pid/g_pid[1].i_pid/kii_mult_reg/CLK
-                               i_pid/g_pid[1].i_pid/iint_reg_reg[39]/R
-                                                              -0.839        
-i_pid/g_pid[1].i_pid/kii_mult_reg/CLK
-                               i_pid/g_pid[1].i_pid/iint_reg_reg[42]/R
-                                                              -0.839        
-adc_rstn_reg/C                 i_pid/g_pid_reg[3].relock_stepsize_reg[3][12]/R
-                                                              -0.838        
-adc_rstn_reg/C                 i_pid/g_pid_reg[3].relock_stepsize_reg[3][13]/R
-                                                              -0.838        
-adc_rstn_reg/C                 i_pid/g_pid_reg[3].relock_stepsize_reg[3][17]/R
-                                                              -0.838        
-adc_rstn_reg/C                 i_pid/g_pid_reg[3].relock_stepsize_reg[3][8]/R
-                                                              -0.838        
-adc_rstn_reg/C                 i_pid/g_pid_reg[1].relock_stepsize_reg[1][0]/R
-                                                              -0.834        
-adc_rstn_reg/C                 i_pid/g_pid_reg[1].relock_stepsize_reg[1][7]/R
-                                                              -0.834        
-adc_rstn_reg/C                 i_pid/g_pid_reg[1].relock_stepsize_reg[1][9]/R
-                                                              -0.834        
-adc_rstn_reg/C                 i_pid/g_set_reg[7].relock_minval_reg[7][7]/R
-                                                              -0.834        
-adc_dat_raw_reg[0][1]/C        i_pid/g_pid[2].i_pid/ki_mult_r_reg__0/B[15]
-                                                              -0.833        
-sys_bus_interconnect/i_pipe/for_bus[3].s_wdata_o_reg[100]/C
-                               i_pid/g_set_reg[6].holdoff_reg[6][4]/D
-                                                              -0.830        
-adc_rstn_reg/C                 i_pid/g_set_reg[4].relock_minval_reg[4][3]/R
-                                                              -0.830        
-adc_rstn_reg/C                 i_pid/g_set_reg[4].relock_minval_reg[4][4]/R
-                                                              -0.830        
-adc_rstn_reg/C                 i_pid/g_set_reg[4].relock_minval_reg[4][5]/R
-                                                              -0.830        
-adc_rstn_reg/C                 i_pid/g_set_reg[4].relock_minval_reg[4][6]/R
-                                                              -0.830        
-adc_rstn_reg/C                 i_pid/g_set_reg[4].relock_minval_reg[4][7]/R
-                                                              -0.830        
-adc_rstn_reg/C                 i_pid/g_pid_reg[2].relock_stepsize_reg[2][0]/R
-                                                              -0.814        
-i_scope/set_b_filt_aa_reg[10]/C
-                               i_scope/i_dfilt1_chb/aa_mult/A[0]
-                                                              -0.806        
-adc_rstn_reg/C                 i_pid/g_set_reg[6].relock_minval_reg[6][3]/R
-                                                              -0.806        
-adc_rstn_reg/C                 i_pid/g_set_reg[6].relock_minval_reg[6][4]/R
-                                                              -0.806        
-adc_rstn_reg/C                 i_pid/g_set_reg[7].relock_minval_reg[7][3]/R
-                                                              -0.802        
-adc_rstn_reg/C                 i_pid/g_set_reg[7].relock_minval_reg[7][4]/R
-                                                              -0.802        
-adc_rstn_reg/C                 i_pid/g_set_reg[7].relock_minval_reg[7][5]/R
-                                                              -0.802        
-adc_rstn_reg/C                 i_pid/g_set_reg[7].relock_minval_reg[7][6]/R
-                                                              -0.802        
-adc_rstn_reg/C                 i_pid/g_set_reg[1].relock_minval_reg[1][3]/R
-                                                              -0.801        
-pwm[0]/v_r_reg[1]/C            pwm[0]/pwm_o_reg/D             -0.524        
-pwm[3]/v_r_reg[1]/C            pwm[3]/pwm_o_reg/D             -0.521        
-pwm[1]/v_r_reg[0]/C            pwm[1]/pwm_o_reg/D             -0.389        
-pwm[2]/vcnt_r_reg[3]/C         pwm[2]/pwm_o_reg/D             -0.020        
-pwm_rstn_reg/C                 pwm[2]/pwm_o_reg/R             0.120         
-pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[0]/CE             0.234         
-pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[1]/CE             0.234         
-pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[2]/CE             0.234         
-pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[3]/CE             0.234         
-pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[4]/CE             0.234         
-pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[5]/CE             0.234         
-pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[6]/CE             0.335         
-pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[7]/CE             0.335         
-pwm[3]/bcnt_reg[1]/C           pwm[3]/v_reg[0]/CE             0.375         
-pwm[3]/bcnt_reg[1]/C           pwm[3]/v_reg[1]/CE             0.375         
-pwm[3]/bcnt_reg[1]/C           pwm[3]/v_reg[2]/CE             0.375         
-pwm[3]/bcnt_reg[1]/C           pwm[3]/v_reg[3]/CE             0.375         
-pwm[3]/bcnt_reg[1]/C           pwm[3]/v_reg[4]/CE             0.375         
-pwm[3]/bcnt_reg[1]/C           pwm[3]/v_reg[5]/CE             0.375         
-pwm[3]/bcnt_reg[1]/C           pwm[3]/v_reg[6]/CE             0.375         
-pwm[3]/bcnt_reg[1]/C           pwm[3]/v_reg[7]/CE             0.375         
-pwm[1]/bcnt_reg[1]/C           pwm[1]/v_reg[3]/CE             0.386         
-pwm[1]/bcnt_reg[1]/C           pwm[1]/v_reg[4]/CE             0.386         
-pwm[1]/bcnt_reg[1]/C           pwm[1]/v_reg[5]/CE             0.386         
-pwm[1]/bcnt_reg[1]/C           pwm[1]/v_reg[6]/CE             0.386         
-pwm[1]/bcnt_reg[1]/C           pwm[1]/v_reg[0]/CE             0.422         
-pwm[1]/bcnt_reg[1]/C           pwm[1]/v_reg[1]/CE             0.422         
-pwm[1]/bcnt_reg[1]/C           pwm[1]/v_reg[2]/CE             0.422         
-pwm[1]/bcnt_reg[1]/C           pwm[1]/v_reg[7]/CE             0.422         
-pwm[0]/bcnt_reg[1]/C           pwm[0]/v_reg[5]/CE             0.442         
-pwm[0]/bcnt_reg[1]/C           pwm[0]/v_reg[6]/CE             0.442         
-dac_rst_reg/C                  oddr_dac_dat[12]/R             0.448         
-dac_rst_reg/C                  oddr_dac_dat[0]/R              0.494         
-pwm[0]/bcnt_reg[1]/C           pwm[0]/v_reg[0]/CE             0.528         
-pwm[0]/bcnt_reg[1]/C           pwm[0]/v_reg[1]/CE             0.528         
-pwm[0]/bcnt_reg[1]/C           pwm[0]/v_reg[2]/CE             0.528         
-pwm[0]/bcnt_reg[1]/C           pwm[0]/v_reg[3]/CE             0.528         
-pwm[0]/bcnt_reg[1]/C           pwm[0]/v_reg[4]/CE             0.528         
-pwm[0]/bcnt_reg[1]/C           pwm[0]/v_reg[7]/CE             0.528         
-dac_rst_reg/C                  oddr_dac_dat[3]/R              0.549         
-dac_rst_reg/C                  oddr_dac_dat[2]/R              0.554         
-dac_rst_reg/C                  oddr_dac_dat[13]/R             0.559         
-i_ams/dac_b_o_reg[13]/C        pwm[1]/b_reg[13]/D             0.581         
-dac_rst_reg/C                  oddr_dac_dat[1]/R              0.633         
-i_ams/dac_d_o_reg[0]/C         pwm[3]/b_reg[0]/D              0.642         
-dac_rst_reg/C                  oddr_dac_dat[9]/R              0.644         
-i_ams/dac_d_o_reg[15]/C        pwm[3]/b_reg[15]/D             0.670         
-dac_rst_reg/C                  oddr_dac_dat[4]/R              0.684         
-pwm[2]/v_reg[2]/C              pwm[2]/v_r_reg[6]/D            0.693         
-dac_rst_reg/C                  oddr_dac_dat[8]/R              0.697         
-dac_rst_reg/C                  oddr_dac_dat[6]/R              0.705         
-i_ams/dac_d_o_reg[2]/C         pwm[3]/b_reg[2]/D              0.728         
-pwm[2]/v_reg[2]/C              pwm[2]/v_r_reg[7]/D            0.742         
-pwm_rstn_reg/C                 pwm[2]/vcnt_reg[0]/R           0.755         
-i_ams/dac_a_o_reg[1]/C         pwm[0]/b_reg[1]/D              0.787         
-i_ams/dac_d_o_reg[10]/C        pwm[3]/b_reg[10]/D             0.808         
-dac_rst_reg/C                  oddr_dac_dat[5]/R              0.832         
-dac_rst_reg/C                  oddr_dac_dat[7]/R              0.843         
-pwm_rstn_reg/C                 pwm[2]/bcnt_reg[0]/R           0.846         
-pwm_rstn_reg/C                 pwm[2]/bcnt_reg[1]/R           0.846         
-pwm_rstn_reg/C                 pwm[2]/bcnt_reg[2]/R           0.846         
-pwm_rstn_reg/C                 pwm[2]/bcnt_reg[3]/R           0.846         
-pwm[2]/v_reg[2]/C              pwm[2]/v_r_reg[5]/D            0.850         
-i_ams/dac_a_o_reg[10]/C        pwm[0]/b_reg[10]/D             0.879         
-pwm[2]/vcnt_reg[3]/C           pwm[2]/bcnt_reg[0]/CE          0.886         
-pwm[2]/vcnt_reg[3]/C           pwm[2]/bcnt_reg[1]/CE          0.886         
-pwm[2]/vcnt_reg[3]/C           pwm[2]/bcnt_reg[2]/CE          0.886         
-pwm[2]/vcnt_reg[3]/C           pwm[2]/bcnt_reg[3]/CE          0.886         
-i_ams/dac_d_o_reg[3]/C         pwm[3]/b_reg[3]/D              0.892         
-pwm[1]/vcnt_reg[4]/C           pwm[1]/bcnt_reg[0]/CE          0.893         
-pwm[1]/vcnt_reg[4]/C           pwm[1]/bcnt_reg[1]/CE          0.893         
-pwm[1]/vcnt_reg[4]/C           pwm[1]/bcnt_reg[2]/CE          0.893         
-pwm[1]/vcnt_reg[4]/C           pwm[1]/bcnt_reg[3]/CE          0.893         
-pwm_rstn_reg/C                 pwm[2]/vcnt_reg[1]/R           0.893         
-pwm_rstn_reg/C                 pwm[2]/vcnt_reg[6]/R           0.893         
-pwm_rstn_reg/C                 pwm[2]/vcnt_reg[7]/R           0.895         
-i_ams/dac_b_o_reg[3]/C         pwm[1]/b_reg[3]/D              0.908         
-i_ams/dac_d_o_reg[7]/C         pwm[3]/b_reg[7]/D              0.921         
-i_ams/dac_b_o_reg[2]/C         pwm[1]/b_reg[2]/D              0.947         
-pwm_rstn_reg/C                 pwm[1]/pwm_o_reg/R             0.957         
-i_ams/dac_c_o_reg[14]/C        pwm[2]/b_reg[14]/D             0.958         
-i_ams/dac_a_o_reg[15]/C        pwm[0]/b_reg[15]/D             0.962         
-i_ams/dac_a_o_reg[7]/C         pwm[0]/b_reg[7]/D              0.962         
-pwm_rstn_reg/C                 pwm[2]/vcnt_reg[2]/R           0.983         
-pwm_rstn_reg/C                 pwm[2]/vcnt_reg[3]/R           0.986         
-pwm_rstn_reg/C                 pwm[2]/vcnt_reg[4]/R           0.986         
-i_ams/dac_c_o_reg[7]/C         pwm[2]/b_reg[7]/D              0.987         
-i_ams/dac_b_o_reg[22]/C        pwm[1]/v_reg[6]/D              0.994         
-pwm[1]/vcnt_reg[7]/C           pwm[1]/b_reg[10]/CE            1.001         
-pwm[1]/vcnt_reg[7]/C           pwm[1]/b_reg[11]/CE            1.001         
-pwm[1]/vcnt_reg[7]/C           pwm[1]/b_reg[12]/CE            1.001         
-pwm[1]/vcnt_reg[7]/C           pwm[1]/b_reg[13]/CE            1.001         
-pwm[1]/vcnt_reg[7]/C           pwm[1]/b_reg[4]/CE             1.001         
-pwm[1]/vcnt_reg[7]/C           pwm[1]/b_reg[5]/CE             1.001         
-pwm[1]/vcnt_reg[7]/C           pwm[1]/b_reg[9]/CE             1.001         
-pwm_rstn_reg/C                 pwm[2]/v_r_reg[6]/CE           1.015         
-pwm_rstn_reg/C                 pwm[2]/v_r_reg[7]/CE           1.015         
-pwm_rstn_reg/C                 pwm[2]/vcnt_r_reg[6]/CE        1.015         
-pwm_rstn_reg/C                 pwm[2]/vcnt_r_reg[7]/CE        1.015         
-pwm[3]/vcnt_reg[4]/C           pwm[3]/b_reg[5]/CE             1.016         
-pwm[3]/vcnt_reg[4]/C           pwm[3]/b_reg[6]/CE             1.016         
-pwm[2]/vcnt_reg[6]/C           pwm[2]/b_reg[10]/CE            1.016         
-pwm[2]/vcnt_reg[6]/C           pwm[2]/b_reg[11]/CE            1.016         
-pwm[2]/vcnt_reg[6]/C           pwm[2]/b_reg[8]/CE             1.016         
-pwm[2]/vcnt_reg[6]/C           pwm[2]/b_reg[9]/CE             1.016         
-i_ams/dac_c_o_reg[4]/C         pwm[2]/b_reg[4]/D              1.025         
-i_ams/dac_c_o_reg[0]/C         pwm[2]/b_reg[0]/D              1.042         
-pwm[1]/vcnt_reg[7]/C           pwm[1]/b_reg[14]/CE            1.043         
-pwm[1]/vcnt_reg[7]/C           pwm[1]/b_reg[1]/CE             1.043         
-pwm[1]/vcnt_reg[7]/C           pwm[1]/b_reg[2]/CE             1.043         
-pwm[1]/vcnt_reg[7]/C           pwm[1]/b_reg[3]/CE             1.043         
-pwm[1]/vcnt_reg[7]/C           pwm[1]/b_reg[6]/CE             1.043         
-dac_rst_reg/C                  oddr_dac_sel/R                 1.225         
-dac_rst_reg/C                  oddr_dac_dat[10]/R             1.379         
-dac_rst_reg/C                  oddr_dac_dat[11]/R             1.528         
-dac_rst_reg/C                  oddr_dac_rst/D2                1.630         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_reg_reg[2]/D
+                                                              0.373         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_reg_reg[1]/D
+                                                              0.385         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_reg_reg[4]/D
+                                                              0.402         
+i_scope/i_dfilt1_chb/kk_mult/CLK
+                               i_scope/i_dfilt1_chb/r5_reg_reg[13]/D
+                                                              0.408         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_reg_reg[3]/D
+                                                              0.474         
+i_pid/g_pid[3].act_sp_reg[3][1]/C
+                               i_pid/g_pid[3].i_pid/kp_mult0/B[14]
+                                                              0.489         
+pwm_rstn_reg/C                 pwm[2]/pwm_o_reg/R             0.491         
+i_ams/dac_c_o_reg[15]/C        pwm[2]/b_reg[15]/D             0.510         
+dac_rst_reg/C                  oddr_dac_dat[1]/R              0.516         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[24]
+                                                              0.530         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[25]
+                                                              0.530         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[26]
+                                                              0.530         
+i_pid/g_pid[3].act_sp_reg[3][1]/C
+                               i_pid/g_pid[3].i_pid/kp_mult0/B[15]
+                                                              0.530         
+i_ams/dac_d_o_reg[14]/C        pwm[3]/b_reg[14]/D             0.532         
+i_ams/dac_c_o_reg[5]/C         pwm[2]/b_reg[5]/D              0.534         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[23]
+                                                              0.544         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[22]
+                                                              0.549         
+i_scope/i_dfilt1_cha/kk_mult/CLK
+                               i_scope/i_dfilt1_cha/r5_reg_reg[12]/D
+                                                              0.549         
+i_scope/i_dfilt1_cha/kk_mult/CLK
+                               i_scope/i_dfilt1_cha/r5_reg_reg[2]/D
+                                                              0.551         
+i_scope/i_dfilt1_cha/kk_mult/CLK
+                               i_scope/i_dfilt1_cha/r5_reg_reg[10]/D
+                                                              0.553         
+dac_rst_reg/C                  oddr_dac_dat[0]/R              0.564         
+i_pid/B__2/C                   i_pid/g_pid[3].act_kig_reg[3][3]/D
+                                                              0.569         
+i_scope/i_dfilt1_cha/kk_mult/CLK
+                               i_scope/i_dfilt1_cha/r5_reg_reg[7]/D
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[0]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[10]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[11]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[12]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[13]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[14]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[15]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[16]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[17]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[18]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[19]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[1]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[20]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[21]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[22]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[23]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[24]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[25]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[26]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[27]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[28]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[29]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[2]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[30]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[31]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[32]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[33]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[34]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[35]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[36]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[37]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[38]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[39]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[3]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[40]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[41]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[42]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[43]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[44]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[45]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[46]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[47]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[4]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[5]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[6]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[7]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[8]
+                                                              0.580         
+i_pid/g_pid[0].act_kpg_reg[0][15]/C
+                               i_pid/g_pid[0].i_pid/kp_mult_reg__0/PCIN[9]
+                                                              0.580         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_reg_reg[0]/D
+                                                              0.585         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[20]
+                                                              0.585         
+i_pid/B__2/C                   i_pid/g_pid[3].act_kig_reg[3][4]/D
+                                                              0.589         
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[7]/CE             0.592         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[27]
+                                                              0.595         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[3]/CE             0.597         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[4]/CE             0.597         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[5]/CE             0.597         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[6]/CE             0.597         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_reg_reg[6]/D
+                                                              0.606         
+dac_rst_reg/C                  oddr_dac_dat[3]/R              0.615         
+dac_rst_reg/C                  oddr_dac_dat[2]/R              0.621         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[18]
+                                                              0.638         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[15]
+                                                              0.640         
+i_scope/i_dfilt1_chb/kk_mult/CLK
+                               i_scope/i_dfilt1_chb/r5_reg_reg[10]/D
+                                                              0.650         
+dac_rst_reg/C                  oddr_dac_dat[6]/R              0.653         
+i_scope/i_dfilt1_chb/kk_mult/CLK
+                               i_scope/i_dfilt1_chb/r5_reg_reg[11]/D
+                                                              0.655         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[8]/CE             0.666         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[9]/CE             0.666         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_reg_reg[5]/D
+                                                              0.670         
+dac_rst_reg/C                  oddr_dac_dat[13]/R             0.672         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[28]
+                                                              0.677         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[29]
+                                                              0.677         
+i_asg/ch[0]/dac_o_reg[5]/C     i_limit/limit_a/signal_o_reg[1]/D
+                                                              0.678         
+i_asg/ch[0]/dac_o_reg[5]/C     i_limit/limit_a/signal_o_reg[8]/D
+                                                              0.680         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_reg_reg[7]/D
+                                                              0.681         
+i_asg/ch[0]/dac_o_reg[5]/C     i_limit/limit_a/signal_o_reg[9]/D
+                                                              0.682         
+i_asg/ch[0]/dac_o_reg[5]/C     i_limit/limit_a/railed_o_reg[0]/D
+                                                              0.683         
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[0]/CE             0.687         
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[1]/CE             0.687         
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[2]/CE             0.687         
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[3]/CE             0.687         
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[4]/CE             0.687         
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[5]/CE             0.687         
+pwm[2]/bcnt_reg[3]/C           pwm[2]/v_reg[6]/CE             0.687         
+i_scope/i_dfilt1_chb/kk_mult/CLK
+                               i_scope/i_dfilt1_chb/r5_reg_reg[9]/D
+                                                              0.691         
+i_asg/ch[0]/dac_o_reg[5]/C     i_limit/limit_a/signal_o_reg[12]/D
+                                                              0.692         
+i_ams/dac_c_o_reg[9]/C         pwm[2]/b_reg[9]/D              0.692         
+pwm[1]/bcnt_reg[3]/C           pwm[1]/v_reg[0]/CE             0.694         
+pwm[1]/bcnt_reg[3]/C           pwm[1]/v_reg[1]/CE             0.694         
+pwm[1]/bcnt_reg[3]/C           pwm[1]/v_reg[2]/CE             0.694         
+pwm[1]/bcnt_reg[3]/C           pwm[1]/v_reg[3]/CE             0.694         
+pwm[1]/bcnt_reg[3]/C           pwm[1]/v_reg[4]/CE             0.694         
+pwm[1]/bcnt_reg[3]/C           pwm[1]/v_reg[5]/CE             0.694         
+pwm[1]/bcnt_reg[3]/C           pwm[1]/v_reg[6]/CE             0.694         
+pwm[1]/bcnt_reg[3]/C           pwm[1]/v_reg[7]/CE             0.694         
+i_asg/ch[0]/dac_o_reg[5]/C     i_limit/limit_a/signal_o_reg[10]/D
+                                                              0.694         
+i_scope/i_dfilt1_cha/kk_mult/CLK
+                               i_scope/i_dfilt1_cha/r5_reg_reg[4]/D
+                                                              0.697         
+i_scope/i_dfilt1_cha/kk_mult/CLK
+                               i_scope/i_dfilt1_cha/r5_reg_reg[5]/D
+                                                              0.699         
+i_scope/i_dfilt1_cha/kk_mult/CLK
+                               i_scope/i_dfilt1_cha/r5_reg_reg[0]/D
+                                                              0.706         
+i_asg/ch[0]/dac_o_reg[5]/C     i_limit/limit_a/signal_o_reg[13]/D
+                                                              0.713         
+i_asg/ch[1]/dac_o_reg[1]/C     i_limit/limit_b/railed_o_reg[0]/D
+                                                              0.719         
+dac_rst_reg/C                  oddr_dac_dat[5]/R              0.723         
+i_scope/i_dfilt1_cha/kk_mult/CLK
+                               i_scope/i_dfilt1_cha/r5_reg_reg[3]/D
+                                                              0.724         
+i_scope/i_dfilt1_chb/kk_mult/CLK
+                               i_scope/i_dfilt1_chb/r5_reg_reg[4]/D
+                                                              0.725         
+i_pid/g_pid[3].act_sp_reg[3][1]/C
+                               i_pid/g_pid[3].i_pid/kp_mult0/B[16]
+                                                              0.725         
+i_pid/g_pid[3].act_sp_reg[3][1]/C
+                               i_pid/g_pid[3].i_pid/kp_mult0/B[17]
+                                                              0.725         
+i_scope/i_dfilt1_cha/kk_mult/CLK
+                               i_scope/i_dfilt1_cha/r5_reg_reg[8]/D
+                                                              0.726         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[6]
+                                                              0.730         
+i_ams/dac_a_o_reg[15]/C        pwm[0]/b_reg[15]/D             0.731         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[0]
+                                                              0.731         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[2]
+                                                              0.731         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[10]
+                                                              0.732         
+i_scope/i_dfilt1_chb/r2_reg_reg[9]/C
+                               i_scope/i_dfilt1_chb/r3_acc/A[12]
+                                                              0.732         
+dac_rst_reg/C                  oddr_dac_dat[11]/R             0.733         
+dac_rst_reg/C                  oddr_dac_dat[4]/R              0.751         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[0]/CE             0.777         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[10]/CE            0.777         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[11]/CE            0.777         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[9]/CE             0.777         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[12]/CE            0.779         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[1]/CE             0.779         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[13]/CE            0.788         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[14]/CE            0.788         
+dac_rst_reg/C                  oddr_dac_dat[7]/R              0.792         
+dac_rst_reg/C                  oddr_dac_dat[9]/R              0.800         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[0]/CE             0.805         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[10]/CE            0.805         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[11]/CE            0.805         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[12]/CE            0.805         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[13]/CE            0.805         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[1]/CE             0.805         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[2]/CE             0.805         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[7]/CE             0.805         
+i_ams/dac_a_o_reg[14]/C        pwm[0]/b_reg[14]/D             0.805         
+i_ams/dac_c_o_reg[2]/C         pwm[2]/b_reg[2]/D              0.808         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[4]/CE             0.808         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[5]/CE             0.808         
+dac_rst_reg/C                  oddr_dac_dat[12]/R             0.810         
+dac_rst_reg/C                  oddr_dac_dat[8]/R              0.813         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[2]/CE             0.813         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[3]/CE             0.813         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[7]/CE             0.813         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[8]/CE             0.813         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/b_reg[6]/CE             0.815         
+i_ams/dac_c_o_reg[10]/C        pwm[2]/b_reg[10]/D             0.823         
+i_ams/dac_b_o_reg[3]/C         pwm[1]/b_reg[3]/D              0.824         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/bcnt_reg[0]/CE          0.845         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/bcnt_reg[1]/CE          0.845         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/bcnt_reg[2]/CE          0.845         
+pwm[1]/vcnt_reg[4]/C           pwm[1]/bcnt_reg[3]/CE          0.845         
+i_ams/dac_d_o_reg[4]/C         pwm[3]/b_reg[4]/D              0.848         
+i_ams/dac_b_o_reg[7]/C         pwm[1]/b_reg[7]/D              0.860         
+i_ams/dac_c_o_reg[8]/C         pwm[2]/b_reg[8]/D              0.866         
+pwm_rstn_reg/C                 pwm[3]/pwm_o_reg/R             0.875         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[14]/CE            0.875         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/b_reg[15]/CE            0.875         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[0]/CE             0.878         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[1]/CE             0.878         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[2]/CE             0.878         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[3]/CE             0.878         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[4]/CE             0.878         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[5]/CE             0.878         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[6]/CE             0.878         
+i_ams/dac_a_o_reg[2]/C         pwm[0]/b_reg[2]/D              0.884         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/bcnt_reg[0]/CE          0.888         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/bcnt_reg[1]/CE          0.888         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/bcnt_reg[2]/CE          0.888         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/bcnt_reg[3]/CE          0.888         
+pwm_rstn_reg/C                 pwm[1]/pwm_o_reg/R             0.894         
+pwm_rstn_reg/C                 pwm[1]/bcnt_reg[0]/R           0.921         
+pwm_rstn_reg/C                 pwm[1]/bcnt_reg[1]/R           0.921         
+pwm_rstn_reg/C                 pwm[1]/bcnt_reg[2]/R           0.921         
+pwm_rstn_reg/C                 pwm[1]/bcnt_reg[3]/R           0.921         
+pwm[3]/vcnt_reg[4]/C           pwm[3]/b_reg[0]/CE             0.925         
+pwm[3]/vcnt_reg[4]/C           pwm[3]/b_reg[1]/CE             0.925         
+pwm[3]/vcnt_reg[4]/C           pwm[3]/b_reg[2]/CE             0.925         
+pwm[3]/vcnt_reg[4]/C           pwm[3]/b_reg[5]/CE             0.925         
+pwm[3]/vcnt_reg[4]/C           pwm[3]/b_reg[6]/CE             0.925         
+pwm[3]/vcnt_reg[4]/C           pwm[3]/b_reg[7]/CE             0.925         
+pwm[3]/vcnt_reg[4]/C           pwm[3]/b_reg[8]/CE             0.925         
+pwm[3]/vcnt_reg[4]/C           pwm[3]/b_reg[9]/CE             0.925         
+pwm[0]/vcnt_reg[4]/C           pwm[0]/v_reg[7]/CE             0.927         
+pwm_rstn_reg/C                 pwm[3]/bcnt_reg[0]/R           0.930         
+pwm_rstn_reg/C                 pwm[3]/bcnt_reg[1]/R           0.930         
+pwm_rstn_reg/C                 pwm[3]/bcnt_reg[2]/R           0.930         
+pwm_rstn_reg/C                 pwm[3]/bcnt_reg[3]/R           0.930         
+i_ams/dac_b_o_reg[11]/C        pwm[1]/b_reg[11]/D             0.934         
+i_ams/dac_c_o_reg[7]/C         pwm[2]/b_reg[7]/D              0.950         
+i_ams/dac_c_o_reg[3]/C         pwm[2]/b_reg[3]/D              0.951         
+pwm_rstn_reg/C                 pwm[0]/pwm_o_reg/R             0.952         
+i_ams/dac_d_o_reg[5]/C         pwm[3]/b_reg[5]/D              0.960         
+dac_rst_reg/C                  oddr_dac_sel/R                 1.022         
+dac_dat_a_reg[7]/C             oddr_dac_dat[7]/D2             1.218         
+dac_rst_reg/C                  oddr_dac_dat[10]/R             1.266         
+dac_rst_reg/C                  oddr_dac_rst/D2                1.700         
+dac_dat_a_reg[8]/C             oddr_dac_dat[8]/D2             1.706         
+dac_dat_a_reg[9]/C             oddr_dac_dat[9]/D2             1.706         
 dac_dat_a_reg[13]/C            oddr_dac_dat[13]/D2            1.716         
-dac_dat_a_reg[5]/C             oddr_dac_dat[5]/D2             1.767         
-dac_dat_a_reg[8]/C             oddr_dac_dat[8]/D2             1.847         
-dac_dat_a_reg[2]/C             oddr_dac_dat[2]/D2             1.856         
-dac_dat_a_reg[9]/C             oddr_dac_dat[9]/D2             1.857         
-dac_dat_a_reg[3]/C             oddr_dac_dat[3]/D2             1.914         
-dac_dat_a_reg[4]/C             oddr_dac_dat[4]/D2             1.949         
-dac_dat_a_reg[7]/C             oddr_dac_dat[7]/D2             1.976         
-dac_dat_a_reg[0]/C             oddr_dac_dat[0]/D2             1.982         
+dac_dat_a_reg[1]/C             oddr_dac_dat[1]/D2             1.757         
+dac_dat_a_reg[4]/C             oddr_dac_dat[4]/D2             1.759         
+dac_dat_a_reg[6]/C             oddr_dac_dat[6]/D2             1.798         
+dac_dat_a_reg[2]/C             oddr_dac_dat[2]/D2             1.810         
+dac_dat_a_reg[11]/C            oddr_dac_dat[11]/D2            1.938         
 dac_dat_a_reg[12]/C            oddr_dac_dat[12]/D2            1.986         
-dac_dat_a_reg[6]/C             oddr_dac_dat[6]/D2             1.986         
-dac_dat_a_reg[10]/C            oddr_dac_dat[10]/D2            1.987         
-dac_dat_a_reg[1]/C             oddr_dac_dat[1]/D2             2.127         
-dac_dat_a_reg[11]/C            oddr_dac_dat[11]/D2            2.191         
-i_limit/limit_b/signal_o_reg[0]/C
-                               dac_dat_b_reg[0]/D             3.617         
-i_limit/limit_b/signal_o_reg[2]/C
-                               dac_dat_b_reg[2]/D             3.786         
-i_limit/limit_b/signal_o_reg[9]/C
-                               dac_dat_b_reg[9]/D             3.853         
-i_limit/limit_a/signal_o_reg[0]/C
-                               dac_dat_a_reg[0]/D             4.014         
-i_limit/limit_a/signal_o_reg[3]/C
-                               dac_dat_a_reg[3]/D             4.039         
-i_limit/limit_b/signal_o_reg[13]/C
-                               dac_dat_b_reg[13]/D            4.272         
-i_limit/limit_b/signal_o_reg[3]/C
-                               dac_dat_b_reg[3]/D             4.297         
-i_limit/limit_b/signal_o_reg[12]/C
-                               dac_dat_b_reg[12]/D            4.393         
-i_limit/limit_a/signal_o_reg[11]/C
-                               dac_dat_a_reg[11]/D            4.401         
-i_limit/limit_b/signal_o_reg[5]/C
-                               dac_dat_b_reg[5]/D             4.503         
-i_limit/limit_a/signal_o_reg[13]/C
-                               dac_dat_a_reg[13]/D            4.510         
-i_limit/limit_b/signal_o_reg[8]/C
-                               dac_dat_b_reg[8]/D             4.548         
-i_limit/limit_a/signal_o_reg[4]/C
-                               dac_dat_a_reg[4]/D             4.596         
-i_limit/limit_b/signal_o_reg[7]/C
-                               dac_dat_b_reg[7]/D             4.695         
-i_limit/limit_a/signal_o_reg[1]/C
-                               dac_dat_a_reg[1]/D             4.748         
-i_limit/limit_b/signal_o_reg[11]/C
-                               dac_dat_b_reg[11]/D            4.866         
+dac_dat_a_reg[0]/C             oddr_dac_dat[0]/D2             1.986         
+dac_dat_a_reg[5]/C             oddr_dac_dat[5]/D2             1.989         
+dac_dat_a_reg[3]/C             oddr_dac_dat[3]/D2             1.990         
+dac_dat_a_reg[10]/C            oddr_dac_dat[10]/D2            2.056         
 i_limit/limit_b/signal_o_reg[1]/C
-                               dac_dat_b_reg[1]/D             4.869         
-i_limit/limit_b/signal_o_reg[4]/C
-                               dac_dat_b_reg[4]/D             4.871         
-i_limit/limit_b/signal_o_reg[10]/C
-                               dac_dat_b_reg[10]/D            4.882         
-i_limit/limit_a/signal_o_reg[10]/C
-                               dac_dat_a_reg[10]/D            4.909         
-i_limit/limit_a/signal_o_reg[2]/C
-                               dac_dat_a_reg[2]/D             4.982         
+                               dac_dat_b_reg[1]/D             3.511         
 i_limit/limit_a/signal_o_reg[12]/C
-                               dac_dat_a_reg[12]/D            5.000         
-i_limit/limit_a/signal_o_reg[6]/C
-                               dac_dat_a_reg[6]/D             5.133         
+                               dac_dat_a_reg[12]/D            3.849         
+i_limit/limit_b/signal_o_reg[3]/C
+                               dac_dat_b_reg[3]/D             3.919         
+i_limit/limit_b/signal_o_reg[4]/C
+                               dac_dat_b_reg[4]/D             3.966         
+i_limit/limit_b/signal_o_reg[13]/C
+                               dac_dat_b_reg[13]/D            3.974         
+i_limit/limit_b/signal_o_reg[5]/C
+                               dac_dat_b_reg[5]/D             4.043         
+i_limit/limit_b/signal_o_reg[12]/C
+                               dac_dat_b_reg[12]/D            4.103         
+i_limit/limit_b/signal_o_reg[2]/C
+                               dac_dat_b_reg[2]/D             4.177         
+i_limit/limit_b/signal_o_reg[0]/C
+                               dac_dat_b_reg[0]/D             4.259         
+i_limit/limit_a/signal_o_reg[13]/C
+                               dac_dat_a_reg[13]/D            4.319         
+i_limit/limit_a/signal_o_reg[4]/C
+                               dac_dat_a_reg[4]/D             4.359         
 i_limit/limit_a/signal_o_reg[5]/C
-                               dac_dat_a_reg[5]/D             5.158         
+                               dac_dat_a_reg[5]/D             4.403         
+i_limit/limit_a/signal_o_reg[2]/C
+                               dac_dat_a_reg[2]/D             4.485         
 i_limit/limit_a/signal_o_reg[8]/C
-                               dac_dat_a_reg[8]/D             5.189         
+                               dac_dat_a_reg[8]/D             4.665         
+i_limit/limit_a/signal_o_reg[3]/C
+                               dac_dat_a_reg[3]/D             4.705         
+i_limit/limit_a/signal_o_reg[11]/C
+                               dac_dat_a_reg[11]/D            4.740         
+i_limit/limit_a/signal_o_reg[1]/C
+                               dac_dat_a_reg[1]/D             4.772         
 i_limit/limit_b/signal_o_reg[6]/C
-                               dac_dat_b_reg[6]/D             5.190         
-i_limit/limit_a/signal_o_reg[7]/C
-                               dac_dat_a_reg[7]/D             5.379         
+                               dac_dat_b_reg[6]/D             4.789         
+i_limit/limit_a/signal_o_reg[0]/C
+                               dac_dat_a_reg[0]/D             4.824         
 i_limit/limit_a/signal_o_reg[9]/C
-                               dac_dat_a_reg[9]/D             5.423         
-dac_dat_b_reg[6]/C             oddr_dac_dat[6]/D1             5.630         
-dac_dat_b_reg[5]/C             oddr_dac_dat[5]/D1             5.630         
-dac_dat_b_reg[13]/C            oddr_dac_dat[13]/D1            5.708         
-dac_dat_b_reg[4]/C             oddr_dac_dat[4]/D1             5.715         
-dac_dat_b_reg[3]/C             oddr_dac_dat[3]/D1             5.725         
-dac_dat_b_reg[8]/C             oddr_dac_dat[8]/D1             5.800         
-dac_dat_b_reg[7]/C             oddr_dac_dat[7]/D1             5.802         
-dac_dat_b_reg[2]/C             oddr_dac_dat[2]/D1             5.802         
-dac_rst_reg/C                  oddr_dac_rst/D1                5.819         
-dac_dat_b_reg[10]/C            oddr_dac_dat[10]/D1            5.936         
-dac_dat_b_reg[11]/C            oddr_dac_dat[11]/D1            5.937         
-dac_dat_b_reg[0]/C             oddr_dac_dat[0]/D1             5.982         
-dac_dat_b_reg[12]/C            oddr_dac_dat[12]/D1            5.986         
-dac_dat_b_reg[1]/C             oddr_dac_dat[1]/D1             5.994         
-dac_dat_b_reg[9]/C             oddr_dac_dat[9]/D1             6.127         
+                               dac_dat_a_reg[9]/D             4.839         
+dac_dat_b_reg[11]/C            oddr_dac_dat[11]/D1            4.867         
+i_limit/limit_a/signal_o_reg[10]/C
+                               dac_dat_a_reg[10]/D            4.906         
+i_limit/limit_a/signal_o_reg[6]/C
+                               dac_dat_a_reg[6]/D             5.043         
+dac_dat_b_reg[7]/C             oddr_dac_dat[7]/D1             5.063         
+dac_dat_b_reg[10]/C            oddr_dac_dat[10]/D1            5.097         
+dac_dat_b_reg[6]/C             oddr_dac_dat[6]/D1             5.114         
+dac_dat_b_reg[9]/C             oddr_dac_dat[9]/D1             5.118         
+i_limit/limit_b/signal_o_reg[8]/C
+                               dac_dat_b_reg[8]/D             5.132         
+i_limit/limit_b/signal_o_reg[10]/C
+                               dac_dat_b_reg[10]/D            5.165         
+dac_dat_b_reg[8]/C             oddr_dac_dat[8]/D1             5.211         
+i_limit/limit_b/signal_o_reg[7]/C
+                               dac_dat_b_reg[7]/D             5.216         
+i_limit/limit_b/signal_o_reg[9]/C
+                               dac_dat_b_reg[9]/D             5.298         
+i_limit/limit_a/signal_o_reg[7]/C
+                               dac_dat_a_reg[7]/D             5.365         
+i_limit/limit_b/signal_o_reg[11]/C
+                               dac_dat_b_reg[11]/D            5.439         
+dac_dat_b_reg[13]/C            oddr_dac_dat[13]/D1            5.616         
+dac_rst_reg/C                  oddr_dac_rst/D1                5.700         
+dac_dat_b_reg[12]/C            oddr_dac_dat[12]/D1            5.795         
+dac_dat_b_reg[0]/C             oddr_dac_dat[0]/D1             5.798         
+dac_dat_b_reg[3]/C             oddr_dac_dat[3]/D1             5.846         
+dac_dat_b_reg[2]/C             oddr_dac_dat[2]/D1             5.946         
+dac_dat_b_reg[1]/C             oddr_dac_dat[1]/D1             5.984         
+dac_dat_b_reg[5]/C             oddr_dac_dat[5]/D1             5.997         
+dac_dat_b_reg[4]/C             oddr_dac_dat[4]/D1             6.129         
 
 
 
