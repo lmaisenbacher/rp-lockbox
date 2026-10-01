@@ -62,6 +62,12 @@ static int RP_ParsePIDArgv(scpi_t *context, rp_pid_t *pid) {
     return RP_OK;
 }
 
+/* Parameter set of a per-set command: the tag of its pattern, 0 for
+ * PID:IN#:OUT#[:PSET1]:..., 1 for PID:IN#:OUT#:PSET2:... */
+static rp_pidset_t RP_ParseSet(scpi_t *context) {
+    return (SCPI_CmdTag(context) == 1) ? RP_PSET_2 : RP_PSET_1;
+}
+
 scpi_result_t RP_PIDSetpoint(scpi_t *context) {
     int result;
     scpi_number_t setpoint;
@@ -80,7 +86,7 @@ scpi_result_t RP_PIDSetpoint(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDSetSetpoint(pid, setpoint.value);
+    result = rp_PIDSetParam(pid, RP_ParseSet(context), RP_PID_SETPOINT, setpoint.value);
     if(result != RP_OK) {
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:SETPoint Failed to set setpoint parameter: %s\n", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -102,7 +108,7 @@ scpi_result_t RP_PIDSetpointQ(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDGetSetpoint(pid, &setpoint);
+    result = rp_PIDGetParam(pid, RP_ParseSet(context), RP_PID_SETPOINT, &setpoint);
     if(result != RP_OK){
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:SETPoint? Failed to get setpoint: %s\n", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -132,7 +138,7 @@ scpi_result_t RP_PIDKg(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDSetKg(pid, kg.value);
+    result = rp_PIDSetParam(pid, RP_ParseSet(context), RP_PID_KG, kg.value);
     if(result != RP_OK) {
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KG Failed to set Kg parameter: %s", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -154,7 +160,7 @@ scpi_result_t RP_PIDKgQ(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDGetKg(pid, &kg);
+    result = rp_PIDGetParam(pid, RP_ParseSet(context), RP_PID_KG, &kg);
     if(result != RP_OK){
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KG? Failed to get Kg: %s\n", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -184,7 +190,7 @@ scpi_result_t RP_PIDKp(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDSetKp(pid, kp.value);
+    result = rp_PIDSetParam(pid, RP_ParseSet(context), RP_PID_KP, kp.value);
     if(result != RP_OK) {
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KP Failed to set Kp parameter: %s", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -206,7 +212,7 @@ scpi_result_t RP_PIDKpQ(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDGetKp(pid, &kp);
+    result = rp_PIDGetParam(pid, RP_ParseSet(context), RP_PID_KP, &kp);
     if(result != RP_OK){
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KP? Failed to get Kp: %s\n", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -236,7 +242,7 @@ scpi_result_t RP_PIDKi(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDSetKi(pid, ki.value);
+    result = rp_PIDSetParam(pid, RP_ParseSet(context), RP_PID_KI, ki.value);
     if(result != RP_OK) {
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KI Failed to set Ki parameter: %s", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -258,7 +264,7 @@ scpi_result_t RP_PIDKiQ(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDGetKi(pid, &ki);
+    result = rp_PIDGetParam(pid, RP_ParseSet(context), RP_PID_KI, &ki);
     if(result != RP_OK){
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KI? Failed to get Ki: %s\n", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -288,7 +294,7 @@ scpi_result_t RP_PIDKii(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDSetKii(pid, kii.value);
+    result = rp_PIDSetParam(pid, RP_ParseSet(context), RP_PID_KII, kii.value);
     if(result != RP_OK) {
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KII Failed to set Kii parameter: %s", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -310,7 +316,7 @@ scpi_result_t RP_PIDKiiQ(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDGetKii(pid, &kii);
+    result = rp_PIDGetParam(pid, RP_ParseSet(context), RP_PID_KII, &kii);
     if(result != RP_OK){
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KII? Failed to get Kii: %s\n", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -340,7 +346,7 @@ scpi_result_t RP_PIDKd(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDSetKd(pid, kd.value);
+    result = rp_PIDSetParam(pid, RP_ParseSet(context), RP_PID_KD, kd.value);
     if(result != RP_OK) {
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KD Failed to set Kd parameter: %s", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -362,7 +368,7 @@ scpi_result_t RP_PIDKdQ(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDGetKd(pid, &kd);
+    result = rp_PIDGetParam(pid, RP_ParseSet(context), RP_PID_KD, &kd);
     if(result != RP_OK){
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:KD? Failed to get Kd: %s\n", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -614,6 +620,59 @@ scpi_result_t RP_PIDLockedQ(scpi_t *context) {
     return SCPI_RES_OK;
 }
 
+scpi_result_t RP_PIDLock(scpi_t *context) {
+    int result;
+    scpi_bool_t lock;
+    rp_pid_t pid;
+
+    /* Parse PID index */
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:LOCK Failed to parse input/output choice: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    /* Parse first parameter lock (ON) or scan (OFF) */
+    if(!SCPI_ParamBool(context, &lock, true)) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:LOCK Failed to parse first parameter.\n");
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDSetLock(pid, lock);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:LOCK Failed to switch between lock and scan: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:LOCK Successfully switched between lock and scan.\n");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_PIDLockQ(scpi_t *context) {
+    int result;
+    bool lock;
+    rp_pid_t pid;
+
+    /* Parse PID index */
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:LOCK? Failed to parse input/output choice: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDGetLock(pid, &lock);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:LOCK? Failed to get whether the PID locks: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    // Return result as string
+    SCPI_ResultMnemonic(context, lock ? "ON": "OFF");
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:LOCK? Successfully returned whether the PID locks.\n");
+    return SCPI_RES_OK;
+}
+
 scpi_result_t RP_PIDResetWhenRailed(scpi_t *context) {
     int result;
     scpi_bool_t enabled;
@@ -789,7 +848,7 @@ scpi_result_t RP_PIDRelockMin(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDSetRelockMinimum(pid, minimum.value);
+    result = rp_PIDSetParam(pid, RP_ParseSet(context), RP_PID_RELOCK_MIN, minimum.value);
     if(result != RP_OK) {
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:RELock:MIN Failed to set minimum value: %s\n", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -811,7 +870,7 @@ scpi_result_t RP_PIDRelockMinQ(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDGetRelockMinimum(pid, &minimum);
+    result = rp_PIDGetParam(pid, RP_ParseSet(context), RP_PID_RELOCK_MIN, &minimum);
     if(result != RP_OK){
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:RELock:MIN? Failed to get minimum value: %s\n", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -841,7 +900,7 @@ scpi_result_t RP_PIDRelockMax(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDSetRelockMaximum(pid, maximum.value);
+    result = rp_PIDSetParam(pid, RP_ParseSet(context), RP_PID_RELOCK_MAX, maximum.value);
     if(result != RP_OK) {
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:RELock:MAX Failed to set maximum value: %s\n", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -863,7 +922,7 @@ scpi_result_t RP_PIDRelockMaxQ(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    result = rp_PIDGetRelockMaximum(pid, &maximum);
+    result = rp_PIDGetParam(pid, RP_ParseSet(context), RP_PID_RELOCK_MAX, &maximum);
     if(result != RP_OK){
         RP_LOG(LOG_ERR, "*PID:IN#:OUT#:RELock:MAX? Failed to get maximum value: %s\n", rp_GetError(result));
         return SCPI_RES_ERR;
@@ -987,6 +1046,34 @@ scpi_result_t RP_PIDMonitorQ(scpi_t *context) {
     return SCPI_RES_OK;
 }
 
+scpi_result_t RP_PIDCountersQ(scpi_t *context) {
+    int result;
+    rp_pid_t pid;
+    rp_pid_counters_t c;
+
+    /* Parse PID index */
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:COUNTers? Failed to parse input/output choice: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDGetCounters(pid, &c);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:COUNTers? Failed to read the counters: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    /* switches,holdoffs_left,holdoffs_out,unlocks */
+    SCPI_ResultUInt32Base(context, c.switches, 10);
+    SCPI_ResultUInt32Base(context, c.holdoffs_left, 10);
+    SCPI_ResultUInt32Base(context, c.holdoffs_out, 10);
+    SCPI_ResultUInt32Base(context, c.unlocks, 10);
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:COUNTers? Successfully returned the counters.");
+    return SCPI_RES_OK;
+}
+
 scpi_result_t RP_PIDUnlockCountQ(scpi_t *context) {
     int result;
     rp_pid_t pid;
@@ -1008,6 +1095,33 @@ scpi_result_t RP_PIDUnlockCountQ(scpi_t *context) {
     SCPI_ResultUInt64Base(context, count, 10);
 
     RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:UNLock:COUNt? Successfully returned the lock drop count.");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_PIDUnlockShortQ(scpi_t *context) {
+    int result;
+    rp_pid_t pid;
+    rp_pid_monitor_t m;
+
+    /* Parse PID index */
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:UNLock:SHORt? Failed to parse input/output choice: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDGetMonitor(pid, &m);
+    if(result == RP_OK && !m.short_counted)
+        result = RP_EUF;
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:UNLock:SHORt? Failed to read the short drops: %s", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    /* The drops that fell between two of the monitor's polls, since it started */
+    SCPI_ResultUInt64Base(context, m.short_total, 10);
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:UNLock:SHORt? Successfully returned the short drop count.");
     return SCPI_RES_OK;
 }
 
@@ -1093,5 +1207,244 @@ scpi_result_t RP_LockboxMonitorQ(scpi_t *context) {
     SCPI_ResultDouble(context, merge_ms);
 
     RP_LOG(LOG_DEBUG, "*LOCKbox:MONitor? Successfully returned the lockbox monitor's health.");
+    return SCPI_RES_OK;
+}
+
+/*
+ * Parameter sets: the holdoff of each set, the selection of the set
+ */
+
+scpi_result_t RP_PIDHoldoff(scpi_t *context) {
+    int result;
+    scpi_number_t holdoff;
+    rp_pid_t pid;
+
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:RELock:HOLDoff Failed to parse input/output choice: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    if(!SCPI_ParamNumber(context, scpi_special_numbers_def, &holdoff, true)) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:RELock:HOLDoff Failed to parse first parameter.\n");
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDSetParam(pid, RP_ParseSet(context), RP_PID_HOLDOFF, holdoff.value);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:RELock:HOLDoff Failed to set the holdoff: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:RELock:HOLDoff Successfully set the holdoff.\n");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_PIDHoldoffQ(scpi_t *context) {
+    int result;
+    float holdoff;
+    rp_pid_t pid;
+
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:RELock:HOLDoff? Failed to parse input/output choice: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDGetParam(pid, RP_ParseSet(context), RP_PID_HOLDOFF, &holdoff);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:RELock:HOLDoff? Failed to get the holdoff: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    SCPI_ResultDouble(context, holdoff);
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:RELock:HOLDoff? Successfully returned the holdoff to client.\n");
+    return SCPI_RES_OK;
+}
+
+/* The two parameter sets */
+static const scpi_choice_def_t scpi_RpPSet[] = {
+    {"PSET1", RP_PSET_1},
+    {"PSET2", RP_PSET_2},
+    SCPI_CHOICE_LIST_END
+};
+
+/* Parameter set selection: a fixed set, or the level of the input, HIGH<n>
+ * selecting set n while the input is high and the other set while it is low */
+static const scpi_choice_def_t scpi_RpPSetMode[] = {
+    {"PSET1", RP_PSET_MODE_1},
+    {"PSET2", RP_PSET_MODE_2},
+    {"HIGH2", RP_PSET_MODE_HIGH_2},
+    {"HIGH1", RP_PSET_MODE_HIGH_1},
+    SCPI_CHOICE_LIST_END
+};
+
+/* The inputs that can select the parameter set */
+static const scpi_choice_def_t scpi_RpPSetInput[] = {
+    {"DIO5_P", RP_DIO5_P},
+    {"DIO6_P", RP_DIO6_P},
+    {"DIO7_P", RP_DIO7_P},
+    {"DIO0_N", RP_DIO0_N},
+    {"DIO5_N", RP_DIO5_N},
+    {"DIO6_N", RP_DIO6_N},
+    {"DIO7_N", RP_DIO7_N},
+    SCPI_CHOICE_LIST_END
+};
+
+scpi_result_t RP_PIDPSetMode(scpi_t *context) {
+    int result;
+    int32_t choice;
+    rp_pid_t pid;
+
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:MODE Failed to parse input/output choice: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+    if (!SCPI_ParamChoice(context, scpi_RpPSetMode, &choice, true)) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:MODE is missing first parameter.\n");
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDSetParamSetMode(pid, choice);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:MODE Failed to set the mode: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:PSET:MODE Successfully set the mode.\n");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_PIDPSetModeQ(scpi_t *context) {
+    int result;
+    const char *name;
+    rp_pset_mode_t mode;
+    rp_pid_t pid;
+
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:MODE? Failed to parse input/output choice: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDGetParamSetMode(pid, &mode);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:MODE? Failed to get the mode: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+    if(!SCPI_ChoiceToName(scpi_RpPSetMode, mode, &name)) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:MODE? Failed to get the mode name.\n");
+        return SCPI_RES_ERR;
+    }
+
+    SCPI_ResultMnemonic(context, name);
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:PSET:MODE? Successfully returned the mode to client.\n");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_PIDPSetInput(scpi_t *context) {
+    int result;
+    int32_t choice;
+    rp_pid_t pid;
+
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:INPut Failed to parse input/output choice: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+    if (!SCPI_ParamChoice(context, scpi_RpPSetInput, &choice, true)) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:INPut is missing first parameter.\n");
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDSetParamSetInput(pid, choice);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:INPut Failed to set the input: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:PSET:INPut Successfully set the input.\n");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_PIDPSetInputQ(scpi_t *context) {
+    int result;
+    const char *name;
+    rp_dpin_t pin;
+    rp_pid_t pid;
+
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:INPut? Failed to parse input/output choice: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDGetParamSetInput(pid, &pin);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:INPut? Failed to get the input: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+    if(!SCPI_ChoiceToName(scpi_RpPSetInput, pin, &name)) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:INPut? Failed to get the input name.\n");
+        return SCPI_RES_ERR;
+    }
+
+    SCPI_ResultMnemonic(context, name);
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:PSET:INPut? Successfully returned the input to client.\n");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_PIDPSetActiveQ(scpi_t *context) {
+    int result;
+    rp_pidset_t active;
+    bool holdoff, level, violated;
+    rp_pid_t pid;
+
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:ACTive? Failed to parse input/output choice: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDGetParamSetState(pid, &active, &holdoff, &level, &violated);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:ACTive? Failed to get the parameter set state: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    SCPI_ResultMnemonic(context, (active == RP_PSET_2) ? "PSET2" : "PSET1");
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:PSET:ACTive? Successfully returned the set in use to client.\n");
+    return SCPI_RES_OK;
+}
+
+scpi_result_t RP_PIDPSetCopy(scpi_t *context) {
+    int result;
+    int32_t from;
+    rp_pid_t pid;
+
+    result = RP_ParsePIDArgv(context, &pid);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:COPY Failed to parse input/output choice: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    /* The set to copy, into the other set */
+    if(!SCPI_ParamChoice(context, scpi_RpPSet, &from, true)) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:COPY is missing first parameter.\n");
+        return SCPI_RES_ERR;
+    }
+
+    result = rp_PIDCopyParams(pid, from, (from == RP_PSET_1) ? RP_PSET_2 : RP_PSET_1);
+    if(result != RP_OK) {
+        RP_LOG(LOG_ERR, "*PID:IN#:OUT#:PSET:COPY Failed to copy the parameter set: %s\n", rp_GetError(result));
+        return SCPI_RES_ERR;
+    }
+
+    RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:PSET:COPY Successfully copied the parameter set.\n");
     return SCPI_RES_OK;
 }

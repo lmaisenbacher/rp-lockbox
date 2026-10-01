@@ -251,6 +251,55 @@ typedef enum {
 } rp_pid_t;
 
 /**
+ * The two parameter sets of a PID. Which one is in use is fixed or follows a
+ * digital input (see rp_pset_mode_t).
+ */
+typedef enum {
+    RP_PSET_1,  //!< Parameter set 1, the only set before parameter sets existed
+    RP_PSET_2   //!< Parameter set 2
+} rp_pidset_t;
+
+/**
+ * The parameters that exist once per parameter set, in the units of their
+ * named functions (rp_PIDSetSetpoint and so on); the holdoff in s.
+ */
+typedef enum {
+    RP_PID_SETPOINT,   //!< Setpoint (V)
+    RP_PID_KP,         //!< P gain
+    RP_PID_KI,         //!< I gain (1/s)
+    RP_PID_KII,        //!< Second integrator gain (1/s)
+    RP_PID_KD,         //!< D gain (s)
+    RP_PID_KG,         //!< Global gain
+    RP_PID_RELOCK_MIN, //!< Lower end of the lock window (V)
+    RP_PID_RELOCK_MAX, //!< Upper end of the lock window (V)
+    RP_PID_HOLDOFF     //!< Holdoff after a switch into the set (s)
+} rp_pidparam_t;
+
+/**
+ * Which parameter set a PID uses: a fixed one, or the one the level of the
+ * selected digital input picks.
+ */
+typedef enum {
+    RP_PSET_MODE_1,      //!< Always parameter set 1
+    RP_PSET_MODE_2,      //!< Always parameter set 2
+    RP_PSET_MODE_HIGH_2, //!< Input high: parameter set 2; input low: set 1
+    RP_PSET_MODE_HIGH_1  //!< Input high: parameter set 1; input low: set 2
+} rp_pset_mode_t;
+
+/**
+ * Event counters of one PID, counted by the FPGA from its load on. They wrap
+ * around at 2^32: a reader takes differences modulo 2^32.
+ */
+typedef struct {
+    uint32_t switches;       //!< Parameter set switches
+    uint32_t holdoffs_left;  //!< Holdoffs during which the relock input left the window
+    uint32_t holdoffs_out;   //!< Holdoffs that ended with the relock input outside the window
+    uint32_t unlocks;        //!< Changes of the lock status from locked to unlocked while
+                             //!< the hold is off (every one; the lockbox monitor merges
+                             //!< them into lock drops)
+} rp_pid_counters_t;
+
+/**
  * Calibration parameters, stored in the EEPROM device
  */
 typedef struct {
@@ -270,10 +319,14 @@ typedef struct {
 } rp_calib_params_t;
 
 /**
- * Lockbox parameters for saving to and restoring from disk.
+ * Lockbox parameters for saving to and restoring from disk. Version 3 appends
+ * parameter set 2 and the set selection to version 2, whose files still load
+ * (see api/src/config.c).
  */
-#define LOCKBOX_CONFIG_VERSION 2
+#define LOCKBOX_CONFIG_VERSION 3
+#ifndef CONFIG_FILE_PATH  /* the host test of saving and loading builds with its own */
 #define CONFIG_FILE_PATH "/home/redpitaya/pid_settings.conf"
+#endif
 typedef struct {
     int config_version;
     float pid_setpoint[4];
@@ -303,6 +356,19 @@ typedef struct {
     float gen_offset[2];
     float gen_freq[2];
     rp_waveform_t gen_waveform[2];
+    // version 3: parameter set 2; the arrays above hold parameter set 1
+    float pid_setpoint_2[4];
+    float pid_kp_2[4];
+    float pid_ki_2[4];
+    float pid_kd_2[4];
+    float pid_kii_2[4];
+    float pid_kg_2[4];
+    float pid_relock_minimum_2[4];
+    float pid_relock_maximum_2[4];
+    float pid_holdoff[4];
+    float pid_holdoff_2[4];
+    rp_pset_mode_t pid_pset_mode[4];
+    rp_dpin_t pid_pset_input[4];
 } rp_lockbox_params_t;
 
 /**
@@ -324,6 +390,9 @@ typedef struct {
     double last_unlock_age_s;     //!< Time since the latest drop began; -1 if none yet
     double last_unlock_s;         //!< Duration of the latest drop (so far, if open); -1 if none yet
     uint64_t raw_unlock_edges;    //!< Falling edges of the lock flag before merging
+    bool short_counted;           //!< Short drops are counted (the FPGA image counts lock drops)
+    uint64_t short_total;         //!< Drops that fell between two polls, included in unlocks_total
+    uint64_t short_since_servo;   //!< The same since the hold went off
 } rp_pid_monitor_t;
 
 /**
@@ -1633,6 +1702,35 @@ int rp_PIDSetEnable(rp_pid_t pid, bool enable);
 int rp_PIDGetEnable(rp_pid_t pid, bool *enabled);
 
 /*
+ * Switch the specified PID between locking and scanning its output with the
+ * signal generator. To lock, the generator of the PID's output is switched
+ * off, then the integrator reset and the hold are released and the PID output
+ * is switched on. To scan, the PID is held, its integrators are reset and its
+ * output is switched off, then the generator is switched on. The three PID
+ * settings change in one register write, so in the same clock cycle; the
+ * generator follows in the next write. PIDs 11 and 12 drive output 1, PIDs 21
+ * and 22 output 2.
+ * @param pid The PID to use (see rp_pid_t documentation for details).
+ * @param lock True to lock, false to scan.
+ * @return If the function is successful, the return value is RP_OK.
+ * If the function is unsuccessful, the return value is any of RP_E* values that
+ * indicate an error.
+ */
+int rp_PIDSetLock(rp_pid_t pid, bool lock);
+
+/*
+ * Get whether the specified PID locks: its output is on, it is not held and
+ * its integrators are not reset. The signal generator does not enter, since
+ * it may also modulate a lock.
+ * @param pid The PID to use (see rp_pid_t documentation for details).
+ * @param lock Pointer where true will be returned if the PID locks.
+ * @return If the function is successful, the return value is RP_OK.
+ * If the function is unsuccessful, the return value is any of RP_E* values that
+ * indicate an error.
+ */
+int rp_PIDGetLock(rp_pid_t pid, bool *lock);
+
+/*
  * Get the lock status of the specified PID.
  * @param pid The PID to use (see rp_pid_t documentation for details).
  * @param pin Pointer where the selected analog pin will be returned.
@@ -1750,6 +1848,113 @@ int rp_PIDGetExtResetEnable(rp_pid_t pid, bool *enabled);
 
 int rp_PIDSetExtResetInput(rp_pid_t pid, rp_dpin_t pin);
 int rp_PIDGetExtResetInput(rp_pid_t pid, rp_dpin_t *pin);
+
+/*
+ * Whether the FPGA image has the two parameter sets. Without them, parameter
+ * set 2, the holdoff and the set selection functions return RP_EUF.
+ * @param available Pointer where the answer will be returned.
+ * @return RP_OK.
+ */
+int rp_PIDHasParamSets(bool *available);
+
+/*
+ * Set a parameter of one parameter set of the specified PID. The setpoint,
+ * the gains and the lock window of parameter set 1 are the values the named
+ * functions (rp_PIDSetKp and so on) set.
+ * @param pid The PID to use (see rp_pid_t documentation for details).
+ * @param set The parameter set (see rp_pidset_t).
+ * @param param The parameter (see rp_pidparam_t for the units).
+ * @param value The value to set.
+ * @return If the function is successful, the return value is RP_OK.
+ * If the function is unsuccessful, the return value is any of RP_E* values that
+ * indicate an error.
+ */
+int rp_PIDSetParam(rp_pid_t pid, rp_pidset_t set, rp_pidparam_t param, float value);
+
+/*
+ * Get a parameter of one parameter set of the specified PID.
+ * @param pid The PID to use (see rp_pid_t documentation for details).
+ * @param set The parameter set (see rp_pidset_t).
+ * @param param The parameter (see rp_pidparam_t for the units).
+ * @param value Pointer where the value will be returned.
+ * @return If the function is successful, the return value is RP_OK.
+ * If the function is unsuccessful, the return value is any of RP_E* values that
+ * indicate an error.
+ */
+int rp_PIDGetParam(rp_pid_t pid, rp_pidset_t set, rp_pidparam_t param, float *value);
+
+/*
+ * Copy the setpoint, the gains and the lock window of one parameter set of the
+ * specified PID to the other (not the holdoff, which belongs to the switch
+ * into each set).
+ * @param pid The PID to use (see rp_pid_t documentation for details).
+ * @param from The set to copy.
+ * @param to The set to overwrite.
+ * @return If the function is successful, the return value is RP_OK.
+ * If the function is unsuccessful, the return value is any of RP_E* values that
+ * indicate an error.
+ */
+int rp_PIDCopyParams(rp_pid_t pid, rp_pidset_t from, rp_pidset_t to);
+
+/*
+ * Set which parameter set the specified PID uses.
+ * @param pid The PID to use (see rp_pid_t documentation for details).
+ * @param mode A fixed set, or the level of the input set with
+ * rp_PIDSetParamSetInput (see rp_pset_mode_t).
+ * @return If the function is successful, the return value is RP_OK.
+ * If the function is unsuccessful, the return value is any of RP_E* values that
+ * indicate an error.
+ */
+int rp_PIDSetParamSetMode(rp_pid_t pid, rp_pset_mode_t mode);
+int rp_PIDGetParamSetMode(rp_pid_t pid, rp_pset_mode_t *mode);
+
+/*
+ * Set the digital input whose level selects the parameter set of the
+ * specified PID in RP_PSET_MODE_HIGH_2 and RP_PSET_MODE_HIGH_1.
+ * @param pid The PID to use (see rp_pid_t documentation for details).
+ * @param pin One of the inputs RP_DIO5_P, RP_DIO6_P, RP_DIO7_P, RP_DIO0_N,
+ * RP_DIO5_N, RP_DIO6_N, RP_DIO7_N.
+ * @return If the function is successful, the return value is RP_OK.
+ * If the function is unsuccessful, the return value is any of RP_E* values that
+ * indicate an error.
+ */
+int rp_PIDSetParamSetInput(rp_pid_t pid, rp_dpin_t pin);
+int rp_PIDGetParamSetInput(rp_pid_t pid, rp_dpin_t *pin);
+
+/*
+ * Get the state of the parameter set selection of the specified PID.
+ * @param pid The PID to use (see rp_pid_t documentation for details).
+ * @param active Pointer where the set in use will be returned.
+ * @param holdoff Pointer set true while the holdoff after a switch runs.
+ * @param level Pointer where the level of the selected input will be returned.
+ * @param violated Pointer set true if the relock input left the lock window
+ * during the holdoff after the last switch.
+ * @return If the function is successful, the return value is RP_OK.
+ * If the function is unsuccessful, the return value is any of RP_E* values that
+ * indicate an error.
+ */
+int rp_PIDGetParamSetState(rp_pid_t pid, rp_pidset_t *active, bool *holdoff, bool *level, bool *violated);
+
+/*
+ * Get the event counters of the specified PID (see rp_pid_counters_t). The
+ * FPGA sees changes of the lock status of any length, the lockbox monitor
+ * only those it samples.
+ * @param pid The PID to use (see rp_pid_t documentation for details).
+ * @param counters Pointer where the counters will be returned.
+ * @return If the function is successful, the return value is RP_OK. With an
+ * FPGA image without the counters, RP_EUF. Otherwise any of the RP_E* values
+ * that indicate an error.
+ */
+int rp_PIDGetCounters(rp_pid_t pid, rp_pid_counters_t *counters);
+
+/*
+ * Get the unlock counters of all four PIDs (what the lockbox monitor polls).
+ * @param unlocks Array where the counters will be returned, element i for the
+ * PID with rp_pid_t value i.
+ * @return If the function is successful, the return value is RP_OK. With an
+ * FPGA image without the counters, RP_EUF.
+ */
+int rp_PIDGetUnlockCounts(uint32_t unlocks[4]);
 
 /*
  * Set the minimum DAC output voltage of the specified channel using the

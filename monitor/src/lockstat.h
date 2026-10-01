@@ -21,6 +21,14 @@
  *   never a drop; edges while the hold is on are tracked but not counted.
  * - Nothing is counted during the startup grace (the SCPI server
  *   re-programs the lock window right after the bitstream load).
+ * - With an FPGA image that counts every loss of lock, the poll also
+ *   learns whether the lock was lost since the previous poll. If it was,
+ *   and both polls read locked, the lock was lost and found again between
+ *   them: a SHORT DROP, which began at the previous poll and has been
+ *   locked since this one, so it merges with what follows within
+ *   `merge_ns` like any drop and closes with a duration of one poll
+ *   interval. Inside an open drop, such a loss restarts the lock stretch
+ *   that closes it.
  */
 
 #ifndef __LOCKSTAT_H
@@ -40,11 +48,13 @@ extern "C" {
 void lockstat_init(struct lockbox_monitor_pid *p, uint64_t now_ns, int locked, int held);
 
 /**
- * One poll. `counting` is 0 during the startup grace (state is tracked,
- * no drop opens); `merge_ns` is the lock time that closes a drop.
+ * One poll at `now_ns`, the previous one at `prev_ns`. `lost` is 1 if the
+ * FPGA's unlock counter rose since the previous poll (0 without one).
+ * `counting` is 0 during the startup grace (state is tracked, no drop
+ * opens); `merge_ns` is the lock time that closes a drop.
  */
-void lockstat_poll(struct lockbox_monitor_pid *p, uint64_t now_ns, int locked, int held,
-                   uint64_t merge_ns, int counting);
+void lockstat_poll(struct lockbox_monitor_pid *p, uint64_t prev_ns, uint64_t now_ns,
+                   int locked, int held, int lost, uint64_t merge_ns, int counting);
 
 #ifdef __cplusplus
 }

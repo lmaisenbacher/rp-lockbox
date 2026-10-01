@@ -12,6 +12,12 @@
  * last segment repeats forever. The scope returns a synthetic signal: 0.5 V
  * plus noise of 1 mV standard deviation on input 1, 0.25 V plus 2 mV on
  * input 2.
+ *
+ * With STUB_FPGA set, the FPGA's unlock counters exist: they count the falls
+ * of the flag while not held, and a segment may carry a fourth field
+ * "<hidden hex>": the PIDs that lost the lock and found it again too fast
+ * for any poll to see, just before the segment's first poll. Without
+ * STUB_FPGA the image has no counters (RP_EUF).
  */
 
 #include <math.h>
@@ -22,7 +28,7 @@
 
 struct segment {
     unsigned long polls;
-    unsigned locked, held;
+    unsigned locked, held, hidden;
 };
 
 static struct segment script[256];
@@ -30,6 +36,10 @@ static int n_segments = 0;
 static int current = 0;
 static unsigned long done_in_segment = 0;
 static int loaded = 0;
+
+/* The FPGA's unlock counters, per PID */
+static uint32_t fpga_count[4];
+static unsigned fpga_prev_locked = 0xF;
 
 static void load_script()
 {
@@ -45,11 +55,13 @@ static void load_script()
     char *copy = strdup(s);
     for (char *tok = strtok(copy, ","); tok && n_segments < 256; tok = strtok(NULL, ",")) {
         unsigned long polls;
-        unsigned locked, held;
-        if (sscanf(tok, "%lu:%x:%x", &polls, &locked, &held) == 3 && polls > 0) {
+        unsigned locked, held, hidden = 0;
+        int fields = sscanf(tok, "%lu:%x:%x:%x", &polls, &locked, &held, &hidden);
+        if (fields >= 3 && polls > 0) {
             script[n_segments].polls = polls;
             script[n_segments].locked = locked & 0xF;
             script[n_segments].held = held & 0xF;
+            script[n_segments].hidden = hidden & 0xF;
             n_segments++;
         } else {
             fprintf(stderr, "stub: bad STUB_SCRIPT segment '%s'\n", tok);
@@ -68,12 +80,36 @@ int rp_Init() { return RP_OK; }
 int rp_Release() { return RP_OK; }
 const char *rp_GetError(int errorCode) { (void)errorCode; return "stub error"; }
 
+/* The FPGA's counters follow one entry of the script */
+static void fpga_follow(const struct segment *seg, int first_poll)
+{
+    for (int i = 0; i < 4; i++) {
+        if ((seg->held >> i) & 1)
+            continue;
+        if (first_poll && ((seg->hidden >> i) & 1))
+            fpga_count[i]++;
+        if (((fpga_prev_locked >> i) & 1) && !((seg->locked >> i) & 1))
+            fpga_count[i]++;
+    }
+    fpga_prev_locked = seg->locked;
+}
+
+int rp_PIDGetUnlockCounts(uint32_t unlocks[4])
+{
+    if (!getenv("STUB_FPGA"))
+        return RP_EUF;
+    for (int i = 0; i < 4; i++)
+        unlocks[i] = fpga_count[i];
+    return RP_OK;
+}
+
 int rp_PIDGetLockHoldBits(uint8_t *locked, uint8_t *held)
 {
     if (!loaded)
         load_script();
     *locked = (uint8_t)script[current].locked;
     *held = (uint8_t)script[current].held;
+    fpga_follow(&script[current], done_in_segment == 0);
     done_in_segment++;
     if (done_in_segment >= script[current].polls && current + 1 < n_segments) {
         current++;

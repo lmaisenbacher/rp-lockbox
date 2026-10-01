@@ -114,6 +114,8 @@ route_design
 write_checkpoint         -force   $path_out/post_route
 report_timing_summary    -file    $path_out/post_route_timing_summary.rpt
 report_timing            -file    $path_out/post_route_timing.rpt -sort_by group -max_paths 100 -path_type summary
+# every failing endpoint, one path each
+report_timing            -file    $path_out/post_route_timing_failing.rpt -sort_by group -max_paths 5000 -nworst 1 -unique_pins -slack_lesser_than 0 -path_type summary
 report_clock_utilization -file    $path_out/clock_util.rpt
 report_utilization       -file    $path_out/post_route_util.rpt
 report_power             -file    $path_out/post_route_power.rpt

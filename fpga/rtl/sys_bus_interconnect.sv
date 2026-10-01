@@ -2,6 +2,10 @@
 // Module: System bus interconnect
 // Author: Iztok Jeras <iztok.jeras@redpitaya.com>
 // (c) Red Pitaya  (redpitaya.com)
+//
+// The bus is registered once in each direction (sys_bus_pipe): the write data
+// fans out to every configuration register of every slave, and registered per
+// slave, each slave loads it from a copy of its own.
 ////////////////////////////////////////////////////////////////////////////////
 
 module sys_bus_interconnect #(
@@ -12,35 +16,49 @@ module sys_bus_interconnect #(
   sys_bus_if.m bus_s [SN-1:0]  // to   slaves
 );
 
-// slave number logarithm
-localparam int unsigned SL = $clog2(SN);
+logic [SN*32-1:0] s_addr ;
+logic [SN*32-1:0] s_wdata;
+logic [SN   -1:0] s_wen  ;
+logic [SN   -1:0] s_ren  ;
+logic [SN*32-1:0] s_rdata;
+logic [SN   -1:0] s_err  ;
+logic [SN   -1:0] s_ack  ;
 
-logic [SL-1:0]         bus_s_a    ;
-logic [SN-1:0]         bus_s_cs   ;
-logic [SN-1:0][32-1:0] bus_s_rdata;
-logic [SN-1:0]         bus_s_err  ;
-logic [SN-1:0]         bus_s_ack  ;
-
-assign bus_s_a  = bus_m.addr[SW+:SL];
-assign bus_s_cs = SN'(1) << bus_s_a;
+sys_bus_pipe #(
+  .SN (SN),
+  .SW (SW)
+) i_pipe (
+  .clk_i     (bus_m.clk  ),
+  .rstn_i    (bus_m.rstn ),
+  .m_addr_i  (bus_m.addr ),
+  .m_wdata_i (bus_m.wdata),
+  .m_wen_i   (bus_m.wen  ),
+  .m_ren_i   (bus_m.ren  ),
+  .m_rdata_o (bus_m.rdata),
+  .m_err_o   (bus_m.err  ),
+  .m_ack_o   (bus_m.ack  ),
+  .s_addr_o  (s_addr     ),
+  .s_wdata_o (s_wdata    ),
+  .s_wen_o   (s_wen      ),
+  .s_ren_o   (s_ren      ),
+  .s_rdata_i (s_rdata    ),
+  .s_err_i   (s_err      ),
+  .s_ack_i   (s_ack      )
+);
 
 generate
 for (genvar i=0; i<SN; i++) begin: for_bus
 
-assign bus_s[i].addr  =               bus_m.addr ;
-assign bus_s[i].wdata =               bus_m.wdata;
-assign bus_s[i].wen   = bus_s_cs[i] & bus_m.wen  ;
-assign bus_s[i].ren   = bus_s_cs[i] & bus_m.ren  ;
+assign bus_s[i].addr  = s_addr [32*i+:32];
+assign bus_s[i].wdata = s_wdata[32*i+:32];
+assign bus_s[i].wen   = s_wen  [i];
+assign bus_s[i].ren   = s_ren  [i];
 
-assign bus_s_rdata[i] = bus_s[i].rdata;
-assign bus_s_err  [i] = bus_s[i].err  ;
-assign bus_s_ack  [i] = bus_s[i].ack  ;
+assign s_rdata[32*i+:32] = bus_s[i].rdata;
+assign s_err  [i]        = bus_s[i].err  ;
+assign s_ack  [i]        = bus_s[i].ack  ;
 
 end: for_bus
 endgenerate
-
-assign bus_m.rdata = bus_s_rdata[bus_s_a];
-assign bus_m.err   = bus_s_err  [bus_s_a];
-assign bus_m.ack   = bus_s_ack  [bus_s_a];
 
 endmodule: sys_bus_interconnect

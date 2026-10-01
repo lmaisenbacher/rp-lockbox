@@ -32,7 +32,7 @@ cd "$(dirname "$0")/.."
 
 BIT=fpga/prj/lockbox/out/red_pitaya.bit
 INSTALLED_BIT=/opt/redpitaya/fpga/lockbox.bit
-SETTINGS=/opt/redpitaya/pid_settings.conf
+SETTINGS=/home/redpitaya/pid_settings.conf
 DROPIN_DIR=/run/systemd/system/lockbox.service.d
 SERVICES="lockbox lockbox-monitor lockbox-web-interface"
 

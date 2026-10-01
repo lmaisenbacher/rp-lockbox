@@ -19,38 +19,67 @@ LOG = logging.getLogger(__name__)
 
 BASEDIR = os.path.dirname(__file__)
 
-# Error codes returned by the API
+# Error codes returned by the API (lockbox.h)
 ERROR_CODES = {
-    1: "RP_EOED. Failed to Open Memory Device.",
-    2: "RP_EOMD. Failed to Close Memory Devic.",
-    3: "RP_ECMD. Failed to Map Memory Device.",
-    4: "RP_EMMD. Failed to Unmap Memory Device.",
-    5: "RP_EUMD. Value Out Of Range.",
-    6: "RP_EOOR. LED Input Direction is not valid.",
-    7: "RP_ELID. Modifying Read Only field.",
-    8: "RP_EMRO. Writing to Input Pin is not valid.",
-    9: "RP_EWIP. Invalid Pin number.",
-    10: "RP_EPN. Uninitialized Input Argument.",
-    11: "RP_UIA. Failed to Find Calibration Parameters.",
-    12: "RP_FCA. Failed to Read Calibration Parameters.",
-    13: "RP_RCA. Buffer too small.",
-    14: "RP_BTS. Invalid parameter value.",
-    15: "RP_EIPV. Unsupported Feature.",
-    16: "RP_EUF. Data not normalized.",
-    17: "RP_ENN. Failed to open bus.",
-    18: "RP_EFOB. Failed to close bus.",
-    19: "RP_EFCB. Failed to acquire bus access.",
-    20: "RP_EABA. Failed to read from the bus.",
-    21: "RP_EFRB. Failed to write to the bus.",
-    22: "RP_EFWB. Extension module not connected.",
-    23: "RP_EMNC. Failed to open config file.",
-    24: "RP_EOCF. Incompatible config file version.",
-    25: "RP_EICV. Failed to Open EEPROM Devic.",
+    1: "RP_EOED. Failed to open EEPROM device.",
+    2: "RP_EOMD. Failed to open memory device.",
+    3: "RP_ECMD. Failed to close memory device.",
+    4: "RP_EMMD. Failed to map memory device.",
+    5: "RP_EUMD. Failed to unmap memory device.",
+    6: "RP_EOOR. Value out of range.",
+    7: "RP_ELID. LED input direction is not valid.",
+    8: "RP_EMRO. Modifying read only field is not allowed.",
+    9: "RP_EWIP. Writing to input pin is not valid.",
+    10: "RP_EPN. Invalid pin number.",
+    11: "RP_UIA. Uninitialized input argument.",
+    12: "RP_FCA. Failed to find calibration parameters.",
+    13: "RP_RCA. Failed to read calibration parameters.",
+    14: "RP_BTS. Buffer too small.",
+    15: "RP_EIPV. Invalid parameter value.",
+    16: "RP_EUF. Unsupported feature.",
+    17: "RP_ENN. Data not normalized.",
+    18: "RP_EFOB. Failed to open bus.",
+    19: "RP_EFCB. Failed to close bus.",
+    20: "RP_EABA. Failed to acquire bus access.",
+    21: "RP_EFRB. Failed to read from the bus.",
+    22: "RP_EFWB. Failed to write to the bus.",
+    23: "RP_EMNC. Extension module not connected.",
+    24: "RP_EOCF. Failed to open config file.",
+    25: "RP_EICV. Incompatible config file version.",
     26: "RP_EMON. Lockbox monitor not running."}
 
 #: Error code of a lockbox monitor that is not running (its readouts are
 #: shown as such, not logged as errors)
 RP_EMON = 26
+
+#: Error code of the parameter set functions on an FPGA image without the
+#: parameter sets
+RP_EUF = 16
+
+#: The parameters of a parameter set (`rp_pidparam_t`), with the factor from
+#: the unit the page shows to the library's
+PSET_PARAMS = {
+    "setpoint": (0, 1.0),
+    "kp": (1, 1.0),
+    "ki": (2, 1.0),
+    "kii": (3, 1.0),
+    "kd": (4, 1e-9),         # ns
+    "kg": (5, 1.0),
+    "relock_min": (6, 1.0),
+    "relock_max": (7, 1.0),
+    "holdoff": (8, 1e-3)}    # ms
+
+#: The parameter sets (`rp_pidset_t`) and the suffix of their keys
+PSET_SUFFIX = {0: "", 1: "_set2"}
+
+#: The pins that can select the parameter set (`rp_dpin_t` values)
+PSET_INPUTS = {13: "DIO5_P", 14: "DIO6_P", 15: "DIO7_P", 16: "DIO0_N",
+              21: "DIO5_N", 22: "DIO6_N", 23: "DIO7_N"}
+
+
+def error_text(code):
+    """The name and description of an API error code."""
+    return ERROR_CODES.get(code, "unknown error %s" % code)
 
 #: The scope decimations the lockbox monitor's input statistics accept, with
 #: the bandwidth (-3 dB of the averaging) each gives
@@ -97,6 +126,16 @@ def software_version():
     return str(version)
 
 
+class PIDCounters(ctypes.Structure):
+    """`rp_pid_counters_t` of lockbox.h: one PID's event counters in the FPGA."""
+    _fields_ = [
+        ("switches", ctypes.c_uint32),
+        ("holdoffs_left", ctypes.c_uint32),
+        ("holdoffs_out", ctypes.c_uint32),
+        ("unlocks", ctypes.c_uint32),
+    ]
+
+
 class PIDMonitor(ctypes.Structure):
     """`rp_pid_monitor_t` of lockbox.h: one PID's lock monitoring."""
     _fields_ = [
@@ -113,6 +152,9 @@ class PIDMonitor(ctypes.Structure):
         ("last_unlock_age_s", ctypes.c_double),
         ("last_unlock_s", ctypes.c_double),
         ("raw_unlock_edges", ctypes.c_uint64),
+        ("short_counted", ctypes.c_bool),
+        ("short_total", ctypes.c_uint64),
+        ("short_since_servo", ctypes.c_uint64),
     ]
 
 
@@ -134,6 +176,9 @@ def pid_monitor(pid):
         "unlocks_total": monitor.unlocks_total,
         "unlocked_total_s": monitor.unlocked_total_s,
         "drops": monitor.unlocks_since_servo,
+        # Of them, the ones shorter than a poll of the monitor (None while
+        # the FPGA image does not count drops)
+        "short_drops": monitor.short_since_servo if monitor.short_counted else None,
         "unlocked_s": monitor.unlocked_since_servo_s,
         "longest_s": monitor.longest_since_servo_s,
         "drop_open": monitor.drop_open,
@@ -195,6 +240,83 @@ def input_stats(channel):
         "bandwidth": STATS_DECIMATIONS.get(decimation.value, ""),
     }
 
+
+def has_param_sets():
+    """Whether the FPGA image has the two parameter sets."""
+    available = ctypes.c_bool()
+    RP_LIB.rp_PIDHasParamSets(ctypes.byref(available))
+    return available.value
+
+
+def get_pset_param(pid, pset, name):
+    """Parameter `name` (see `PSET_PARAMS`) of parameter set `pset` of PID
+    `pid`, in the unit the page shows, or None if the FPGA image lacks it."""
+    param, scale = PSET_PARAMS[name]
+    value = ctypes.c_float()
+    retval = RP_LIB.rp_PIDGetParam(pid, pset, param, ctypes.byref(value))
+    if retval == RP_EUF:
+        return None
+    if retval != 0:
+        LOG.error("Failed to get %s of PID %d, set %d. Error code: %s",
+                  name, pid, pset, error_text(retval))
+        return None
+    return value.value / scale
+
+
+def set_pset_param(name):
+    """Handle a POST request that sets parameter `name` (see `PSET_PARAMS`).
+
+    Accepted POST parameters:
+    :pid: the PID to adjust
+    :set: the parameter set: 0 = param. set 1 (the default), 1 = param. set 2
+    :<name>: the value to set, in the unit the page shows
+    """
+    value = request.params.get(name, 0, type=float)
+    pid = request.params.get("pid", 1, type=int)
+    pset = request.params.get("set", 0, type=int)
+    param, scale = PSET_PARAMS[name]
+    retval = RP_LIB.rp_PIDSetParam(pid, pset, param, ctypes.c_float(scale * value))
+    if retval != 0:
+        LOG.error("Failed to set %s of PID %d, set %d. Error code: %s",
+                  name, pid, pset, error_text(retval))
+    LOG.info("PID %d set %d %s: %f", pid, pset, name, value)
+
+
+def pset_state(pid):
+    """The parameter set in use by PID `pid` as a dict, or None if the FPGA
+    image lacks the parameter sets."""
+    active = ctypes.c_int()
+    holdoff = ctypes.c_bool()
+    level = ctypes.c_bool()
+    violated = ctypes.c_bool()
+    retval = RP_LIB.rp_PIDGetParamSetState(
+        pid, ctypes.byref(active), ctypes.byref(holdoff), ctypes.byref(level),
+        ctypes.byref(violated))
+    if retval == RP_EUF:
+        return None
+    if retval != 0:
+        LOG.error("Failed to get the parameter set state of PID %d. Error code: %s",
+                  pid, error_text(retval))
+        return None
+    state = {
+        "active": active.value,
+        "holdoff": holdoff.value,
+        "level": level.value,
+        "violated": violated.value,
+        "counters": None,
+    }
+    counters = PIDCounters()
+    retval = RP_LIB.rp_PIDGetCounters(pid, ctypes.byref(counters))
+    if retval == 0:
+        state["counters"] = {
+            "switches": counters.switches,
+            "holdoffs_left": counters.holdoffs_left,
+            "holdoffs_out": counters.holdoffs_out,
+        }
+    elif retval != RP_EUF:
+        LOG.error("Failed to get the counters of PID %d. Error code: %s", pid, error_text(retval))
+    return state
+
 @route('/')
 def index():
     """Main HTML file."""
@@ -230,99 +352,88 @@ def favicon():
 
 @route("/_set_setpoint", method="POST")
 def set_setpoint():
-    """Handle POST request for setting the PID setpoint.
-
-    Accepted POST parameters:
-    :pid: the PID to adjust
-    :setpoint: the value to set in V
-    """
-    setpoint = request.params.get("setpoint", 0, type=float)
-    pid = request.params.get("pid", 1, type=int)
-    retval = RP_LIB.rp_PIDSetSetpoint(pid, ctypes.c_float(setpoint))
-    if retval != 0:
-        LOG.error("Failed to set PID setpoint. Error code: %s", ERROR_CODES[retval])
-    LOG.info("setpoint: %f", setpoint)
-    LOG.info("PID: %d", pid)
+    """Handle POST request for setting the PID setpoint (V), see `set_pset_param`."""
+    set_pset_param("setpoint")
 
 @route("/_set_kp", method="POST")
 def set_kp():
-    """Handle POST request for setting the PID Kp (P gain).
-
-    Accepted POST parameters:
-    :pid: the PID to adjust
-    :kp: the value to set
-    """
-    kp = request.params.get("kp", 0, type=float)
-    pid = request.params.get("pid", 1, type=int)
-    retval = RP_LIB.rp_PIDSetKp(pid, ctypes.c_float(kp))
-    if retval != 0:
-        LOG.error("Failed to set PID Kp. Error code: %s", ERROR_CODES[retval])
-    LOG.info("Kp: %f", kp)
-    LOG.info("PID: %d", pid)
+    """Handle POST request for setting the PID Kp (P gain), see `set_pset_param`."""
+    set_pset_param("kp")
 
 @route("/_set_ki", method="POST")
 def set_ki():
-    """Handle POST request for setting the PID Ki (integrator gain (1/s)).
-
-    Accepted POST parameters:
-    :pid: the PID to adjust
-    :ki: the value to set in 1/s
-    """
-    ki = request.params.get("ki", 0, type=float)
-    pid = request.params.get("pid", 1, type=int)
-    retval = RP_LIB.rp_PIDSetKi(pid, ctypes.c_float(ki))
-    if retval != 0:
-        LOG.error("Failed to set PID Ki. Error code: %s", ERROR_CODES[retval])
-    LOG.info("Ki: %f", ki)
-    LOG.info("PID: %d", pid)
+    """Handle POST request for setting the PID Ki (integrator gain (1/s)), see
+    `set_pset_param`."""
+    set_pset_param("ki")
 
 @route("/_set_kd", method="POST")
 def set_kd():
-    """Handle POST request for setting the PID Kd (derivative gain (ns)).
-
-    Accepted POST parameters:
-    :pid: the PID to adjust
-    :kd: the value to set
-    """
-    kd = request.params.get("kd", 0, type=float)
-    pid = request.params.get("pid", 1, type=int)
-    retval = RP_LIB.rp_PIDSetKd(pid, ctypes.c_float(1e-9*kd))
-    if retval != 0:
-        LOG.error("Failed to set PID Kd. Error code: %s", ERROR_CODES[retval])
-    LOG.info("Kd: %f", kd)
-    LOG.info("PID: %d", pid)
+    """Handle POST request for setting the PID Kd (derivative gain (ns)), see
+    `set_pset_param`."""
+    set_pset_param("kd")
 
 @route("/_set_kii", method="POST")
 def set_kii():
-    """Handle POST request for setting the PID Kii (2nd integrator gain (1/s)).
-
-    Accepted POST parameters:
-    :pid: the PID to adjust
-    :kii: the value to set in 1/s
-    """
-    kii = request.params.get("kii", 0, type=float)
-    pid = request.params.get("pid", 1, type=int)
-    retval = RP_LIB.rp_PIDSetKii(pid, ctypes.c_float(kii))
-    if retval != 0:
-        LOG.error("Failed to set PID Kii. Error code: %s", ERROR_CODES[retval])
-    LOG.info("Kii: %f", kii)
-    LOG.info("PID: %d", pid)
+    """Handle POST request for setting the PID Kii (2nd integrator gain (1/s)), see
+    `set_pset_param`."""
+    set_pset_param("kii")
 
 @route("/_set_kg", method="POST")
 def set_kg():
-    """Handle POST request for setting the PID Kg (global gain).
+    """Handle POST request for setting the PID Kg (global gain), see `set_pset_param`."""
+    set_pset_param("kg")
+
+@route("/_set_holdoff", method="POST")
+def set_holdoff():
+    """Handle POST request for setting the holdoff after a switch into a parameter
+    set (ms), see `set_pset_param`."""
+    set_pset_param("holdoff")
+
+@route("/_set_pset_mode", method="POST")
+def set_pset_mode():
+    """Handle POST request for setting which parameter set a PID uses.
 
     Accepted POST parameters:
     :pid: the PID to adjust
-    :kp: the value to set
+    :mode: 0 = param. set 1, 1 = param. set 2, 2 = the digital input selects (high: set 2),
+           3 = the digital input selects (high: set 1)
     """
-    kg = request.params.get("kg", 0, type=float)
+    mode = request.params.get("mode", 0, type=int)
     pid = request.params.get("pid", 1, type=int)
-    retval = RP_LIB.rp_PIDSetKg(pid, ctypes.c_float(kg))
+    retval = RP_LIB.rp_PIDSetParamSetMode(pid, ctypes.c_int(mode))
     if retval != 0:
-        LOG.error("Failed to set PID Kg. Error code: %s", ERROR_CODES[retval])
-    LOG.info("Kg: %f", kg)
-    LOG.info("PID: %d", pid)
+        LOG.error("Failed to set the parameter set mode of PID %d. Error code: %s",
+                  pid, error_text(retval))
+
+@route("/_set_pset_input", method="POST")
+def set_pset_input():
+    """Handle POST request for setting the digital input that selects the parameter set.
+
+    Accepted POST parameters:
+    :pid: the PID to adjust
+    :din: the digital input (see `PSET_INPUTS`)
+    """
+    din = request.params.get("din", 0, type=int)
+    pid = request.params.get("pid", 1, type=int)
+    retval = RP_LIB.rp_PIDSetParamSetInput(pid, ctypes.c_int(din))
+    if retval != 0:
+        LOG.error("Failed to set the digital input of PID %d. Error code: %s", pid,
+                  error_text(retval))
+
+@route("/_copy_params", method="POST")
+def copy_params():
+    """Handle POST request for copying one parameter set of a PID into its other set.
+
+    Accepted POST parameters:
+    :pid: the PID to adjust
+    :from: the set to copy: 0 = param. set 1 (into set 2), 1 = param. set 2 (into set 1)
+    """
+    pid = request.params.get("pid", 1, type=int)
+    pset = request.params.get("from", 0, type=int)
+    retval = RP_LIB.rp_PIDCopyParams(pid, pset, 1 - pset)
+    if retval != 0:
+        LOG.error("Failed to copy parameter set %d of PID %d. Error code: %s",
+                  pset + 1, pid, error_text(retval))
 
 @route("/_set_inverted", method="POST")
 def set_inverted():
@@ -396,39 +507,32 @@ def set_pid_enabled():
     if retval != 0:
         LOG.error("Failed to set PID enabled. Error code: %s", ERROR_CODES[retval])
 
+@route("/_set_lock", method="POST")
+def set_lock():
+    """Handle POST request for switching a PID between lock and scan (`rp_PIDSetLock`).
+
+    Accepted POST parameters:
+    :pid: the PID to switch
+    :lock: true to lock, false to scan with the signal generator of the PID's output
+    """
+    lock = request.params.get("lock", 0) == "true"
+    pid = request.params.get("pid", 1, type=int)
+    retval = RP_LIB.rp_PIDSetLock(pid, lock)
+    if retval != 0:
+        LOG.error("Failed to switch PID %d to %s. Error code: %s",
+                  pid, "lock" if lock else "scan", error_text(retval))
+
 @route("/_set_relock_min", method="POST")
 def set_relock_min():
     """Handle POST request for setting the minimum input voltage for which the PID is considered
-    locked.
-
-    Accepted POST parameters:
-    :pid: the PID to adjust
-    :relock_min: the value to set
-    """
-    relock_min = request.params.get("relock_min", 0, type=float)
-    pid = request.params.get("pid", 1, type=int)
-    retval = RP_LIB.rp_PIDSetRelockMinimum(pid, ctypes.c_float(relock_min))
-    if retval != 0:
-        LOG.error("Failed to set PID minimum relock voltage. Error code: %s", ERROR_CODES[retval])
-    LOG.info("Minimum relock voltage: %f", relock_min)
-    LOG.info("PID: %d", pid)
+    locked, see `set_pset_param`."""
+    set_pset_param("relock_min")
 
 @route("/_set_relock_max", method="POST")
 def set_relock_max():
     """Handle POST request for setting the maximum input voltage for which the PID is considered
-    locked.
-
-    Accepted POST parameters:
-    :pid: the PID to adjust
-    :relock_max: the value to set
-    """
-    relock_max = request.params.get("relock_max", 0, type=float)
-    pid = request.params.get("pid", 1, type=int)
-    retval = RP_LIB.rp_PIDSetRelockMaximum(pid, ctypes.c_float(relock_max))
-    if retval != 0:
-        LOG.error("Failed to set PID maximum relock voltage. Error code: %s", ERROR_CODES[retval])
-    LOG.info("Maximum relock voltage: %f", relock_max)
-    LOG.info("PID: %d", pid)
+    locked, see `set_pset_param`."""
+    set_pset_param("relock_max")
 
 @route("/_set_relock_slew_rate", method="POST")
 def set_relock_slew_rate():
@@ -705,6 +809,11 @@ def get_values():
         "pid_12_lock_status": lock_status[1].value,
         "pid_21_lock_status": lock_status[2].value,
         "pid_22_lock_status": lock_status[3].value,
+        # The parameter set in use (None without the parameter sets)
+        "pid_11_pset": pset_state(0),
+        "pid_12_pset": pset_state(1),
+        "pid_21_pset": pset_state(2),
+        "pid_22_pset": pset_state(3),
         "monitor": health,
         "pid_11_monitor": pid_monitor(0) if alive else None,
         "pid_12_monitor": pid_monitor(1) if alive else None,
@@ -733,19 +842,33 @@ def set_stats_decimation():
 def get_parameters():
     """Return a json string containing the current lockbox parameters."""
 
-    setpoint = [0., 0., 0., 0.]
-    kp_param = [0., .0, 0., 0.]
-    ki_param = [0., 0., 0., 0.]
-    kd_param = [0., 0., 0., 0.]
-    kii_param = [0., .0, 0., 0.]
-    kg_param = [0., 0., 0., 0.]
+    # The parameters of both parameter sets: "pid_11_kp" is param. set 1,
+    # "pid_11_kp_set2" param. set 2 (None without the parameter sets)
+    pset_values = {}
+    pset_mode = [0, 0, 0, 0]
+    pset_input = [15, 15, 15, 15]
+    for i, code in enumerate(("11", "12", "21", "22")):
+        for name in PSET_PARAMS:
+            for pset, suffix in PSET_SUFFIX.items():
+                pset_values["pid_%s_%s%s" % (code, name, suffix)] = get_pset_param(i, pset, name)
+        mode = ctypes.c_int()
+        retval = RP_LIB.rp_PIDGetParamSetMode(i, ctypes.byref(mode))
+        if retval == 0:
+            pset_mode[i] = mode.value
+        elif retval != RP_EUF:
+            LOG.error("Failed to get the parameter set mode of PID. Error code: %s", error_text(retval))
+        din = ctypes.c_int()
+        retval = RP_LIB.rp_PIDGetParamSetInput(i, ctypes.byref(din))
+        if retval == 0:
+            pset_input[i] = din.value
+        elif retval != RP_EUF:
+            LOG.error("Failed to get the digital input of PID. Error code: %s", error_text(retval))
+
     inverted = [False, False, False, False]
     hold = [False, False, False, False]
     int_reset = [False, False, False, False]
     int_auto = [False, False, False, False]
     enabled = [False, False, False, False]
-    relock_min = [0., 0., 0., 0.]
-    relock_max = [0., 0., 0., 0.]
     relock_slew_rate = [0., 0., 0., 0.]
     relock_enabled = [False, False, False, False]
     relock_input = [0, 0, 0, 0]
@@ -753,37 +876,6 @@ def get_parameters():
     ext_reset_enabled = [False, False, False, False]
     ext_reset_input = [0, 0, 0, 0]
     for i in range(4):
-        setpoint[i] = ctypes.c_float()
-        retval = RP_LIB.rp_PIDGetSetpoint(i, ctypes.byref(setpoint[i]))
-        if retval != 0:
-            LOG.error("Failed to get PID setpoint. Error code: %s", ERROR_CODES[retval])
-
-        kp_param[i] = ctypes.c_float()
-        retval = RP_LIB.rp_PIDGetKp(i, ctypes.byref(kp_param[i]))
-        if retval != 0:
-            LOG.error("Failed to get PID Kp parameter. Error code: %s", ERROR_CODES[retval])
-
-        ki_param[i] = ctypes.c_float()
-        retval = RP_LIB.rp_PIDGetKi(i, ctypes.byref(ki_param[i]))
-        if retval != 0:
-            LOG.error("Failed to get PID Ki parameter. Error code: %s", ERROR_CODES[retval])
-
-        kd_param[i] = ctypes.c_float()
-        retval = RP_LIB.rp_PIDGetKd(i, ctypes.byref(kd_param[i]))
-        if retval != 0:
-            LOG.error("Failed to get PID Kd parameter. Error code: %s", ERROR_CODES[retval])
-        kd_param[i] = kd_param[i].value*1e9
-
-        kii_param[i] = ctypes.c_float()
-        retval = RP_LIB.rp_PIDGetKii(i, ctypes.byref(kii_param[i]))
-        if retval != 0:
-            LOG.error("Failed to get PID Kii parameter. Error code: %s", ERROR_CODES[retval])
-
-        kg_param[i] = ctypes.c_float()
-        retval = RP_LIB.rp_PIDGetKg(i, ctypes.byref(kg_param[i]))
-        if retval != 0:
-            LOG.error("Failed to get PID Kg parameter. Error code: %s", ERROR_CODES[retval])
-
         inverted[i] = ctypes.c_bool()
         retval = RP_LIB.rp_PIDGetInverted(i, ctypes.byref(inverted[i]))
         if retval != 0:
@@ -811,18 +903,6 @@ def get_parameters():
         retval = RP_LIB.rp_PIDGetEnable(i, ctypes.byref(enabled[i]))
         if retval != 0:
             LOG.error("Failed to get state of PID enable. Error code: %s",
-                      ERROR_CODES[retval])
-
-        relock_min[i] = ctypes.c_float()
-        retval = RP_LIB.rp_PIDGetRelockMinimum(i, ctypes.byref(relock_min[i]))
-        if retval != 0:
-            LOG.error("Failed to get PID minimum relock voltage. Error code: %s",
-                      ERROR_CODES[retval])
-
-        relock_max[i] = ctypes.c_float()
-        retval = RP_LIB.rp_PIDGetRelockMaximum(i, ctypes.byref(relock_max[i]))
-        if retval != 0:
-            LOG.error("Failed to get PID maximum relock voltage. Error code: %s",
                       ERROR_CODES[retval])
 
         relock_slew_rate[i] = ctypes.c_float()
@@ -952,30 +1032,15 @@ def get_parameters():
     parameters = {
         "version": VERSION,
         "stats_decimation": stats_decimation.value,
-        "pid_11_setpoint": setpoint[0].value,
-        "pid_12_setpoint": setpoint[1].value,
-        "pid_21_setpoint": setpoint[2].value,
-        "pid_22_setpoint": setpoint[3].value,
-        "pid_11_kp": kp_param[0].value,
-        "pid_12_kp": kp_param[1].value,
-        "pid_21_kp": kp_param[2].value,
-        "pid_22_kp": kp_param[3].value,
-        "pid_11_ki": ki_param[0].value,
-        "pid_12_ki": ki_param[1].value,
-        "pid_21_ki": ki_param[2].value,
-        "pid_22_ki": ki_param[3].value,
-        "pid_11_kd": kd_param[0],
-        "pid_12_kd": kd_param[1],
-        "pid_21_kd": kd_param[2],
-        "pid_22_kd": kd_param[3],
-        "pid_11_kii": kii_param[0].value,
-        "pid_12_kii": kii_param[1].value,
-        "pid_21_kii": kii_param[2].value,
-        "pid_22_kii": kii_param[3].value,
-        "pid_11_kg": kg_param[0].value,
-        "pid_12_kg": kg_param[1].value,
-        "pid_21_kg": kg_param[2].value,
-        "pid_22_kg": kg_param[3].value,
+        "param_sets": has_param_sets(),
+        "pid_11_pset_mode": pset_mode[0],
+        "pid_12_pset_mode": pset_mode[1],
+        "pid_21_pset_mode": pset_mode[2],
+        "pid_22_pset_mode": pset_mode[3],
+        "pid_11_pset_input": pset_input[0],
+        "pid_12_pset_input": pset_input[1],
+        "pid_21_pset_input": pset_input[2],
+        "pid_22_pset_input": pset_input[3],
         "pid_11_inverted": inverted[0].value,
         "pid_12_inverted": inverted[1].value,
         "pid_21_inverted": inverted[2].value,
@@ -996,14 +1061,6 @@ def get_parameters():
         "pid_12_enabled": enabled[1].value,
         "pid_21_enabled": enabled[2].value,
         "pid_22_enabled": enabled[3].value,
-        "pid_11_relock_min": relock_min[0].value,
-        "pid_12_relock_min": relock_min[1].value,
-        "pid_21_relock_min": relock_min[2].value,
-        "pid_22_relock_min": relock_min[3].value,
-        "pid_11_relock_max": relock_max[0].value,
-        "pid_12_relock_max": relock_max[1].value,
-        "pid_21_relock_max": relock_max[2].value,
-        "pid_22_relock_max": relock_max[3].value,
         "pid_11_relock_slew_rate": relock_slew_rate[0].value,
         "pid_12_relock_slew_rate": relock_slew_rate[1].value,
         "pid_21_relock_slew_rate": relock_slew_rate[2].value,
@@ -1045,10 +1102,40 @@ def get_parameters():
         "sg_1_offset": sg_1_offset.value,
         "sg_2_offset": sg_2_offset.value
     }
+    parameters.update(pset_values)
     return json.dumps(parameters)
 
+def _value(arg):
+    """The Python value of an argument the server passes to the library
+    (a ctypes number or a plain bool)."""
+    return arg.value if hasattr(arg, "value") else arg
+
+
 class MockRPLib():
-    """Class that simulates the Red Pitaya lockbox library."""
+    """Class that simulates the Red Pitaya lockbox library, for running the
+    page without a Red Pitaya. Setters store their values and getters return
+    them, so edits on the page round-trip."""
+
+    #: Values of the parameters of a parameter set, in the order of
+    #: `rp_pidparam_t` and the library's units
+    PSET_DEFAULTS = [0.0, 0.1, 10.0, 0.0, 1e-9, 1.0, 0.0, 7.0, 0.0]
+
+    def __init__(self):
+        self.pset = {(pid, pset): list(self.PSET_DEFAULTS) for pid in range(4) for pset in (0, 1)}
+        self.pset[(0, 1)][5] = 0.5
+        self.pset_mode = [2, 0, 0, 0]
+        self.pset_input = [15, 15, 15, 15]
+        self.values = {}
+        self.mock_stats_decimation = 1024
+
+    def _set(self, name, index, arg):
+        LOG.debug("%s[%d] = %s", name, index, _value(arg))
+        self.values[(name, index)] = _value(arg)
+        return 0
+
+    def _get(self, name, index, ref, default):
+        ref._obj.value = self.values.get((name, index), default)
+        return 0
 
     def rp_Init(self):
         LOG.debug("rp_Init called")
@@ -1066,7 +1153,6 @@ class MockRPLib():
         return 0
 
     # The lockbox monitor: a running service with fixed numbers
-    mock_stats_decimation = 1024
 
     def rp_MonitorGetHealth(self, alive, uptime_s, period_ms, max_gap_ms, late_polls, merge_ms):
         alive._obj.value = True
@@ -1092,6 +1178,9 @@ class MockRPLib():
         m.last_unlock_age_s = 4321.0
         m.last_unlock_s = 0.4
         m.raw_unlock_edges = 20 + pid
+        m.short_counted = True
+        m.short_total = 2
+        m.short_since_servo = 1 if pid != 3 else 0
         return 0
 
     def rp_GetInStats(self, channel, mean, sd, minimum, maximum, window_s, age_s, decimation):
@@ -1115,89 +1204,202 @@ class MockRPLib():
         decimation._obj.value = self.mock_stats_decimation
         return 0
 
-    def rp_PIDSetSetpoint(self, pid, setpoint):
-        LOG.debug("pid: %d\t setpoint: %f", pid, setpoint.value)
+    # The parameter sets
+
+    def rp_PIDHasParamSets(self, available):
+        available._obj.value = True
         return 0
 
-    def rp_PIDSetKp(self, pid, kp):
-        LOG.debug("pid: %d\t kp: %f", pid, kp.value)
+    def rp_PIDSetParam(self, pid, pset, param, value):
+        LOG.debug("pid: %d\t set: %d\t param: %d\t value: %g", pid, pset, param, value.value)
+        self.pset[(pid, pset)][param] = value.value
         return 0
 
-    def rp_PIDSetKi(self, pid, ki):
-        LOG.debug("pid: %d\t ki: %f", pid, ki.value)
+    def rp_PIDGetParam(self, pid, pset, param, value):
+        value._obj.value = self.pset[(pid, pset)][param]
         return 0
 
-    def rp_PIDSetKd(self, pid, kd):
-        LOG.debug("pid: %d\t kd: %d", pid, kd.value)
+    def rp_PIDCopyParams(self, pid, source, target):
+        # all but the holdoff (the last parameter)
+        self.pset[(pid, target)][:8] = self.pset[(pid, source)][:8]
         return 0
 
-    def rp_PIDSetInverted(self, pid, inverted):
-        LOG.debug("pid: %d\t inverted: %s", pid, inverted)
+    def rp_PIDSetParamSetMode(self, pid, mode):
+        self.pset_mode[pid] = mode.value
         return 0
 
-    def rp_PIDSetHold(self, pid, hold):
-        LOG.debug("pid: %d\t hold: %s", pid, hold)
+    def rp_PIDGetParamSetMode(self, pid, mode):
+        mode._obj.value = self.pset_mode[pid]
         return 0
 
-    def rp_PIDSetIntReset(self, pid, int_reset):
-        LOG.debug("pid: %d\t int_reset: %s", pid, int_reset)
+    def rp_PIDSetParamSetInput(self, pid, din):
+        if din.value not in PSET_INPUTS:
+            return 10
+        self.pset_input[pid] = din.value
         return 0
 
-    def rp_PIDSetResetWhenRailed(self, pid, int_auto):
-        LOG.debug("pid: %d\t int_auto: %s", pid, int_auto)
+    def rp_PIDGetParamSetInput(self, pid, din):
+        din._obj.value = self.pset_input[pid]
         return 0
 
-    def rp_PIDSetRelockMinimum(self, pid, relock_min):
-        LOG.debug("pid: %d\t relock_min: %f", pid, relock_min.value)
+    def rp_PIDGetParamSetState(self, pid, active, holdoff, level, violated):
+        # Following its input, PID 11 sees the input high, and the holdoff of
+        # the set in use running if it has one
+        mode = self.pset_mode[pid]
+        level._obj.value = mode in (2, 3) and pid == 0
+        active._obj.value = 1 if (mode == 1 or (mode == 2 and level._obj.value)
+                                  or (mode == 3 and not level._obj.value)) else 0
+        holdoff._obj.value = level._obj.value and self.pset[(pid, active._obj.value)][8] > 0
+        violated._obj.value = False
         return 0
 
-    def rp_PIDSetRelockMaximum(self, pid, relock_max):
-        LOG.debug("pid: %d\t relock_max: %f", pid, relock_max.value)
+    def rp_PIDGetCounters(self, pid, counters):
+        c = counters._obj
+        c.switches = 1234 if pid == 0 else 0
+        c.holdoffs_left = 56 if pid == 0 else 0
+        c.holdoffs_out = 2 if pid == 0 else 0
+        c.unlocks = 19 + pid
         return 0
 
-    def rp_PIDSetRelockStepsize(self, pid, relock_slew_rate):
-        LOG.debug("pid: %d\t relock_slew_rate: %f", pid, relock_slew_rate.value)
+    def rp_PIDSetLock(self, pid, value):
+        lock = bool(_value(value))
+        output = 0 if pid in (0, 1) else 1
+        if lock:
+            self._set("sg_enabled", output, False)
+        self._set("int_reset", pid, not lock)
+        self._set("hold", pid, not lock)
+        self._set("enabled", pid, lock)
+        if not lock:
+            self._set("sg_enabled", output, True)
         return 0
 
-    def rp_PIDSetRelock(self, pid, relock_enabled):
-        LOG.debug("pid: %d\t relock_enabled: %s", pid, relock_enabled)
+    def rp_PIDGetLock(self, pid, ref):
+        ref._obj.value = (not self.values.get(("int_reset", pid), False)
+                          and not self.values.get(("hold", pid), False)
+                          and self.values.get(("enabled", pid), True))
         return 0
 
-    def rp_PIDSetRelockInput(self, pid, ain):
-        LOG.debug("pid: %d\t ain: %d", pid, ain.value)
-        return 0
+    # Flags and values without logic of their own
 
-    def rp_LimitMin(self, output, limit_min):
-        LOG.debug("output: %d\t limit_min: %f", output, limit_min.value)
-        return 0
+    def rp_PIDSetInverted(self, pid, value):
+        return self._set("inverted", pid, value)
 
-    def rp_LimitMax(self, output, limit_max):
-        LOG.debug("output: %d\t limit_max: %f", output, limit_max.value)
-        return 0
+    def rp_PIDGetInverted(self, pid, ref):
+        return self._get("inverted", pid, ref, False)
 
-    def rp_GenWaveform(self, output, waveform):
-        LOG.debug("output: %d\t waveform: %d", output, waveform.value)
-        return 0
+    def rp_PIDSetHold(self, pid, value):
+        return self._set("hold", pid, value)
 
-    def rp_GenAmp(self, output, amp):
-        LOG.debug("output: %d\t amp: %f", output, amp.value)
-        return 0
+    def rp_PIDGetHold(self, pid, ref):
+        return self._get("hold", pid, ref, False)
 
-    def rp_GenFreq(self, output, freq):
-        LOG.debug("output: %d\t freq: %f", output, freq.value)
-        return 0
+    def rp_PIDSetIntReset(self, pid, value):
+        return self._set("int_reset", pid, value)
 
-    def rp_GenOffset(self, output, offset):
-        LOG.debug("output: %d\t offset: %f", output, offset.value)
-        return 0
+    def rp_PIDGetIntReset(self, pid, ref):
+        return self._get("int_reset", pid, ref, False)
+
+    def rp_PIDSetResetWhenRailed(self, pid, value):
+        return self._set("int_auto", pid, value)
+
+    def rp_PIDGetResetWhenRailed(self, pid, ref):
+        return self._get("int_auto", pid, ref, False)
+
+    def rp_PIDSetEnable(self, pid, value):
+        return self._set("enabled", pid, value)
+
+    def rp_PIDGetEnable(self, pid, ref):
+        return self._get("enabled", pid, ref, True)
+
+    def rp_PIDSetRelock(self, pid, value):
+        return self._set("relock", pid, value)
+
+    def rp_PIDGetRelock(self, pid, ref):
+        return self._get("relock", pid, ref, True)
+
+    def rp_PIDSetRelockStepsize(self, pid, value):
+        return self._set("relock_stepsize", pid, value)
+
+    def rp_PIDGetRelockStepsize(self, pid, ref):
+        return self._get("relock_stepsize", pid, ref, 500.0)
+
+    def rp_PIDSetRelockInput(self, pid, value):
+        return self._set("relock_input", pid, value)
+
+    def rp_PIDGetRelockInput(self, pid, ref):
+        return self._get("relock_input", pid, ref, 5)
+
+    def rp_PIDSetLockStatusOutputEnable(self, pid, value):
+        return self._set("lso", pid, value)
+
+    def rp_PIDGetLockStatusOutputEnable(self, pid, ref):
+        return self._get("lso", pid, ref, True)
+
+    def rp_PIDSetExtResetEnable(self, pid, value):
+        return self._set("ext_reset", pid, value)
+
+    def rp_PIDGetExtResetEnable(self, pid, ref):
+        return self._get("ext_reset", pid, ref, False)
+
+    def rp_PIDSetExtResetInput(self, pid, value):
+        return self._set("ext_reset_input", pid, value)
+
+    def rp_PIDGetExtResetInput(self, pid, ref):
+        return self._get("ext_reset_input", pid, ref, 13)
+
+    def rp_LimitMin(self, output, value):
+        return self._set("limit_min", output, value)
+
+    def rp_LimitGetMin(self, output, ref):
+        return self._get("limit_min", output, ref, -1.0)
+
+    def rp_LimitMax(self, output, value):
+        return self._set("limit_max", output, value)
+
+    def rp_LimitGetMax(self, output, ref):
+        return self._get("limit_max", output, ref, 1.0)
+
+    def rp_GenWaveform(self, output, value):
+        return self._set("waveform", output, value)
+
+    def rp_GenGetWaveform(self, output, ref):
+        return self._get("waveform", output, ref, 0)
+
+    def rp_GenAmp(self, output, value):
+        return self._set("amp", output, value)
+
+    def rp_GenGetAmp(self, output, ref):
+        return self._get("amp", output, ref, 1.0)
+
+    def rp_GenFreq(self, output, value):
+        return self._set("freq", output, value)
+
+    def rp_GenGetFreq(self, output, ref):
+        return self._get("freq", output, ref, 1000.0)
+
+    def rp_GenOffset(self, output, value):
+        return self._set("offset", output, value)
+
+    def rp_GenGetOffset(self, output, ref):
+        return self._get("offset", output, ref, 0.0)
 
     def rp_GenOutEnable(self, output):
-        LOG.debug("output %d signal generator enabled", output)
-        return 0
+        return self._set("sg_enabled", output, True)
 
     def rp_GenOutDisable(self, output):
-        LOG.debug("output %d signal generator disabled", output)
-        return 0
+        return self._set("sg_enabled", output, False)
+
+    def rp_GenOutIsEnabled(self, output, ref):
+        return self._get("sg_enabled", output, ref, True)
+
+    def rp_GenPOffsetEnable(self, output):
+        return self._set("poffset", output, True)
+
+    def rp_GenPOffsetDisable(self, output):
+        return self._set("poffset", output, False)
+
+    def rp_GenPOffsetIsEnabled(self, output, ref):
+        return self._get("poffset", output, ref, False)
 
     def rp_SaveLockboxConfig(self):
         LOG.debug("Lockbox configuration saved")
@@ -1207,118 +1409,15 @@ class MockRPLib():
         LOG.debug("Lockbox configuration loaded")
         return 0
 
-    def rp_PIDGetSetpoint(self, pid, setpoint):
-        LOG.debug("rp_PIDGetSetpoint called")
-        setpoint._obj.value = 1.0
-        return 0
-
-    def rp_PIDGetKp(self, pid, kp):
-        LOG.debug("rp_PIDGetKp called")
-        kp._obj.value = 0.1
-        return 0
-
-    def rp_PIDGetKi(self, pid, ki):
-        LOG.debug("rp_PIDGetKi called")
-        ki._obj.value = 10.0
-        return 0
-
-    def rp_PIDGetKd(self, pid, kd):
-        LOG.debug("rp_PIDGetKd called")
-        kd._obj.value = 1
-        return 0
-
-    def rp_PIDGetInverted(self, pid, inverted):
-        LOG.debug("rp_PIDGetInverted called")
-        inverted._obj.value = True
-        return 0
-
-    def rp_PIDGetHold(self, pid, hold):
-        LOG.debug("rp_PIDGetHold called")
-        hold._obj.value = True
-        return 0
-
-    def rp_PIDGetIntReset(self, pid, int_reset):
-        LOG.debug("rp_PIDGetIntReset called")
-        int_reset._obj.value = True
-        return 0
-
-    def rp_PIDGetResetWhenRailed(self, pid, int_auto):
-        LOG.debug("rp_PIDGetResetWhenRailed called")
-        int_auto._obj.value = True
-        return 0
-
-    def rp_PIDGetRelockMinimum(self, pid, relock_min):
-        LOG.debug("rp_PIDGetRelockMinimum called")
-        relock_min._obj.value = 0.0
-        return 0
-
-    def rp_PIDGetRelockMaximum(self, pid, relock_max):
-        LOG.debug("rp_PIDGetRelockMaximum called")
-        relock_max._obj.value = 7.0
-        return 0
-
-    def rp_PIDGetRelockStepsize(self, pid, relock_slew_rate):
-        LOG.debug("rp_PIDGetRelockStepsize called")
-        relock_slew_rate._obj.value = 500.0
-        return 0
-
-    def rp_PIDGetRelock(self, pid, relock_enabled):
-        LOG.debug("rp_PIDGetRelock called")
-        relock_enabled._obj.value = True
-        return 0
-
-    def rp_PIDGetRelockInput(self, pid, relock_input):
-        LOG.debug("rp_PIDGetRelockInput called")
-        relock_input._obj.value = 5
-        return 0
-
-    def rp_LimitGetMin(self, pid, limit_min):
-        LOG.debug("rp_LimitGetMin called")
-        limit_min._obj.value = -1.0
-        return 0
-
-    def rp_LimitGetMax(self, pid, limit_max):
-        LOG.debug("rp_LimitGetMax called")
-        limit_max._obj.value = 1.0
-        return 0
-
-    def rp_GenGetAmp(self, pid, amp):
-        LOG.debug("rp_GenGetAmp called")
-        amp._obj.value = 1.0
-        return 0
-
-    def rp_GenGetFreq(self, pid, freq):
-        LOG.debug("rp_GenGetFreq called")
-        freq._obj.value = 1000.0
-        return 0
-
-    def rp_GenGetOffset(self, pid, offset):
-        LOG.debug("rp_GenGetOffset called")
-        offset._obj.value = 0.0
-        return 0
-
-    def rp_GenGetWaveform(self, pid, waveform):
-        LOG.debug("rp_GenGetWaveform called")
-        waveform._obj.value = 0
-        return 0
-
-    def rp_GenOutIsEnabled(self, pid, sg_enabled):
-        LOG.debug("rp_GenOutIsEnabled called")
-        sg_enabled._obj.value = True
-        return 0
-
     def rp_ApinGetValue(self, ain, ain_voltage):
-        LOG.debug("rp_ApinGetValue called")
         ain_voltage._obj.value = 1.3
         return 0
 
     def rp_GetInVoltage(self, input, fast_input_voltage):
-        LOG.debug("rp_GetInVoltage called")
         fast_input_voltage._obj.value = 0.9
         return 0
 
     def rp_GetOutVoltage(self, input, fast_output_voltage):
-        LOG.debug("rp_GetOutVoltage called")
         fast_output_voltage._obj.value = 0.8
         return 0
 

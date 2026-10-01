@@ -18,6 +18,14 @@ monitor/test/test_lockstat
 monitor/test/lockbox-monitor-host
 monitor/test/readmon
 monitor/test/*.conf
+api/test/test_config
+api/test/test_pid
+api/test/test_lockbox
+api/test/build_info.h
+scpi-server/test/test_commands
+scpi-server/test/commands.inc
+fpga/sim/**/*.vvp
+fpga/sim/**/xsim.dir/
 *.swp
 **/prj/**/sdk
 build/

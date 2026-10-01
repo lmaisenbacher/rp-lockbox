@@ -148,7 +148,7 @@ int generate_setFrequency(rp_channel_t channel, float frequency) {
 int generate_getFrequency(rp_channel_t channel, float *frequency) {
     volatile ch_properties_t *ch_properties;
     getChannelPropertiesAddress(&ch_properties, channel);
-    *frequency = (float) round((ch_properties->counterStep * DAC_FREQUENCY) / (65536 * BUFFER_LENGTH));
+    *frequency = (float) ((ch_properties->counterStep * DAC_FREQUENCY) / (65536 * BUFFER_LENGTH));
     return RP_OK;
 }
 

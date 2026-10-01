@@ -19,6 +19,7 @@
 	}
     .output-group {
         display: inline-block;
+        vertical-align: top;
         padding: 5px;
     }
     .flex-container {
@@ -37,6 +38,21 @@
         height: 40px;
         font-size: 16px;
 	}
+    .pset-select {
+		width: 240px;
+        height: 40px;
+        font-size: 16px;
+	}
+    /* The column headers of the two parameter sets; the set in use is highlighted */
+    th.pset-col {
+        font-weight: normal;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+    th.pset-active {
+        background-color: #2196F3;
+        color: white;
+    }
     .button {
         text-align: center;
     }
@@ -114,19 +130,26 @@
         // Global variables
         var update_interval = 500;
         var update_interval_values = 100;
-        var spinner_pid_sp_name = ["#spinner_pid_11_sp", "#spinner_pid_21_sp", "#spinner_pid_12_sp", "#spinner_pid_22_sp"];
-        var spinner_pid_kp_name = ["#spinner_pid_11_kp", "#spinner_pid_21_kp", "#spinner_pid_12_kp", "#spinner_pid_22_kp"];
-        var spinner_pid_ki_name = ["#spinner_pid_11_ki", "#spinner_pid_21_ki", "#spinner_pid_12_ki", "#spinner_pid_22_ki"];
-        var spinner_pid_kd_name = ["#spinner_pid_11_kd", "#spinner_pid_21_kd", "#spinner_pid_12_kd", "#spinner_pid_22_kd"];
-        var spinner_pid_kii_name = ["#spinner_pid_11_kii", "#spinner_pid_21_kii", "#spinner_pid_12_kii", "#spinner_pid_22_kii"];
-        var spinner_pid_kg_name = ["#spinner_pid_11_kg", "#spinner_pid_21_kg", "#spinner_pid_12_kg", "#spinner_pid_22_kg"];
+        // The PIDs in the order of the library (rp_pid_t): the page's element
+        // ids carry these codes
+        var pid_codes = ["11", "12", "21", "22"];
+        // The parameters of a parameter set: the key in _get_parameters, the
+        // element id (param. set 1; + "_set2" for param. set 2) and the decimals shown
+        var pset_fields = [
+            ["setpoint", "spinner_pid_%_sp", 3],
+            ["kg", "spinner_pid_%_kg", 2],
+            ["kp", "spinner_pid_%_kp", 3],
+            ["ki", "spinner_pid_%_ki", 2],
+            ["kii", "spinner_pid_%_kii", 2],
+            ["kd", "spinner_pid_%_kd", 2],
+            ["relock_min", "spinner_relock_%_min", 3],
+            ["relock_max", "spinner_relock_%_max", 3],
+            ["holdoff", "spinner_relock_%_holdoff", 3]];
         var checkbox_pid_inv_name = ["#checkbox_pid_11_inv", "#checkbox_pid_21_inv", "#checkbox_pid_12_inv", "#checkbox_pid_22_inv"];
         var checkbox_pid_hold_name = ["#checkbox_pid_11_hold", "#checkbox_pid_21_hold", "#checkbox_pid_12_hold", "#checkbox_pid_22_hold"];
         var checkbox_pid_int_res_name = ["#checkbox_pid_11_int_res", "#checkbox_pid_21_int_res", "#checkbox_pid_12_int_res", "#checkbox_pid_22_int_res"];
         var checkbox_pid_int_auto_reset_name = ["#checkbox_pid_11_int_auto_reset", "#checkbox_pid_21_int_auto_reset", "#checkbox_pid_12_int_auto_reset", "#checkbox_pid_22_int_auto_reset"];
         var checkbox_pid_enabled_name = ["#checkbox_pid_11_enabled", "#checkbox_pid_21_enabled", "#checkbox_pid_12_enabled", "#checkbox_pid_22_enabled"];
-        var spinner_relock_min_name = ["#spinner_relock_11_min", "#spinner_relock_21_min", "#spinner_relock_12_min", "#spinner_relock_22_min"];
-        var spinner_relock_max_name = ["#spinner_relock_11_max", "#spinner_relock_21_max", "#spinner_relock_12_max", "#spinner_relock_22_max"];
         var spinner_relock_slew_rate_name = ["#spinner_relock_11_slew_rate", "#spinner_relock_21_slew_rate", "#spinner_relock_12_slew_rate", "#spinner_relock_22_slew_rate"];
         var checkbox_relock_enabled_name = ["#checkbox_relock_11_enabled", "#checkbox_relock_21_enabled", "#checkbox_relock_12_enabled", "#checkbox_relock_22_enabled"];
         var checkbox_lso_enabled_name = ["#checkbox_lso_11_enabled", "#checkbox_lso_21_enabled", "#checkbox_lso_12_enabled", "#checkbox_lso_22_enabled"];
@@ -142,45 +165,36 @@
         var drops_name = ["#drops_11", "#drops_21", "#drops_12", "#drops_22"];
         var unlocked_name = ["#unlocked_11", "#unlocked_21", "#unlocked_12", "#unlocked_22"];
 
-        function set_setpoint(pid, setpoint) {
-            $.post("_set_setpoint", {
+        // A parameter of a parameter set: `param` a key of pset_fields, `pset`
+        // 0 (param. set 1) or 1 (param. set 2)
+        var pset_routes = {setpoint: "_set_setpoint", kg: "_set_kg", kp: "_set_kp", ki: "_set_ki",
+                           kii: "_set_kii", kd: "_set_kd", relock_min: "_set_relock_min",
+                           relock_max: "_set_relock_max", holdoff: "_set_holdoff"};
+        function set_pset_param(pid, pset, param, value) {
+            var data = {pid: pid, set: pset};
+            data[param] = value;
+            $.post(pset_routes[param], data);
+        };
+
+        function set_pset_mode(pid, mode) {
+            $.post("_set_pset_mode", {
                 pid: pid,
-                setpoint: setpoint,
+                mode: mode,
             });
         };
 
-		function set_kp(pid, kp) {
-            $.post("_set_kp", {
+        function set_pset_input(pid, din) {
+            $.post("_set_pset_input", {
                 pid: pid,
-                kp: kp,
+                din: din,
             });
         };
 
-		function set_ki(pid, ki) {
-            $.post("_set_ki", {
+        // Copy parameter set `from` (0 or 1) of a PID into its other set
+        function copy_params(pid, from) {
+            $.post("_copy_params", {
                 pid: pid,
-                ki: ki,
-            });
-        };
-
-		function set_kd(pid, kd) {
-            $.post("_set_kd", {
-                pid: pid,
-                kd: kd,
-            });
-        };
-
-		function set_kii(pid, kii) {
-            $.post("_set_kii", {
-                pid: pid,
-                kii: kii,
-            });
-        };
-
-		function set_kg(pid, kg) {
-            $.post("_set_kg", {
-                pid: pid,
-                kg: kg,
+                from: from,
             });
         };
 
@@ -216,20 +230,6 @@
 			$.post("_set_pid_enabled", {
 				pid: pid,
 				pid_enabled: pid_enabled,
-			});
-		};
-
-		function set_relock_min(pid, relock_min) {
-			$.post("_set_relock_min", {
-				pid: pid,
-				relock_min: relock_min,
-			});
-		};
-
-		function set_relock_max(pid, relock_max) {
-			$.post("_set_relock_max", {
-				pid: pid,
-				relock_max: relock_max,
 			});
 		};
 
@@ -347,175 +347,59 @@
             });
         };
 
+        // Toggle a PID between lock and scan (`rp_PIDSetLock`). The PID locks
+        // while its output is on and it is neither held nor its integrators
+        // reset, as `rp_PIDGetLock` reads it; the code's first digit is the
+        // output whose generator scans.
         function toggle_lock_scan(event, ui) {
-            var pid;
-            var output;
-            var enabled;
-            switch(event.target.id) {
-                case "button_toggle_11":
-                    pid = 0;
-                    output = 0;
-                    enabled = $("#checkbox_sg_1_enabled").prop("checked");
-                    $("#checkbox_sg_1_enabled").prop("checked", !enabled);
-                    $("#checkbox_pid_11_hold").prop("checked", !enabled);
-                    $("#checkbox_pid_11_int_res").prop("checked", !enabled);
-                    break;
-                case "button_toggle_12":
-                    pid = 1;
-                    output = 0;
-                    enabled = $("#checkbox_sg_1_enabled").prop("checked");
-                    $("#checkbox_sg_1_enabled").prop("checked", !enabled);
-                    $("#checkbox_pid_12_hold").prop("checked", !enabled);
-                    $("#checkbox_pid_12_int_res").prop("checked", !enabled);
-                    break;
-                case "button_toggle_21":
-                    pid = 2;
-                    output = 1;
-                    enabled = $("#checkbox_sg_2_enabled").prop("checked");
-                    $("#checkbox_sg_2_enabled").prop("checked", !enabled);
-                    $("#checkbox_pid_21_hold").prop("checked", !enabled);
-                    $("#checkbox_pid_21_int_res").prop("checked", !enabled);
-                    break;
-                case "button_toggle_22":
-                    pid = 3;
-                    output = 1;
-                    enabled = $("#checkbox_sg_2_enabled").prop("checked");
-                    $("#checkbox_sg_2_enabled").prop("checked", !enabled);
-                    $("#checkbox_pid_22_hold").prop("checked", !enabled);
-                    $("#checkbox_pid_22_int_res").prop("checked", !enabled);
-                    break;
-                default:
-                    pid = 0;
-            }
-            set_sg_enabled(output, !enabled);
-            set_int_reset(pid, !enabled);
-            set_hold(pid, !enabled);
+            var pid = pid_of(event.target.id);
+            var code = pid_codes[pid];
+            var hold = $("#checkbox_pid_" + code + "_hold");
+            var int_res = $("#checkbox_pid_" + code + "_int_res");
+            var enabled = $("#checkbox_pid_" + code + "_enabled");
+            var lock = hold.prop("checked") || int_res.prop("checked") || !enabled.prop("checked");
+            $("#checkbox_sg_" + code[0] + "_enabled").prop("checked", !lock);
+            hold.prop("checked", !lock);
+            int_res.prop("checked", !lock);
+            enabled.prop("checked", lock);
+            $.post("_set_lock", {
+                pid: pid,
+                lock: lock,
+            });
         };
 
-        function setpoint_changed(event, ui) {
-            var pid;
-            switch(event.target.id) {
-                case "spinner_pid_11_sp":
-                    pid = 0;
-                    break;
-                case "spinner_pid_12_sp":
-                    pid = 1;
-                    break;
-                case "spinner_pid_21_sp":
-                    pid = 2;
-                    break;
-                case "spinner_pid_22_sp":
-                    pid = 3;
-                    break;
-                default:
-                    pid = 0;
-            }
-            set_setpoint(pid, $(event.target).val());
+        // The PID (library order) of an element id that carries its code,
+        // e.g. "spinner_pid_21_kp_set2" -> 2
+        function pid_of(id) {
+            var match = id.match(/_(11|12|21|22)(_|$)/);
+            return match ? pid_codes.indexOf(match[1]) : 0;
         }
 
-        function kp_changed(event, ui) {
-            var pid;
-            switch(event.target.id) {
-                case "spinner_pid_11_kp":
-                    pid = 0;
-                    break;
-                case "spinner_pid_12_kp":
-                    pid = 1;
-                    break;
-                case "spinner_pid_21_kp":
-                    pid = 2;
-                    break;
-                case "spinner_pid_22_kp":
-                    pid = 3;
-                    break;
-                default:
-                    pid = 0;
+        // A spinner of a parameter of a parameter set
+        function pset_param_changed(event, ui) {
+            var id = event.target.id;
+            var pset = id.endsWith("_set2") ? 1 : 0;
+            var stem = id.replace(/_(11|12|21|22)(_|$)/, "_%$2").replace(/_set2$/, "");
+            for (var k = 0; k < pset_fields.length; k++) {
+                if (pset_fields[k][1] == stem) {
+                    set_pset_param(pid_of(id), pset, pset_fields[k][0], $(event.target).val());
+                    return;
+                }
             }
-            set_kp(pid, $(event.target).val());
         }
 
-        function ki_changed(event, ui) {
-            var pid;
-            switch(event.target.id) {
-                case "spinner_pid_11_ki":
-                    pid = 0;
-                    break;
-                case "spinner_pid_12_ki":
-                    pid = 1;
-                    break;
-                case "spinner_pid_21_ki":
-                    pid = 2;
-                    break;
-                case "spinner_pid_22_ki":
-                    pid = 3;
-                    break;
-                default:
-                    pid = 0;
-            }
-            set_ki(pid, $(event.target).val());
+        function pset_mode_changed(event, ui) {
+            set_pset_mode(pid_of(event.target.id), $(event.target).val());
         }
 
-        function kd_changed(event, ui) {
-            var pid;
-            switch(event.target.id) {
-                case "spinner_pid_11_kd":
-                    pid = 0;
-                    break;
-                case "spinner_pid_12_kd":
-                    pid = 1;
-                    break;
-                case "spinner_pid_21_kd":
-                    pid = 2;
-                    break;
-                case "spinner_pid_22_kd":
-                    pid = 3;
-                    break;
-                default:
-                    pid = 0;
-            }
-            set_kd(pid, $(event.target).val());
+        function pset_input_changed(event, ui) {
+            set_pset_input(pid_of(event.target.id), $(event.target).val());
         }
 
-        function kii_changed(event, ui) {
-            var pid;
-            switch(event.target.id) {
-                case "spinner_pid_11_kii":
-                    pid = 0;
-                    break;
-                case "spinner_pid_12_kii":
-                    pid = 1;
-                    break;
-                case "spinner_pid_21_kii":
-                    pid = 2;
-                    break;
-                case "spinner_pid_22_kii":
-                    pid = 3;
-                    break;
-                default:
-                    pid = 0;
-            }
-            set_kii(pid, $(event.target).val());
-        }
-
-        function kg_changed(event, ui) {
-            var pid;
-            switch(event.target.id) {
-                case "spinner_pid_11_kg":
-                    pid = 0;
-                    break;
-                case "spinner_pid_12_kg":
-                    pid = 1;
-                    break;
-                case "spinner_pid_21_kg":
-                    pid = 2;
-                    break;
-                case "spinner_pid_22_kg":
-                    pid = 3;
-                    break;
-                default:
-                    pid = 0;
-            }
-            set_kg(pid, $(event.target).val());
+        // The buttons "button_copy_<code>_set1" and "..._set2" name the set they copy
+        function copy_clicked(event, ui) {
+            var id = event.currentTarget.id;
+            copy_params(pid_of(id), id.endsWith("_set2") ? 1 : 0);
         }
 
         function inverted_changed(event, ui) {
@@ -623,47 +507,6 @@
             set_pid_enabled(pid, $(event.target).prop("checked"));
         }
 
-		function relock_min_changed(event, ui) {
-            var pid;
-            switch(event.target.id) {
-                case "spinner_relock_11_min":
-                    pid = 0;
-                    break;
-                case "spinner_relock_12_min":
-                    pid = 1;
-                    break;
-                case "spinner_relock_21_min":
-                    pid = 2;
-                    break;
-                case "spinner_relock_22_min":
-                    pid = 3;
-                    break;
-                default:
-                    pid = 0;
-            }
-            set_relock_min(pid, $(event.target).val());
-        }
-
-		function relock_max_changed(event, ui) {
-            var pid;
-            switch(event.target.id) {
-                case "spinner_relock_11_max":
-                    pid = 0;
-                    break;
-                case "spinner_relock_12_max":
-                    pid = 1;
-                    break;
-                case "spinner_relock_21_max":
-                    pid = 2;
-                    break;
-                case "spinner_relock_22_max":
-                    pid = 3;
-                    break;
-                default:
-                    pid = 0;
-            }
-            set_relock_max(pid, $(event.target).val());
-        }
 
 		function relock_slew_rate_changed(event, ui) {
             var pid;
@@ -961,18 +804,59 @@
             else {
                 $(".options-item").show();
             }
+            show_param_sets();
+        }
+
+        // What the last parameter poll said about the parameter sets: whether
+        // the FPGA image has them, and the set in use of each PID (by code)
+        var param_sets_available = false;
+        var pset_modes = {};
+        // The holdoffs (ms) of both sets of each PID (by code)
+        var pset_holdoffs = {};
+
+        // The param. set 2 column and the parameter set rows of a PID show
+        // with an FPGA image that has them, while the option asks for them or
+        // the PID uses anything but param. set 1, so nothing in use is hidden
+        function show_param_sets() {
+            var show = $("#checkbox_show_psets").prop("checked");
+            $("#options_psets").toggle(param_sets_available && !$("#checkbox_opt_hide").prop("checked"));
+            for (var p = 0; p < 4; p++) {
+                var code = pid_codes[p];
+                $("#output_group_" + code + " .pset-only").toggle(
+                    param_sets_available && (show || pset_modes[code] != 0));
+            }
+        }
+
+        function show_psets_changed(event, ui) {
+            localStorage.setItem("show_param_sets", event.target.checked ? "1" : "0");
+            show_param_sets();
         }
 
         function update_parameters() {
 
             $.getJSON("_get_parameters").done(function(data){
 
-                var sp_values = [data.pid_11_setpoint, data.pid_21_setpoint, data.pid_12_setpoint, data.pid_22_setpoint];
-                var kp_values = [data.pid_11_kp, data.pid_21_kp, data.pid_12_kp, data.pid_22_kp];
-                var ki_values = [data.pid_11_ki, data.pid_21_ki, data.pid_12_ki, data.pid_22_ki];
-                var kd_values = [data.pid_11_kd, data.pid_21_kd, data.pid_12_kd, data.pid_22_kd];
-                var kii_values = [data.pid_11_kii, data.pid_21_kii, data.pid_12_kii, data.pid_22_kii];
-                var kg_values = [data.pid_11_kg, data.pid_21_kg, data.pid_12_kg, data.pid_22_kg];
+                // Both parameter sets (see show_param_sets for what shows)
+                param_sets_available = data.param_sets;
+                for (var p = 0; p < 4; p++) {
+                    var code = pid_codes[p];
+                    for (var k = 0; k < pset_fields.length; k++) {
+                        var key = "pid_" + code + "_" + pset_fields[k][0];
+                        var id = "#" + pset_fields[k][1].replace("%", code);
+                        if (data[key] !== null) {
+                            $(id).not(":focus").val(data[key].toFixed(pset_fields[k][2]));
+                        }
+                        if (data[key + "_set2"] !== null) {
+                            $(id + "_set2").not(":focus").val(data[key + "_set2"].toFixed(pset_fields[k][2]));
+                        }
+                    }
+                    pset_modes[code] = data["pid_" + code + "_pset_mode"];
+                    pset_holdoffs[code] = [data["pid_" + code + "_holdoff"], data["pid_" + code + "_holdoff_set2"]];
+                    $("#pset_mode_" + code).not(":focus").val(String(pset_modes[code]));
+                    $("#pset_input_" + code).not(":focus").val(String(data["pid_" + code + "_pset_input"]));
+                }
+                show_param_sets();
+
                 var inv_values = [data.pid_11_inverted, data.pid_21_inverted, data.pid_12_inverted, data.pid_22_inverted];
                 var hold_values = [data.pid_11_hold, data.pid_21_hold, data.pid_12_hold, data.pid_22_hold];
                 var int_res_values = [data.pid_11_int_res, data.pid_21_int_res, data.pid_12_int_res, data.pid_22_int_res];
@@ -980,8 +864,6 @@
                 var enabled_values = [data.pid_11_enabled, data.pid_21_enabled, data.pid_12_enabled, data.pid_22_enabled];
                 var lso_enabled_values = [data.pid_11_lso_enabled, data.pid_21_lso_enabled, data.pid_12_lso_enabled, data.pid_22_lso_enabled];
                 var ext_reset_enabled_values = [data.pid_11_ext_reset_enabled, data.pid_21_ext_reset_enabled, data.pid_12_ext_reset_enabled, data.pid_22_ext_reset_enabled];
-                var relock_min_values = [data.pid_11_relock_min, data.pid_21_relock_min, data.pid_12_relock_min, data.pid_22_relock_min];
-                var relock_max_values = [data.pid_11_relock_max, data.pid_21_relock_max, data.pid_12_relock_max, data.pid_22_relock_max];
                 var relock_slew_rate_values = [data.pid_11_relock_slew_rate, data.pid_21_relock_slew_rate, data.pid_12_relock_slew_rate, data.pid_22_relock_slew_rate];
                 var relock_enabled_values = [data.pid_11_relock_enabled, data.pid_21_relock_enabled, data.pid_12_relock_enabled, data.pid_22_relock_enabled];
                 var relock_input_values = [data.pid_11_relock_input, data.pid_21_relock_input, data.pid_12_relock_input, data.pid_22_relock_input];
@@ -990,12 +872,6 @@
                 var sg_amp_offset_values = [data.sg_1_amp, data.sg_2_amp, data.sg_1_offset, data.sg_2_offset];
 
                 for(i=0; i<4; i++){
-                    $(spinner_pid_sp_name[i]).not(":focus").val(sp_values[i].toFixed(3));
-                    $(spinner_pid_kp_name[i]).not(":focus").val(kp_values[i].toFixed(3));
-                    $(spinner_pid_ki_name[i]).not(":focus").val(ki_values[i].toFixed(2));
-                    $(spinner_pid_kd_name[i]).not(":focus").val(kd_values[i].toFixed(2));
-                    $(spinner_pid_kii_name[i]).not(":focus").val(kii_values[i].toFixed(2));
-                    $(spinner_pid_kg_name[i]).not(":focus").val(kg_values[i].toFixed(2));
                     $(checkbox_pid_inv_name[i]).not(":focus").prop("checked", inv_values[i]);
                     $(checkbox_pid_hold_name[i]).not(":focus").prop("checked", hold_values[i]);
                     $(checkbox_pid_int_res_name[i]).not(":focus").prop("checked", int_res_values[i]);
@@ -1003,8 +879,6 @@
                     $(checkbox_pid_enabled_name[i]).not(":focus").prop("checked", enabled_values[i]);
                     $(checkbox_lso_enabled_name[i]).not(":focus").prop("checked", lso_enabled_values[i]);
                     $(checkbox_ext_reset_enabled_name[i]).not(":focus").prop("checked", ext_reset_enabled_values[i]);
-                    $(spinner_relock_min_name[i]).not(":focus").val(relock_min_values[i].toFixed(3));
-                    $(spinner_relock_max_name[i]).not(":focus").val(relock_max_values[i].toFixed(3));
                     $(spinner_relock_slew_rate_name[i]).not(":focus").val(relock_slew_rate_values[i].toFixed(2));
                     $(checkbox_relock_enabled_name[i]).not(":focus").prop("checked", relock_enabled_values[i]);
                     $(relock_input_name[i]).not(":focus").val(relock_input_values[i]);
@@ -1074,7 +948,9 @@
             $(lock_status_name[i]).val((m.locked ? "Locked" : "Unlocked") + " for " + format_duration(m.lock_age_s));
             if (m.servo_on) {
                 $(servo_name[i]).val("since " + clock_before(m.servo_age_s) + " (" + format_duration(m.servo_age_s) + ")");
-                $(drops_name[i]).val(m.drops);
+                // with how many of them were shorter than the monitor's polls
+                // (seen by the FPGA's counter only)
+                $(drops_name[i]).val(m.short_drops ? m.drops + " (" + m.short_drops + " < 1 ms)" : m.drops);
                 $(unlocked_name[i]).val(m.drops > 0
                     ? format_drop(m.unlocked_s) + " (longest " + format_drop(m.longest_s) + ")"
                     : "-");
@@ -1113,9 +989,44 @@
             $("#monitor_merge").val(monitor.merge_ms.toFixed(0) + " ms locked");
         }
 
+        // The parameter set in use by the PID with code `code` (`pset` null
+        // without the parameter sets): the readouts and the highlighted
+        // column headers
+        function show_pset(code, pset) {
+            var counts = "#pset_switches_" + code + ", #pset_left_" + code + ", #pset_out_" + code;
+            if (!pset) {
+                $("#pset_active_" + code + ", #pset_level_" + code + ", #pset_violated_" + code).val("-");
+                $(counts).val("-");
+                $(".pset-col-" + code).removeClass("pset-active");
+                return;
+            }
+            // The FPGA's counts since it was loaded
+            if (pset.counters) {
+                $("#pset_switches_" + code).val(pset.counters.switches);
+                $("#pset_left_" + code).val(pset.counters.holdoffs_left);
+                $("#pset_out_" + code).val(pset.counters.holdoffs_out);
+            } else {
+                $(counts).val("-");
+            }
+            $("#pset_active_" + code).val((pset.active ? "Param. set 2" : "Param. set 1") + (pset.holdoff ? " (holdoff)" : ""));
+            $("#pset_level_" + code).val(pset.level ? "high" : "low");
+            // The holdoff after the last switch is the one of the set in use
+            var holdoffs = pset_holdoffs[code];
+            if (holdoffs && !holdoffs[pset.active ? 1 : 0]) {
+                $("#pset_violated_" + code).val("no holdoff set");
+            } else {
+                $("#pset_violated_" + code).val(pset.violated ? "input left the window" : "input stayed in the window");
+            }
+            $("#col_set1_pid_" + code + ", #col_set1_mon_" + code).toggleClass("pset-active", !pset.active);
+            $("#col_set2_pid_" + code + ", #col_set2_mon_" + code).toggleClass("pset-active", !!pset.active);
+        }
+
         function update_values() {
             var relock_input_value = [0, 0, 0, 0];
             $.getJSON("_get_values").done(function(data){
+                for (var p = 0; p < 4; p++) {
+                    show_pset(pid_codes[p], data["pid_" + pid_codes[p] + "_pset"]);
+                }
                 var data_values = [data.ain0_voltage, data.ain1_voltage, data.ain2_voltage, data.ain3_voltage];
                 var lock_status_values = [data.pid_11_lock_status, data.pid_21_lock_status, data.pid_12_lock_status, data.pid_22_lock_status];
                 var monitor_values = [data.pid_11_monitor, data.pid_21_monitor, data.pid_12_monitor, data.pid_22_monitor];
@@ -1187,6 +1098,12 @@
             max: 7.
             });
         $( ".relock_limit_min_spinner, .relock_limit_max_spinner" ).width(105);
+		$( ".holdoff_spinner" ).spinner({
+            step: 0.1,
+            min: 0.,
+            max: 34359.
+            });
+        $( ".holdoff_spinner" ).width(105);
 		$( ".slew_rate_spinner" ).spinner({
             step: 1.,
             min: 0.058,
@@ -1224,12 +1141,10 @@
         $("#select_op_mode").on("selectmenuselect", op_mode_changed);
         $("#select_op_mode").trigger("selectmenuselect");
 
-		$( ".sp_spinner" ).on("spinstop", setpoint_changed);
-		$( ".kp_spinner" ).on("spinstop", kp_changed);
-		$( ".ki_spinner" ).on("spinstop", ki_changed);
-		$( ".kd_spinner" ).on("spinstop", kd_changed);
-        $( ".kii_spinner" ).on("spinstop", kii_changed);
-        $( ".kg_spinner" ).on("spinstop", kg_changed);
+		$( ".pset_spinner" ).on("spinstop", pset_param_changed);
+        $( ".pset-mode-select" ).on("change", pset_mode_changed);
+        $( ".pset-input-select" ).on("change", pset_input_changed);
+        $( ".copy-button" ).on("click", copy_clicked);
 
         $( ".inv_checkbox" ).on("change", inverted_changed);
         $( ".hold_checkbox" ).on("change", hold_changed);
@@ -1238,8 +1153,6 @@
 		$( ".pid_enabled_checkbox").on("change", pid_enabled_changed);
 
 		$( ".relock_enabled_checkbox").on("change", relock_enabled_changed);
-        $( ".relock_limit_min_spinner").on("spinstop", relock_min_changed);
-        $( ".relock_limit_max_spinner").on("spinstop", relock_max_changed);
         $( ".slew_rate_spinner").on("spinstop", relock_slew_rate_changed);
         $(".relock-select").on("change", relock_input_changed);
 		$( ".lso_enabled_checkbox").on("change", lso_enabled_changed);
@@ -1269,6 +1182,10 @@
         $("#button_toggle_22").on("click", toggle_lock_scan);
 
         $( "#checkbox_opt_hide").on("change", opt_hide_changed);
+        // Both parameter sets hidden unless asked for (a setting of this browser)
+        $("#checkbox_show_psets").prop("checked", localStorage.getItem("show_param_sets") === "1");
+        $("#checkbox_show_psets").on("change", show_psets_changed);
+        show_param_sets();
 
 
         // Start the update loop
@@ -1306,32 +1223,100 @@
 				<a>Output voltage (V)</a>
                 <output id="fast_output_11_voltage">0</output>
 
+                <fieldset class="pset-only">
+                    <legend><h3>Parameter set</h3></legend>
+                    <table>
+                        <tr>
+                            <td><label for="pset_mode_11">Set in use</label></td>
+                            <td>
+                                <select id="pset_mode_11" class="pset-select pset-mode-select">
+                                    <option value="0">Param. set 1</option>
+                                    <option value="1">Param. set 2</option>
+                                    <option value="2">Input high &rarr; param. set 2</option>
+                                    <option value="3">Input high &rarr; param. set 1</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="pset_input_11">Digital input</label></td>
+                            <td>
+                                <select id="pset_input_11" class="pset-select pset-input-select">
+                                    <option value="13">DIO5_P</option>
+                                    <option value="14">DIO6_P</option>
+                                    <option value="15">DIO7_P</option>
+                                    <option value="16">DIO0_N</option>
+                                    <option value="21">DIO5_N</option>
+                                    <option value="22">DIO6_N</option>
+                                    <option value="23">DIO7_N</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><a>Active set</a></td>
+                            <td><output id="pset_active_11">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Input level</a></td>
+                            <td><output id="pset_level_11">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Last holdoff</a></td>
+                            <td><output id="pset_violated_11">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Switches</a></td>
+                            <td><output id="pset_switches_11">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Window left in holdoff</a></td>
+                            <td><output id="pset_left_11">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Holdoff ended outside</a></td>
+                            <td><output id="pset_out_11">-</output></td>
+                        </tr>
+                    </table>
+                    <button id="button_copy_11_set1" class="button copy-button">Copy param. set 1 &rarr; 2</button>
+                    <button id="button_copy_11_set2" class="button copy-button">Copy param. set 2 &rarr; 1</button>
+                </fieldset>
+
                 <fieldset>
                     <legend><h3>PID</h3></legend>
                     <table>
+                        <tr class="pset-only">
+                            <td></td>
+                            <th id="col_set1_pid_11" class="pset-col pset-col-11">Param. set 1</th>
+                            <th id="col_set2_pid_11" class="pset-col pset-col-11">Param. set 2</th>
+                        </tr>
                         <tr>
                             <td><label for="spinner_pid_11_sp">Setpoint (V)</label></td>
-                            <td><input id="spinner_pid_11_sp" class="sp_spinner"></td>
+                            <td><input id="spinner_pid_11_sp" class="sp_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_11_sp_set2" class="sp_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_11_kg">Global gain</label></td>
-                            <td><input id="spinner_pid_11_kg" class="kg_spinner"></td>
+                            <td><input id="spinner_pid_11_kg" class="kg_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_11_kg_set2" class="kg_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_11_kp">KP</label></td>
-                            <td><input id="spinner_pid_11_kp" class="kp_spinner"></td>
+                            <td><input id="spinner_pid_11_kp" class="kp_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_11_kp_set2" class="kp_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_11_ki">KI (1/s)</label></td>
-                            <td><input id="spinner_pid_11_ki" class="ki_spinner"></td>
+                            <td><input id="spinner_pid_11_ki" class="ki_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_11_ki_set2" class="ki_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_11_kii">KII (1/s)</label></td>
-                            <td><input id="spinner_pid_11_kii" class="kii_spinner"></td>
+                            <td><input id="spinner_pid_11_kii" class="kii_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_11_kii_set2" class="kii_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_11_kd">KD (ns)</label></td>
-                            <td><input id="spinner_pid_11_kd" class="kd_spinner"></td>
+                            <td><input id="spinner_pid_11_kd" class="kd_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_11_kd_set2" class="kd_spinner pset_spinner"></td>
                         </tr>
                     </table>
 
@@ -1361,17 +1346,29 @@
                     <legend><h3>Lock monitoring</h3></legend>
 
                     <table>
+                        <tr class="pset-only">
+                            <td></td>
+                            <th id="col_set1_mon_11" class="pset-col pset-col-11">Param. set 1</th>
+                            <th id="col_set2_mon_11" class="pset-col pset-col-11">Param. set 2</th>
+                        </tr>
                         <tr>
                             <td><label for="spinner_relock_11_min">Min (V)</label></td>
-                            <td><input id="spinner_relock_11_min" class="relock_limit_min_spinner"></td>
+                            <td><input id="spinner_relock_11_min" class="relock_limit_min_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_relock_11_min_set2" class="relock_limit_min_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_relock_11_max">Max (V)</label></td>
-                            <td><input id="spinner_relock_11_max" class="relock_limit_max_spinner"></td>
+                            <td><input id="spinner_relock_11_max" class="relock_limit_max_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_relock_11_max_set2" class="relock_limit_max_spinner pset_spinner"></td>
+                        </tr>
+                        <tr class="pset-only">
+                            <td><label for="spinner_relock_11_holdoff">Holdoff after switch (ms)</label></td>
+                            <td><input id="spinner_relock_11_holdoff" class="holdoff_spinner pset_spinner"></td>
+                            <td><input id="spinner_relock_11_holdoff_set2" class="holdoff_spinner pset_spinner"></td>
                         </tr>
 						<tr>
                             <td><label for="relock_11_input">Input</label></td>
-                            <td>
+                            <td colspan="2">
                                 <select id="relock_11_input" class="relock-select">
                                     <option value="4">AIN0</option>
                                     <option value="5">AIN1</option>
@@ -1382,23 +1379,23 @@
                         </tr>
                         <tr>
                             <td><a>Input voltage (V)</a></td>
-                            <td><output id="ain_voltage_11">0</output></td>
+                            <td colspan="2"><output id="ain_voltage_11">0</output></td>
                         </tr>
                         <tr>
                             <td><a>Lock status</a></td>
-                            <td><output id="lock_status_11">0</output></td>
+                            <td colspan="2"><output id="lock_status_11">0</output></td>
                         </tr>
                         <tr>
                             <td><a>Servo on</a></td>
-                            <td><output id="servo_11">-</output></td>
+                            <td colspan="2"><output id="servo_11">-</output></td>
                         </tr>
                         <tr>
                             <td><a>Unlocks since servo on</a></td>
-                            <td><output id="drops_11">-</output></td>
+                            <td colspan="2"><output id="drops_11">-</output></td>
                         </tr>
                         <tr>
                             <td><a>Unlocked since servo on</a></td>
-                            <td><output id="unlocked_11">-</output></td>
+                            <td colspan="2"><output id="unlocked_11">-</output></td>
                         </tr>
                     </table>
 
@@ -1445,6 +1442,8 @@
                                 <select id="ext_reset_11_input" class="ext_reset_input_select">
                                     <option value="13">DIO5_P</option>
                                     <option value="14">DIO6_P</option>
+                                    <option value="15">DIO7_P</option>
+                                    <option value="16">DIO0_N</option>
                                 </select>
                             </td>
                         </tr>
@@ -1466,32 +1465,100 @@
 
 				<a>Output voltage (V)</a>
                 <output id="fast_output_21_voltage">0</output>
+                <fieldset class="pset-only">
+                    <legend><h3>Parameter set</h3></legend>
+                    <table>
+                        <tr>
+                            <td><label for="pset_mode_21">Set in use</label></td>
+                            <td>
+                                <select id="pset_mode_21" class="pset-select pset-mode-select">
+                                    <option value="0">Param. set 1</option>
+                                    <option value="1">Param. set 2</option>
+                                    <option value="2">Input high &rarr; param. set 2</option>
+                                    <option value="3">Input high &rarr; param. set 1</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="pset_input_21">Digital input</label></td>
+                            <td>
+                                <select id="pset_input_21" class="pset-select pset-input-select">
+                                    <option value="13">DIO5_P</option>
+                                    <option value="14">DIO6_P</option>
+                                    <option value="15">DIO7_P</option>
+                                    <option value="16">DIO0_N</option>
+                                    <option value="21">DIO5_N</option>
+                                    <option value="22">DIO6_N</option>
+                                    <option value="23">DIO7_N</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><a>Active set</a></td>
+                            <td><output id="pset_active_21">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Input level</a></td>
+                            <td><output id="pset_level_21">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Last holdoff</a></td>
+                            <td><output id="pset_violated_21">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Switches</a></td>
+                            <td><output id="pset_switches_21">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Window left in holdoff</a></td>
+                            <td><output id="pset_left_21">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Holdoff ended outside</a></td>
+                            <td><output id="pset_out_21">-</output></td>
+                        </tr>
+                    </table>
+                    <button id="button_copy_21_set1" class="button copy-button">Copy param. set 1 &rarr; 2</button>
+                    <button id="button_copy_21_set2" class="button copy-button">Copy param. set 2 &rarr; 1</button>
+                </fieldset>
+
                 <fieldset>
                     <legend><h3>PID</h3></legend>
                     <table>
+                        <tr class="pset-only">
+                            <td></td>
+                            <th id="col_set1_pid_21" class="pset-col pset-col-21">Param. set 1</th>
+                            <th id="col_set2_pid_21" class="pset-col pset-col-21">Param. set 2</th>
+                        </tr>
                         <tr>
                             <td><label for="spinner_pid_21_sp">Setpoint (V)</label></td>
-                            <td><input id="spinner_pid_21_sp" class="sp_spinner"></td>
+                            <td><input id="spinner_pid_21_sp" class="sp_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_21_sp_set2" class="sp_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_21_kg">Global gain</label></td>
-                            <td><input id="spinner_pid_21_kg" class="kg_spinner"></td>
+                            <td><input id="spinner_pid_21_kg" class="kg_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_21_kg_set2" class="kg_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_21_kp">KP</label></td>
-                            <td><input id="spinner_pid_21_kp" class="kp_spinner"></td>
+                            <td><input id="spinner_pid_21_kp" class="kp_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_21_kp_set2" class="kp_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_21_ki">KI (1/s)</label></td>
-                            <td><input id="spinner_pid_21_ki" class="ki_spinner"></td>
+                            <td><input id="spinner_pid_21_ki" class="ki_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_21_ki_set2" class="ki_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_21_kii">KII (1/s)</label></td>
-                            <td><input id="spinner_pid_21_kii" class="kii_spinner"></td>
+                            <td><input id="spinner_pid_21_kii" class="kii_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_21_kii_set2" class="kii_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_21_kd">KD (ns)</label></td>
-                            <td><input id="spinner_pid_21_kd" class="kd_spinner"></td>
+                            <td><input id="spinner_pid_21_kd" class="kd_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_21_kd_set2" class="kd_spinner pset_spinner"></td>
                         </tr>
                     </table>
 
@@ -1521,17 +1588,29 @@
                     <legend><h3>Lock monitoring</h3></legend>
 
                     <table>
+                        <tr class="pset-only">
+                            <td></td>
+                            <th id="col_set1_mon_21" class="pset-col pset-col-21">Param. set 1</th>
+                            <th id="col_set2_mon_21" class="pset-col pset-col-21">Param. set 2</th>
+                        </tr>
                         <tr>
                             <td><label for="spinner_relock_21_min">Min (V)</label></td>
-                            <td><input id="spinner_relock_21_min" class="relock_limit_min_spinner"></td>
+                            <td><input id="spinner_relock_21_min" class="relock_limit_min_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_relock_21_min_set2" class="relock_limit_min_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_relock_21_max">Max (V)</label></td>
-                            <td><input id="spinner_relock_21_max" class="relock_limit_max_spinner"></td>
+                            <td><input id="spinner_relock_21_max" class="relock_limit_max_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_relock_21_max_set2" class="relock_limit_max_spinner pset_spinner"></td>
+                        </tr>
+                        <tr class="pset-only">
+                            <td><label for="spinner_relock_21_holdoff">Holdoff after switch (ms)</label></td>
+                            <td><input id="spinner_relock_21_holdoff" class="holdoff_spinner pset_spinner"></td>
+                            <td><input id="spinner_relock_21_holdoff_set2" class="holdoff_spinner pset_spinner"></td>
                         </tr>
 						<tr>
                             <td><label for="relock_21_input">Input</label></td>
-                            <td>
+                            <td colspan="2">
                                 <select id="relock_21_input" class="relock-select">
                                     <option value="4">AIN0</option>
                                     <option value="5">AIN1</option>
@@ -1542,23 +1621,23 @@
                         </tr>
                         <tr>
                             <td><a>Input voltage (V)</a></td>
-                            <td><output id="ain_voltage_21">0</output></td>
+                            <td colspan="2"><output id="ain_voltage_21">0</output></td>
                         </tr>
                         <tr>
                             <td><a>Lock status</a></td>
-                            <td><output id="lock_status_21">0</output></td>
+                            <td colspan="2"><output id="lock_status_21">0</output></td>
                         </tr>
                         <tr>
                             <td><a>Servo on</a></td>
-                            <td><output id="servo_21">-</output></td>
+                            <td colspan="2"><output id="servo_21">-</output></td>
                         </tr>
                         <tr>
                             <td><a>Unlocks since servo on</a></td>
-                            <td><output id="drops_21">-</output></td>
+                            <td colspan="2"><output id="drops_21">-</output></td>
                         </tr>
                         <tr>
                             <td><a>Unlocked since servo on</a></td>
-                            <td><output id="unlocked_21">-</output></td>
+                            <td colspan="2"><output id="unlocked_21">-</output></td>
                         </tr>
                     </table>
 
@@ -1605,6 +1684,8 @@
                                 <select id="ext_reset_21_input" class="ext_reset_input_select">
                                     <option value="13">DIO5_P</option>
                                     <option value="14">DIO6_P</option>
+                                    <option value="15">DIO7_P</option>
+                                    <option value="16">DIO0_N</option>
                                 </select>
                             </td>
                         </tr>
@@ -1640,32 +1721,100 @@
                 <a>Output voltage (V)</a>
                 <output id="fast_output_12_voltage">0</output>
 
+                <fieldset class="pset-only">
+                    <legend><h3>Parameter set</h3></legend>
+                    <table>
+                        <tr>
+                            <td><label for="pset_mode_12">Set in use</label></td>
+                            <td>
+                                <select id="pset_mode_12" class="pset-select pset-mode-select">
+                                    <option value="0">Param. set 1</option>
+                                    <option value="1">Param. set 2</option>
+                                    <option value="2">Input high &rarr; param. set 2</option>
+                                    <option value="3">Input high &rarr; param. set 1</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="pset_input_12">Digital input</label></td>
+                            <td>
+                                <select id="pset_input_12" class="pset-select pset-input-select">
+                                    <option value="13">DIO5_P</option>
+                                    <option value="14">DIO6_P</option>
+                                    <option value="15">DIO7_P</option>
+                                    <option value="16">DIO0_N</option>
+                                    <option value="21">DIO5_N</option>
+                                    <option value="22">DIO6_N</option>
+                                    <option value="23">DIO7_N</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><a>Active set</a></td>
+                            <td><output id="pset_active_12">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Input level</a></td>
+                            <td><output id="pset_level_12">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Last holdoff</a></td>
+                            <td><output id="pset_violated_12">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Switches</a></td>
+                            <td><output id="pset_switches_12">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Window left in holdoff</a></td>
+                            <td><output id="pset_left_12">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Holdoff ended outside</a></td>
+                            <td><output id="pset_out_12">-</output></td>
+                        </tr>
+                    </table>
+                    <button id="button_copy_12_set1" class="button copy-button">Copy param. set 1 &rarr; 2</button>
+                    <button id="button_copy_12_set2" class="button copy-button">Copy param. set 2 &rarr; 1</button>
+                </fieldset>
+
                 <fieldset>
                     <legend><h3>PID</h3></legend>
                     <table>
+                        <tr class="pset-only">
+                            <td></td>
+                            <th id="col_set1_pid_12" class="pset-col pset-col-12">Param. set 1</th>
+                            <th id="col_set2_pid_12" class="pset-col pset-col-12">Param. set 2</th>
+                        </tr>
                         <tr>
                             <td><label for="spinner_pid_12_sp">Setpoint (V)</label></td>
-                            <td><input id="spinner_pid_12_sp" class="sp_spinner"></td>
+                            <td><input id="spinner_pid_12_sp" class="sp_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_12_sp_set2" class="sp_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_12_kg">Global gain</label></td>
-                            <td><input id="spinner_pid_12_kg" class="kg_spinner"></td>
+                            <td><input id="spinner_pid_12_kg" class="kg_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_12_kg_set2" class="kg_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_12_kp">KP</label></td>
-                            <td><input id="spinner_pid_12_kp" class="kp_spinner"></td>
+                            <td><input id="spinner_pid_12_kp" class="kp_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_12_kp_set2" class="kp_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_12_ki">KI (1/s)</label></td>
-                            <td><input id="spinner_pid_12_ki" class="ki_spinner"></td>
+                            <td><input id="spinner_pid_12_ki" class="ki_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_12_ki_set2" class="ki_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_12_kii">KII (1/s)</label></td>
-                            <td><input id="spinner_pid_12_kii" class="kii_spinner"></td>
+                            <td><input id="spinner_pid_12_kii" class="kii_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_12_kii_set2" class="kii_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_12_kd">KD (ns)</label></td>
-                            <td><input id="spinner_pid_12_kd" class="kd_spinner"></td>
+                            <td><input id="spinner_pid_12_kd" class="kd_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_12_kd_set2" class="kd_spinner pset_spinner"></td>
                         </tr>
                     </table>
 
@@ -1695,17 +1844,29 @@
                     <legend><h3>Lock monitoring</h3></legend>
 
                     <table>
+                        <tr class="pset-only">
+                            <td></td>
+                            <th id="col_set1_mon_12" class="pset-col pset-col-12">Param. set 1</th>
+                            <th id="col_set2_mon_12" class="pset-col pset-col-12">Param. set 2</th>
+                        </tr>
                         <tr>
                             <td><label for="spinner_relock_12_min">Min (V)</label></td>
-                            <td><input id="spinner_relock_12_min" class="relock_limit_min_spinner"></td>
+                            <td><input id="spinner_relock_12_min" class="relock_limit_min_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_relock_12_min_set2" class="relock_limit_min_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_relock_12_max">Max (V)</label></td>
-                            <td><input id="spinner_relock_12_max" class="relock_limit_max_spinner"></td>
+                            <td><input id="spinner_relock_12_max" class="relock_limit_max_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_relock_12_max_set2" class="relock_limit_max_spinner pset_spinner"></td>
+                        </tr>
+                        <tr class="pset-only">
+                            <td><label for="spinner_relock_12_holdoff">Holdoff after switch (ms)</label></td>
+                            <td><input id="spinner_relock_12_holdoff" class="holdoff_spinner pset_spinner"></td>
+                            <td><input id="spinner_relock_12_holdoff_set2" class="holdoff_spinner pset_spinner"></td>
                         </tr>
 						<tr>
                             <td><label for="relock_12_input">Input</label></td>
-                            <td>
+                            <td colspan="2">
                                 <select id="relock_12_input" class="relock-select">
                                     <option value="4">AIN0</option>
                                     <option value="5">AIN1</option>
@@ -1716,23 +1877,23 @@
                         </tr>
                         <tr>
                             <td><a>Input voltage (V)</a></td>
-                            <td><output id="ain_voltage_12">0</output></td>
+                            <td colspan="2"><output id="ain_voltage_12">0</output></td>
                         </tr>
                         <tr>
                             <td><a>Lock status</a></td>
-                            <td><output id="lock_status_12">0</output></td>
+                            <td colspan="2"><output id="lock_status_12">0</output></td>
                         </tr>
                         <tr>
                             <td><a>Servo on</a></td>
-                            <td><output id="servo_12">-</output></td>
+                            <td colspan="2"><output id="servo_12">-</output></td>
                         </tr>
                         <tr>
                             <td><a>Unlocks since servo on</a></td>
-                            <td><output id="drops_12">-</output></td>
+                            <td colspan="2"><output id="drops_12">-</output></td>
                         </tr>
                         <tr>
                             <td><a>Unlocked since servo on</a></td>
-                            <td><output id="unlocked_12">-</output></td>
+                            <td colspan="2"><output id="unlocked_12">-</output></td>
                         </tr>
                     </table>
 
@@ -1779,6 +1940,8 @@
                                 <select id="ext_reset_12_input" class="ext_reset_input_select">
                                     <option value="13">DIO5_P</option>
                                     <option value="14">DIO6_P</option>
+                                    <option value="15">DIO7_P</option>
+                                    <option value="16">DIO0_N</option>
                                 </select>
                             </td>
                         </tr>
@@ -1800,32 +1963,100 @@
                 <a>Output voltage (V)</a>
                 <output id="fast_output_22_voltage">0</output>
 
+                <fieldset class="pset-only">
+                    <legend><h3>Parameter set</h3></legend>
+                    <table>
+                        <tr>
+                            <td><label for="pset_mode_22">Set in use</label></td>
+                            <td>
+                                <select id="pset_mode_22" class="pset-select pset-mode-select">
+                                    <option value="0">Param. set 1</option>
+                                    <option value="1">Param. set 2</option>
+                                    <option value="2">Input high &rarr; param. set 2</option>
+                                    <option value="3">Input high &rarr; param. set 1</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="pset_input_22">Digital input</label></td>
+                            <td>
+                                <select id="pset_input_22" class="pset-select pset-input-select">
+                                    <option value="13">DIO5_P</option>
+                                    <option value="14">DIO6_P</option>
+                                    <option value="15">DIO7_P</option>
+                                    <option value="16">DIO0_N</option>
+                                    <option value="21">DIO5_N</option>
+                                    <option value="22">DIO6_N</option>
+                                    <option value="23">DIO7_N</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><a>Active set</a></td>
+                            <td><output id="pset_active_22">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Input level</a></td>
+                            <td><output id="pset_level_22">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Last holdoff</a></td>
+                            <td><output id="pset_violated_22">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Switches</a></td>
+                            <td><output id="pset_switches_22">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Window left in holdoff</a></td>
+                            <td><output id="pset_left_22">-</output></td>
+                        </tr>
+                        <tr>
+                            <td><a>Holdoff ended outside</a></td>
+                            <td><output id="pset_out_22">-</output></td>
+                        </tr>
+                    </table>
+                    <button id="button_copy_22_set1" class="button copy-button">Copy param. set 1 &rarr; 2</button>
+                    <button id="button_copy_22_set2" class="button copy-button">Copy param. set 2 &rarr; 1</button>
+                </fieldset>
+
                 <fieldset>
                     <legend><h3>PID</h3></legend>
                     <table>
+                        <tr class="pset-only">
+                            <td></td>
+                            <th id="col_set1_pid_22" class="pset-col pset-col-22">Param. set 1</th>
+                            <th id="col_set2_pid_22" class="pset-col pset-col-22">Param. set 2</th>
+                        </tr>
                         <tr>
                             <td><label for="spinner_pid_22_sp">Setpoint (V)</label></td>
-                            <td><input id="spinner_pid_22_sp" class="sp_spinner"></td>
+                            <td><input id="spinner_pid_22_sp" class="sp_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_22_sp_set2" class="sp_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_22_kg">Global gain</label></td>
-                            <td><input id="spinner_pid_22_kg" class="kg_spinner"></td>
+                            <td><input id="spinner_pid_22_kg" class="kg_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_22_kg_set2" class="kg_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_22_kp">KP</label></td>
-                            <td><input id="spinner_pid_22_kp" class="kp_spinner"></td>
+                            <td><input id="spinner_pid_22_kp" class="kp_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_22_kp_set2" class="kp_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_22_ki">KI (1/s)</label></td>
-                            <td><input id="spinner_pid_22_ki" class="ki_spinner"></td>
+                            <td><input id="spinner_pid_22_ki" class="ki_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_22_ki_set2" class="ki_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_22_kii">KII (1/s)</label></td>
-                            <td><input id="spinner_pid_22_kii" class="kii_spinner"></td>
+                            <td><input id="spinner_pid_22_kii" class="kii_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_22_kii_set2" class="kii_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_pid_22_kd">KD (ns)</label></td>
-                            <td><input id="spinner_pid_22_kd" class="kd_spinner"></td>
+                            <td><input id="spinner_pid_22_kd" class="kd_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_pid_22_kd_set2" class="kd_spinner pset_spinner"></td>
                         </tr>
                     </table>
 
@@ -1855,17 +2086,29 @@
                     <legend><h3>Lock monitoring</h3></legend>
 
                     <table>
+                        <tr class="pset-only">
+                            <td></td>
+                            <th id="col_set1_mon_22" class="pset-col pset-col-22">Param. set 1</th>
+                            <th id="col_set2_mon_22" class="pset-col pset-col-22">Param. set 2</th>
+                        </tr>
                         <tr>
                             <td><label for="spinner_relock_22_min">Min (V)</label></td>
-                            <td><input id="spinner_relock_22_min" class="relock_limit_min_spinner"></td>
+                            <td><input id="spinner_relock_22_min" class="relock_limit_min_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_relock_22_min_set2" class="relock_limit_min_spinner pset_spinner"></td>
                         </tr>
                         <tr>
                             <td><label for="spinner_relock_22_max">Max (V)</label></td>
-                            <td><input id="spinner_relock_22_max" class="relock_limit_max_spinner"></td>
+                            <td><input id="spinner_relock_22_max" class="relock_limit_max_spinner pset_spinner"></td>
+                            <td class="pset-only"><input id="spinner_relock_22_max_set2" class="relock_limit_max_spinner pset_spinner"></td>
+                        </tr>
+                        <tr class="pset-only">
+                            <td><label for="spinner_relock_22_holdoff">Holdoff after switch (ms)</label></td>
+                            <td><input id="spinner_relock_22_holdoff" class="holdoff_spinner pset_spinner"></td>
+                            <td><input id="spinner_relock_22_holdoff_set2" class="holdoff_spinner pset_spinner"></td>
                         </tr>
 						<tr>
                             <td><label for="relock_22_input">Input</label></td>
-                            <td>
+                            <td colspan="2">
                                 <select id="relock_22_input" class="relock-select">
                                     <option value="4">AIN0</option>
                                     <option value="5">AIN1</option>
@@ -1876,23 +2119,23 @@
                         </tr>
                         <tr>
                             <td><a>Input voltage (V)</a></td>
-                            <td><output id="ain_voltage_22">0</output></td>
+                            <td colspan="2"><output id="ain_voltage_22">0</output></td>
                         </tr>
                         <tr>
                             <td><a>Lock status</a></td>
-                            <td><output id="lock_status_22">0</output></td>
+                            <td colspan="2"><output id="lock_status_22">0</output></td>
                         </tr>
                         <tr>
                             <td><a>Servo on</a></td>
-                            <td><output id="servo_22">-</output></td>
+                            <td colspan="2"><output id="servo_22">-</output></td>
                         </tr>
                         <tr>
                             <td><a>Unlocks since servo on</a></td>
-                            <td><output id="drops_22">-</output></td>
+                            <td colspan="2"><output id="drops_22">-</output></td>
                         </tr>
                         <tr>
                             <td><a>Unlocked since servo on</a></td>
-                            <td><output id="unlocked_22">-</output></td>
+                            <td colspan="2"><output id="unlocked_22">-</output></td>
                         </tr>
                     </table>
 
@@ -1939,6 +2182,8 @@
                                 <select id="ext_reset_22_input" class="ext_reset_input_select">
                                     <option value="13">DIO5_P</option>
                                     <option value="14">DIO6_P</option>
+                                    <option value="15">DIO7_P</option>
+                                    <option value="16">DIO0_N</option>
                                 </select>
                             </td>
                         </tr>
@@ -2053,6 +2298,15 @@
                         <option value="1">In1 -> Out1 and In1 -> Out2</option>
                         <option value="2">In2 -> Out1 and In2 -> Out2</option>
                     </select>
+            </fieldset>
+
+            <fieldset class="options-item" id="options_psets">
+                <legend><h2>Parameter sets</h2></legend>
+                <label class="checkbox-container">Show both parameter sets
+                    <input type="checkbox" id="checkbox_show_psets" class="checkbox">
+                    <span class="checkmark"></span>
+                </label>
+                <a>A PID that does not use param. set 1 always shows them.</a>
             </fieldset>
 
             <fieldset class="options-item">

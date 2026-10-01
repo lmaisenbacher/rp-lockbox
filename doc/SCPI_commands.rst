@@ -267,6 +267,17 @@ Parameter options:
 | ``PID:IN<n>:OUT<n>:LOCKED?``                      | ``rp_PIDGetLockStatus``      | | Get the lock status from lock monitoring: ON while the  |
 |                                                   |                              | | auxiliary input is inside the relock MIN/MAX window.    |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:LOCK <state>``                 | ``rp_PIDSetLock``            | | ON: lock. The generator of the PID's output is switched |
+|                                                   |                              |   off, then the integrator reset and the hold are         |
+|                                                   |                              |   released and the PID output is switched on.             |
+|                                                   |                              | | OFF: scan. The PID is held, its integrators are reset   |
+|                                                   |                              |   and its output is switched off, then the generator is   |
+|                                                   |                              |   switched on.                                            |
+|                                                   |                              | | The three PID settings change in one register write.    |
++---------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:LOCK?``                        | ``rp_PIDGetLock``            | | Get whether the PID locks: ON while its output is on,   |
+|                                                   |                              |   it is not held and its integrators are not reset.       |
++---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | ``PID:IN<n>:OUT<n>:ENABled <state>``              | ``rp_PIDSetEnable``          | Enable or disable the PID (and relock) output.            |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | ``PID:IN<n>:OUT<n>:ENABled?``                     | ``rp_PIDGetEnable``          | Get if the PID (and relock) output is enabled.            |
@@ -326,6 +337,20 @@ Parameter options:
 | ``PID:IN<n>:OUT<n>:UNLock:COUNt?``                | ``rp_PIDGetUnlockCount``     | | Lock drops since the lockbox monitor started            |
 |                                                   |                              | | (monotonic; loggers take the difference).               |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:UNLock:SHORt?``                | ``rp_PIDGetMonitor``         | | Of those, the drops that fell between two of the        |
+|                                                   |                              |   monitor's polls, seen by the FPGA's unlock counter      |
+|                                                   |                              |   (monotonic). Fails with "Unsupported feature" with an   |
+|                                                   |                              |   FPGA image without the counters.                        |
++---------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:COUNTers?``                    | ``rp_PIDGetCounters``        | | The FPGA's event counters since it was loaded:          |
+|                                                   |                              |   ``switches,holdoffs_left,holdoffs_out,unlocks`` -       |
+|                                                   |                              |   parameter set switches, holdoffs during which the relock|
+|                                                   |                              |   input left the window, holdoffs that ended with it      |
+|                                                   |                              |   outside, and every change of the lock status from       |
+|                                                   |                              |   locked to unlocked while the hold is off. They wrap     |
+|                                                   |                              |   around at 2^32; loggers take differences. Works without |
+|                                                   |                              |   the lockbox monitor.                                    |
++---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | ``PID:IN<n>:OUT<n>:UNLock:TIME?``                 | ``rp_PIDGetUnlockedTime``    | | Time in s spent in lock drops since the lockbox         |
 |                                                   |                              | | monitor started (monotonic, the open drop included).    |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
@@ -334,6 +359,71 @@ Parameter options:
 | | ``PID:IN1:OUT1:UNL:EVEN? 5`` >                  |                              | | oldest first: ``n``, then ``index,age_s,duration_s``    |
 | | ``2,6,120.5,0.003,7,30.1,0.010``                |                              | | per drop.                                               |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
+
+==============
+Parameter sets
+==============
+
+Each PID has two parameter sets, parameter set 1 and parameter set 2 (see the README's "Two
+parameter sets switched by a digital input"). The setpoint, the gains, the lock window and the
+holdoff exist once per set. Their commands take an optional set node after the PID: ``:PSET1`` or
+none addresses parameter set 1 (the commands of the PID table above), ``:PSET2`` parameter set 2,
+e.g. ``PID:IN1:OUT1:PSET2:KP 0.05``. Each of them has a query form with ``?``. Parameter set 2 and
+the ``PSET`` commands need an FPGA image with the parameter sets; with an older image they fail
+("Unsupported feature").
+
+Parameter options:
+
+* ``<set> = {PSET1,PSET2}`` Default: ``PSET1``
+* ``<time> = {0...34} s`` Default: ``0``
+* ``<mode> = {PSET1,PSET2,HIGH2,HIGH1}`` Default: ``PSET1``
+* ``<din> = {DIO5_P,DIO6_P,DIO7_P,DIO0_N,DIO5_N,DIO6_N,DIO7_N}`` Default: ``DIO7_P``
+
+.. tabularcolumns:: |p{28mm}|p{28mm}|p{28mm}|
+
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| SCPI                                                   | API                          | description                                               |
++========================================================+==============================+===========================================================+
+| ``PID:IN<n>:OUT<n>[:<set>]:SETPoint <setpoint>``       | ``rp_PIDSetParam``           | The setpoint of a parameter set, in V.                    |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>[:<set>]:SETPoint?``                 | ``rp_PIDGetParam``           | Get the setpoint of a parameter set.                      |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>[:<set>]:KG <kg>``                   | ``rp_PIDSetParam``           | The global gain of a parameter set (0 to 4096).           |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>[:<set>]:KP <kp>``                   | ``rp_PIDSetParam``           | The P gain of a parameter set (0 to 4096).                |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>[:<set>]:KI <ki>``                   | ``rp_PIDSetParam``           | The I gain of a parameter set in 1/s.                     |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>[:<set>]:KII <kii>``                 | ``rp_PIDSetParam``           | The II gain of a parameter set in 1/s.                    |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>[:<set>]:KD <kd>``                   | ``rp_PIDSetParam``           | The D gain of a parameter set in s.                       |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>[:<set>]:RELock:MIN <limit>``        | ``rp_PIDSetParam``           | The lower end of the lock window of a parameter set.      |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>[:<set>]:RELock:MAX <limit>``        | ``rp_PIDSetParam``           | The upper end of the lock window of a parameter set.      |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>[:<set>]:RELock:HOLDoff <time>``     | ``rp_PIDSetParam``           | | For this time in s after a switch into the parameter    |
+|                                                        |                              | | set, the lock status cannot go from locked to           |
+|                                                        |                              | | unlocked (no lock drop, no relock).                     |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:PSET:MODE <mode>``                  | ``rp_PIDSetParamSetMode``    | | Which parameter set the PID uses: always ``PSET1`` or   |
+|                                                        |                              |   ``PSET2``, or the one the level of its digital input    |
+|                                                        |                              |   selects: ``HIGH2`` set 2 while the input is high (set 1 |
+|                                                        |                              |   while low), ``HIGH1`` set 1 while it is high (set 2     |
+|                                                        |                              |   while low).                                             |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:PSET:MODE?``                        | ``rp_PIDGetParamSetMode``    | Get the mode.                                             |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:PSET:INPut <din>``                  | ``rp_PIDSetParamSetInput``   | Set the digital input that selects the parameter set.     |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:PSET:INPut?``                       | ``rp_PIDGetParamSetInput``   | Get the digital input that selects the parameter set.     |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:PSET:ACTive?``                      | ``rp_PIDGetParamSetState``   | The parameter set in use: ``PSET1`` or ``PSET2``.         |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
+| ``PID:IN<n>:OUT<n>:PSET:COPY <set>``                   | ``rp_PIDCopyParams``         | | Copy the setpoint, the gains and the lock window of the |
+|                                                        |                              |   named parameter set into the other set (not the         |
+|                                                        |                              |   holdoff).                                               |
++--------------------------------------------------------+------------------------------+-----------------------------------------------------------+
 
 ===============
 Output limiting

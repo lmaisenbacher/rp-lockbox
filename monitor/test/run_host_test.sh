@@ -55,6 +55,7 @@ check "PID 1 scanning: no drops" "$(value "$out" pid1.unlocks_total)" "0"
 check "PID 1 servo off" "$(value "$out" pid1.servo_on)" "0"
 check "PID 1 servo age -1" "$(value "$out" pid1.servo_age_s)" "-1.000"
 check "PID 2 untouched" "$(value "$out" pid2.unlocks_total)" "0"
+check "no FPGA counters: short drops not counted" "$(value "$out" pid0.short_counted)" "0"
 check "PID 3 untouched" "$(value "$out" pid3.unlocks_total)" "0"
 check "stats decimation default" "$(value "$out" monitor.stats_decimation)" "1024"
 check "input 1 decimation" "$(value "$out" in1.decimation)" "1024"
@@ -95,6 +96,27 @@ daemon=$!
 sleep 0.5
 out=$(./readmon)
 check "decimation restored from the settings file" "$(value "$out" monitor.stats_decimation)" "8192"
+kill -TERM $daemon
+wait $daemon
+rm -f "$CONF"
+
+# With the FPGA's drop counters: after the grace, a drop of PID 0 that no
+# poll sees (a short drop), a 3 ms drop, then another short drop with a
+# 3 ms drop 5 ms after it (merged into one drop)
+SCRIPT="700:f:0,1:f:0:1,300:f:0,3:e:0,300:f:0,1:f:0:1,5:f:0,3:e:0,100000:f:0"
+STUB_FPGA=1 STUB_SCRIPT="$SCRIPT" ./lockbox-monitor-host --grace-s 0.5 --conf "$CONF" &
+daemon=$!
+sleep 2.5
+out=$(./readmon)
+check "FPGA counters: short drops counted" "$(value "$out" pid0.short_counted)" "1"
+check "PID 0 drops with the short ones" "$(value "$out" pid0.unlocks_total)" "3"
+check "PID 0 short drops" "$(value "$out" pid0.short_total)" "2"
+check "PID 0 short drops since servo on" "$(value "$out" pid0.short_since_servo)" "2"
+check "PID 1 no short drops" "$(value "$out" pid1.short_total)" "0"
+events=$(./readmon --events 0)
+check "three events with the short ones" "$(value "$events" events.n)" "3"
+check_near "short drop: one poll interval at most" "$(echo "$events" | sed -n 's/^event\.1=[^,]*,//p')" "0.001" "0.0015"
+check_near "short and 3 ms drop merged" "$(echo "$events" | sed -n 's/^event\.3=[^,]*,//p')" "0.009" "0.003"
 kill -TERM $daemon
 wait $daemon
 rm -f "$CONF"

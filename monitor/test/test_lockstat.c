@@ -4,7 +4,8 @@
  * All rights reserved.
  *
  * @brief Tests of the lock-drop state machine (lockstat.c), run on any host:
- * polls are fed with synthetic millisecond times.
+ * polls are fed with synthetic millisecond times, and with whether a
+ * synthetic FPGA unlock counter rose, for the short drops.
  */
 
 #include <stdio.h>
@@ -37,7 +38,7 @@ static void polls(struct lockbox_monitor_pid *p, uint64_t *t, int n, int locked,
 {
     for (int i = 0; i < n; i++) {
         *t += MS;
-        lockstat_poll(p, *t, locked, held, MERGE, counting);
+        lockstat_poll(p, *t - MS, *t, locked, held, 0, MERGE, counting);
     }
 }
 
@@ -265,6 +266,132 @@ static void test_ring_wraps()
     CHECK_EQ(p.unlocked_ns, (70 * 71 / 2) * MS);
 }
 
+/* `n` polls one millisecond apart; at the first, the FPGA's unlock counter
+ * has risen (`lost`) */
+static void lost_polls(struct lockbox_monitor_pid *p, uint64_t *t, int n, int locked, int held,
+                       int lost, int counting)
+{
+    for (int i = 0; i < n; i++) {
+        *t += MS;
+        lockstat_poll(p, *t - MS, *t, locked, held, i == 0 ? lost : 0, MERGE, counting);
+    }
+}
+
+static void test_short_drop()
+{
+    struct lockbox_monitor_pid p;
+    uint64_t t;
+    fresh(&p, &t, 1, 0);
+    lost_polls(&p, &t, 100, 1, 0, 0, 1);
+    CHECK_EQ(p.unlock_count, 0);
+    /* Lost since the previous poll, both polls read locked: a short drop
+     * that began at the previous poll, locked since this one */
+    uint64_t t_prev = t;
+    lost_polls(&p, &t, 1, 1, 0, 1, 1);
+    CHECK_EQ(p.unlock_count, 1);
+    CHECK_EQ(p.short_drops, 1);
+    CHECK_EQ(p.drop_open, 1);
+    CHECK_EQ(p.last_unlock_start_ns, t_prev);
+    CHECK_EQ(p.streak_since_ns, t);
+    uint64_t t_relock = t;
+    /* Closed after the merge time with one poll interval as its duration */
+    lost_polls(&p, &t, 10, 1, 0, 0, 1);
+    CHECK_EQ(p.drop_open, 0);
+    CHECK_EQ(p.last_unlock_ns, MS);
+    CHECK_EQ(p.unlocked_ns, MS);
+    CHECK_EQ(p.event_head, 1);
+    CHECK_EQ(p.events[0].duration_ns, MS);
+    CHECK_EQ(p.state_since_ns, t_relock);
+    CHECK_EQ(p.unlock_count, 1);
+}
+
+static void test_lost_with_visible_drops()
+{
+    struct lockbox_monitor_pid p;
+    uint64_t t;
+    fresh(&p, &t, 1, 0);
+    lost_polls(&p, &t, 50, 1, 0, 0, 1);
+    /* The counter rose by this poll and the flags show the drop: one drop */
+    lost_polls(&p, &t, 3, 0, 0, 1, 1);
+    lost_polls(&p, &t, 20, 1, 0, 0, 1);
+    CHECK_EQ(p.unlock_count, 1);
+    CHECK_EQ(p.short_drops, 0);
+    /* The counter shows it only at the next poll (the unlock fell between
+     * the two reads): still one */
+    lost_polls(&p, &t, 1, 0, 0, 0, 1);
+    lost_polls(&p, &t, 2, 0, 0, 1, 1);
+    lost_polls(&p, &t, 20, 1, 0, 0, 1);
+    CHECK_EQ(p.unlock_count, 2);
+    CHECK_EQ(p.short_drops, 0);
+    /* ... or at the first locked poll after it */
+    lost_polls(&p, &t, 1, 0, 0, 0, 1);
+    lost_polls(&p, &t, 20, 1, 0, 1, 1);
+    CHECK_EQ(p.unlock_count, 3);
+    CHECK_EQ(p.short_drops, 0);
+}
+
+static void test_lost_inside_a_drop()
+{
+    struct lockbox_monitor_pid p;
+    uint64_t t;
+    fresh(&p, &t, 1, 0);
+    lost_polls(&p, &t, 50, 1, 0, 0, 1);
+    /* A 2 ms drop, locked again for 5 ms, then lost between two polls: the
+     * lock stretch that closes the drop begins after that */
+    lost_polls(&p, &t, 2, 0, 0, 1, 1);
+    uint64_t t_start = t - MS;
+    lost_polls(&p, &t, 5, 1, 0, 0, 1);
+    lost_polls(&p, &t, 1, 1, 0, 1, 1);
+    uint64_t t_relock = t;
+    lost_polls(&p, &t, 9, 1, 0, 0, 1);
+    CHECK_EQ(p.drop_open, 1);
+    lost_polls(&p, &t, 1, 1, 0, 0, 1);
+    CHECK_EQ(p.drop_open, 0);
+    CHECK_EQ(p.last_unlock_ns, t_relock - t_start);
+    CHECK_EQ(p.unlock_count, 1);
+    CHECK_EQ(p.raw_unlock_edges, 2);
+    /* A short drop, then a drop the flags see within the merge time: one */
+    lost_polls(&p, &t, 1, 1, 0, 1, 1);
+    lost_polls(&p, &t, 4, 1, 0, 0, 1);
+    lost_polls(&p, &t, 2, 0, 0, 0, 1);
+    lost_polls(&p, &t, 20, 1, 0, 0, 1);
+    CHECK_EQ(p.unlock_count, 2);
+    CHECK_EQ(p.short_drops, 1);
+    CHECK_EQ(p.event_head, 2);
+}
+
+static void test_lost_ignored()
+{
+    struct lockbox_monitor_pid p;
+    uint64_t t;
+    fresh(&p, &t, 1, 0);
+    lost_polls(&p, &t, 50, 1, 0, 0, 1);
+    /* Held, in the grace, or still unlocked: no short drop */
+    lost_polls(&p, &t, 5, 1, 1, 1, 1);
+    lost_polls(&p, &t, 5, 1, 0, 0, 1);
+    lost_polls(&p, &t, 5, 1, 0, 1, 0);
+    lost_polls(&p, &t, 2, 0, 0, 0, 0);
+    lost_polls(&p, &t, 5, 0, 0, 1, 1);
+    CHECK_EQ(p.unlock_count, 0);
+    CHECK_EQ(p.short_drops, 0);
+}
+
+static void test_short_since_servo()
+{
+    struct lockbox_monitor_pid p;
+    uint64_t t;
+    fresh(&p, &t, 1, 0);
+    lost_polls(&p, &t, 50, 1, 0, 0, 1);
+    lost_polls(&p, &t, 1, 1, 0, 1, 1);
+    lost_polls(&p, &t, 20, 1, 0, 0, 1);
+    CHECK_EQ(p.short_drops, 1);
+    /* Scan, then Lock: the "since servo on" counts start again */
+    lost_polls(&p, &t, 5, 1, 1, 0, 1);
+    lost_polls(&p, &t, 5, 1, 0, 0, 1);
+    CHECK_EQ(p.short_at_servo, 1);
+    CHECK_EQ(p.count_at_servo, 1);
+}
+
 int main()
 {
     test_init();
@@ -276,6 +403,11 @@ int main()
     test_hold_closes_open_drop();
     test_grace();
     test_ring_wraps();
+    test_short_drop();
+    test_lost_with_visible_drops();
+    test_lost_inside_a_drop();
+    test_lost_ignored();
+    test_short_since_servo();
     if (failures) {
         printf("%d check(s) failed\n", failures);
         return EXIT_FAILURE;

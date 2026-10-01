@@ -39,6 +39,9 @@ static void print_pid(int pid)
     printf("pid%d.last_unlock_age_s=%.3f\n", pid, m.last_unlock_age_s);
     printf("pid%d.last_unlock_s=%.4f\n", pid, m.last_unlock_s);
     printf("pid%d.raw_unlock_edges=%llu\n", pid, (unsigned long long)m.raw_unlock_edges);
+    printf("pid%d.short_counted=%d\n", pid, m.short_counted);
+    printf("pid%d.short_total=%llu\n", pid, (unsigned long long)m.short_total);
+    printf("pid%d.short_since_servo=%llu\n", pid, (unsigned long long)m.short_since_servo);
 }
 
 static void print_input(int ch)

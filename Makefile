@@ -20,6 +20,11 @@ LIBLOCKBOX_DIR = api
 api:
 	$(MAKE) -C $(LIBLOCKBOX_DIR) VERSION=$(VERSION) REVISION=$(REVISION)
 
+# Host tests of the API library's settings file (any Linux with gcc)
+.PHONY: api-test
+api-test:
+	$(MAKE) -C $(LIBLOCKBOX_DIR)/test test
+
 ################################################################################
 # SCPI server
 ################################################################################
@@ -28,6 +33,11 @@ SCPI_SERVER_DIR = scpi-server
 .PHONY: scpi
 scpi:
 	$(MAKE) -C $(SCPI_SERVER_DIR) VERSION=$(VERSION) REVISION=$(REVISION)
+
+# Host test of the SCPI command table (any Linux with gcc)
+.PHONY: scpi-test
+scpi-test:
+	$(MAKE) -C $(SCPI_SERVER_DIR)/test test
 
 ################################################################################
 # Lockbox monitor daemon (links the API library: build `api` first)

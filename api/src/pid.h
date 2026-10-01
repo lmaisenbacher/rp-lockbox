@@ -30,9 +30,10 @@
 
 // Base PID address
 static const int PID_BASE_ADDR = 0x00300000;
-static const int PID_BASE_SIZE = 0x4C;
 
-// PID structure declaration
+// PID structure declaration. The registers of parameter set 2 (setpoint,
+// gains, lock window, holdoff) sit at the addresses of set 1 + 0x100;
+// pid_SetRegister addresses both sets.
 typedef struct pid_control_s {
     uint32_t conf;
     uint32_t conf2;
@@ -81,14 +82,57 @@ typedef struct pid_control_s {
     uint32_t pid12_ext_reset_input;
     uint32_t pid21_ext_reset_input;
     uint32_t pid22_ext_reset_input;
+    uint32_t pset_ctrl[4];         // parameter set selection: [1:0] mode, [6:4] input
+    uint32_t holdoff[4];           // holdoff after a switch into the set, in clock cycles
+    uint32_t reserved2[4];
+    uint32_t pset_status;          // read only, see PID_STATUS_*
+    uint32_t reserved3[2];
+    uint32_t feature_id;           // read only, PID_FEATURE_MAGIC in the upper half
+    uint32_t set2[64];             // parameter set 2, at the offsets of set 1
+    uint32_t counters[4][4];       // read only, event counters [PID_CNT_*][pid]
 } pid_control_t;
+
+#define PID_BASE_SIZE sizeof(pid_control_t)
+
+// Byte offsets of the registers that exist once per parameter set, for the
+// parameter set 1 and PID 11; + 4 per PID, + PID_SET_STRIDE for parameter set 2
+static const uint32_t PID_SET_STRIDE = 0x100;
+static const uint32_t PID_REG_SETPOINT = 0x10;
+static const uint32_t PID_REG_KP = 0x20;
+static const uint32_t PID_REG_KI = 0x30;
+static const uint32_t PID_REG_KD = 0x40;
+static const uint32_t PID_REG_RELOCK_MIN = 0x50;
+static const uint32_t PID_REG_RELOCK_MAX = 0x60;
+static const uint32_t PID_REG_KII = 0x90;
+static const uint32_t PID_REG_KG = 0xA0;
+static const uint32_t PID_REG_HOLDOFF = 0xD0;
+
+// Gateware with the two parameter sets reads this in the upper half of feature_id
+static const uint32_t PID_FEATURE_MAGIC = 0x5053;
+// The version in the lower half of feature_id from which the event counters exist
+static const uint32_t PID_FEATURE_COUNTERS = 2;
+// counters: the first index
+enum { PID_CNT_SWITCHES, PID_CNT_HOLDOFFS_LEFT, PID_CNT_HOLDOFFS_OUT, PID_CNT_UNLOCKS };
+// pset_ctrl
+static const uint32_t PID_PSET_MODE_MASK = 0x3;
+static const uint32_t PID_PSET_INPUT_SHIFT = 4;
+static const uint32_t PID_PSET_INPUT_MASK = 0x7;
+// pset_status: bit (SHIFT + pid), the input levels at bit (SHIFT + input)
+static const uint32_t PID_STATUS_ACTIVE_SHIFT = 0;
+static const uint32_t PID_STATUS_HOLDOFF_SHIFT = 4;
+static const uint32_t PID_STATUS_WINDOW_SHIFT = 8;
+static const uint32_t PID_STATUS_VIOLATED_SHIFT = 12;
+static const uint32_t PID_STATUS_LEVEL_SHIFT = 16;
 
 static const uint32_t PID_CONF_MASK = 0xFFFFFFFF; // (32 bits)
 static const uint32_t PID_CONF2_MASK = 0x0000000F; // (4 bits)
 // Bit positions in `conf` of the per-PID flags, bit (SHIFT + pid) for
-// pid = RP_PID_11..RP_PID_22: the hold setting and the lock status the
-// FPGA derives from the relock input (read together by pid_GetLockHoldBits)
+// pid = RP_PID_11..RP_PID_22: the integrator reset, the hold setting, the
+// output enable and the lock status the FPGA derives from the relock input
+// (read together by pid_GetLockHoldBits)
+static const uint32_t PID_CONF_INT_RESET_SHIFT = 0;
 static const uint32_t PID_CONF_HOLD_SHIFT = 12;
+static const uint32_t PID_CONF_ENABLE_SHIFT = 20;
 static const uint32_t PID_CONF_LOCKED_SHIFT = 24;
 static const uint32_t PID_SETPOINT_MASK = 0x3FFF; // (14 bits)
 static const uint32_t PID_KP_MASK = 0xFFFFFF; // (24 bits)
@@ -138,6 +182,10 @@ int pid_SetPIDEnable(rp_pid_t pid, bool enable);
 int pid_GetPIDEnable(rp_pid_t pid, bool *enabled);
 int pid_GetPIDLockStatus(rp_pid_t pid, bool *lock_status);
 int pid_GetLockHoldBits(uint8_t *locked, uint8_t *held);
+int pid_SetLock(rp_pid_t pid, bool lock);
+int pid_GetLock(rp_pid_t pid, bool *lock);
+int pid_GetCounters(rp_pid_t pid, rp_pid_counters_t *counters);
+int pid_GetUnlockCounts(uint32_t unlocks[4]);
 int pid_SetRelockStepsize(rp_pid_t pid, float stepsize);
 int pid_GetRelockStepsize(rp_pid_t pid, float *stepsize);
 int pid_SetRelockMinimum(rp_pid_t pid, float minimum);
@@ -152,5 +200,15 @@ int pid_SetExtResetEnable(rp_pid_t pid, bool enable);
 int pid_GetExtResetEnable(rp_pid_t pid, bool *enabled);
 int pid_SetExtResetInput(rp_pid_t pid, rp_dpin_t pin);
 int pid_GetExtResetInput(rp_pid_t pid, rp_dpin_t *pin);
+
+int pid_HasParamSets(bool *available);
+int pid_SetParam(rp_pid_t pid, rp_pidset_t set, rp_pidparam_t param, float value);
+int pid_GetParam(rp_pid_t pid, rp_pidset_t set, rp_pidparam_t param, float *value);
+int pid_CopyParams(rp_pid_t pid, rp_pidset_t from, rp_pidset_t to);
+int pid_SetParamSetMode(rp_pid_t pid, rp_pset_mode_t mode);
+int pid_GetParamSetMode(rp_pid_t pid, rp_pset_mode_t *mode);
+int pid_SetParamSetInput(rp_pid_t pid, rp_dpin_t pin);
+int pid_GetParamSetInput(rp_pid_t pid, rp_dpin_t *pin);
+int pid_GetParamSetState(rp_pid_t pid, rp_pidset_t *active, bool *holdoff, bool *level, bool *violated);
 
 #endif //__PID_H

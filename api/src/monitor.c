@@ -144,6 +144,9 @@ int mon_GetPID(rp_pid_t pid, rp_pid_monitor_t *out)
     else
         out->last_unlock_s = -1.0;
     out->raw_unlock_edges = p->raw_unlock_edges;
+    out->short_counted = m.fpga_counts != 0;
+    out->short_total = p->short_drops;
+    out->short_since_servo = out->servo_on ? p->short_drops - p->short_at_servo : 0;
     return RP_OK;
 }
 

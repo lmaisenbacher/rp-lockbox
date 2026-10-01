@@ -56,8 +56,8 @@ static void open_drop(struct lockbox_monitor_pid *p, uint64_t now_ns)
     p->state_since_ns = now_ns;
 }
 
-void lockstat_poll(struct lockbox_monitor_pid *p, uint64_t now_ns, int locked, int held,
-                   uint64_t merge_ns, int counting)
+void lockstat_poll(struct lockbox_monitor_pid *p, uint64_t prev_ns, uint64_t now_ns,
+                   int locked, int held, int lost, uint64_t merge_ns, int counting)
 {
     int prev_raw = p->raw_locked ? 1 : 0;
     int prev_held = p->held ? 1 : 0;
@@ -79,6 +79,7 @@ void lockstat_poll(struct lockbox_monitor_pid *p, uint64_t now_ns, int locked, i
         p->count_at_servo = p->unlock_count;
         p->unlocked_ns_at_servo = p->unlocked_ns;
         p->longest_since_servo_ns = 0;
+        p->short_at_servo = p->short_drops;
     }
 
     if (held) {
@@ -95,23 +96,34 @@ void lockstat_poll(struct lockbox_monitor_pid *p, uint64_t now_ns, int locked, i
         if (prev_raw && !locked) {
             if (counting) {
                 open_drop(p, now_ns);
-            } else {
-                p->locked = 0;
-                p->state_since_ns = now_ns;
+                return;
             }
+            p->locked = 0;
+            p->state_since_ns = now_ns;
         } else if (!prev_raw && locked) {
             /* The acquisition (after a Lock press, or after a drop that
              * began during the grace or while scanning): not a drop */
             p->locked = 1;
             p->state_since_ns = now_ns;
+        } else if (prev_raw && locked && lost && counting) {
+            /* Lost and found again between the two polls: a short drop */
+            open_drop(p, prev_ns);
+            p->short_drops++;
+            p->streak_since_ns = now_ns;
+            p->unlocked_ns = p->drop_base_ns + (now_ns - prev_ns);
         }
         return;
     }
 
     /* A drop is open */
     if (locked) {
-        if (!prev_raw)
+        if (!prev_raw) {
             p->streak_since_ns = now_ns;
+        } else if (lost) {
+            /* Lost again between the polls: the lock stretch begins now */
+            p->raw_unlock_edges++;
+            p->streak_since_ns = now_ns;
+        }
         if (p->streak_since_ns && now_ns - p->streak_since_ns >= merge_ns) {
             close_drop(p, p->streak_since_ns);
             return;

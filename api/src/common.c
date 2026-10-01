@@ -55,7 +55,8 @@ int cmn_Map(size_t size, size_t offset, void** mapped)
 
     *mapped = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, offset);
 
-    if(mapped == (void *) -1) {
+    if(*mapped == MAP_FAILED) {
+        *mapped = NULL;
         return RP_EMMD;
     }
 

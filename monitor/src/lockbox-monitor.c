@@ -7,7 +7,9 @@
  *
  * Polls the FPGA's lock and hold flags of the four PID controllers every
  * millisecond (one register read), runs the lock-drop bookkeeping of
- * lockstat.c for each, and publishes the result in the shared-memory block
+ * lockstat.c for each - with the FPGA's unlock counters, where the image
+ * has them, for the drops shorter than a poll - and publishes the result in
+ * the shared-memory block
  * of lockbox_monitor.h, which liblockbox reads for the SCPI server and the
  * web interface. A second thread owns the scope block and measures the
  * fast inputs' noise: buffers of samples averaged over the decimation are
@@ -413,14 +415,22 @@ int main(int argc, char *argv[])
     work.merge_ns = merge_ns;
     work.grace_ns = grace_ns;
 
-    /* The first poll is the baseline */
+    /* The first poll is the baseline. The FPGA's unlock counters, where the
+     * image has them, are read before the flags: an unlock between the two
+     * reads then shows in the flags at once, as an ordinary drop. */
     uint8_t locked, held;
+    uint32_t unlocks[LOCKBOX_MONITOR_PIDS];
+    bool fpga_counts = rp_PIDGetUnlockCounts(unlocks) == RP_OK;
     rp_PIDGetLockHoldBits(&locked, &held);
     uint64_t now = monotonic_ns();
     work.start_ns = now;
     work.last_poll_ns = now;
-    for (int i = 0; i < LOCKBOX_MONITOR_PIDS; i++)
+    work.fpga_counts = fpga_counts ? 1 : 0;
+    for (int i = 0; i < LOCKBOX_MONITOR_PIDS; i++) {
         lockstat_init(&work.pids[i], now, (locked >> i) & 1, (held >> i) & 1);
+        if (fpga_counts)
+            work.pids[i].fpga_unlocks = unlocks[i];
+    }
     publish();
 
     pthread_t stats;
@@ -433,8 +443,9 @@ int main(int argc, char *argv[])
     }
 
     syslog(LOG_NOTICE, "lockbox-monitor started: period %.3g ms, merge %.3g ms, grace %.3g s, "
-           "statistics %s (decimation %u)", opts.period_ms, opts.merge_ms, opts.grace_s,
-           opts.stats ? "on" : "off", opts.stats_decimation);
+           "statistics %s (decimation %u), FPGA unlock counters %s", opts.period_ms, opts.merge_ms,
+           opts.grace_s, opts.stats ? "on" : "off", opts.stats_decimation,
+           fpga_counts ? "read" : "absent");
 
     uint64_t next = now + period_ns;
     while (!stop_requested) {
@@ -444,6 +455,8 @@ int main(int argc, char *argv[])
         if (stop_requested)
             break;
 
+        if (fpga_counts)
+            rp_PIDGetUnlockCounts(unlocks);
         rp_PIDGetLockHoldBits(&locked, &held);
         now = monotonic_ns();
         uint64_t gap = now - work.last_poll_ns;
@@ -452,8 +465,16 @@ int main(int argc, char *argv[])
         if (gap > 2 * period_ns)
             work.late_polls++;
         int counting = now - work.start_ns >= grace_ns;
-        for (int i = 0; i < LOCKBOX_MONITOR_PIDS; i++)
-            lockstat_poll(&work.pids[i], now, (locked >> i) & 1, (held >> i) & 1, merge_ns, counting);
+        for (int i = 0; i < LOCKBOX_MONITOR_PIDS; i++) {
+            struct lockbox_monitor_pid *p = &work.pids[i];
+            /* Lost since the previous poll; any change of the count says so,
+             * a restart of the counter by an FPGA reload included */
+            int lost = fpga_counts && unlocks[i] != p->fpga_unlocks;
+            if (fpga_counts)
+                p->fpga_unlocks = unlocks[i];
+            lockstat_poll(p, work.last_poll_ns, now, (locked >> i) & 1, (held >> i) & 1, lost,
+                          merge_ns, counting);
+        }
         work.last_poll_ns = now;
         work.polls++;
         take_stats();

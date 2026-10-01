@@ -7,7 +7,9 @@
  *
  * The lockbox monitor daemon (lockbox-monitor) samples the FPGA's lock and
  * hold flags every millisecond, counts lock drops, and measures the fast
- * inputs' noise with the scope block. It publishes its state in a POSIX
+ * inputs' noise with the scope block. With an FPGA image that counts every
+ * loss of lock, it also counts the drops that fell between two of its
+ * polls (short drops). It publishes its state in a POSIX
  * shared-memory block (/dev/shm/lockbox-monitor); liblockbox reads the
  * block for the SCPI server and the web interface (rp_PIDGetMonitor and
  * friends in lockbox.h). Daemon and library compile against this one
@@ -33,7 +35,7 @@ extern "C" {
 /** Name of the shared-memory block (shm_open) */
 #define LOCKBOX_MONITOR_SHM "/lockbox-monitor"
 /** Layout version; readers refuse a block of another layout */
-#define LOCKBOX_MONITOR_LAYOUT 1
+#define LOCKBOX_MONITOR_LAYOUT 2
 /** The four PID controllers, indexed like rp_pid_t */
 #define LOCKBOX_MONITOR_PIDS 4
 /** The two fast analog inputs, indexed like rp_channel_t */
@@ -46,7 +48,7 @@ extern "C" {
 /** One lock drop */
 struct lockbox_monitor_event {
     uint64_t index;         /**< 1-based, increasing per PID */
-    uint64_t start_ns;      /**< the poll that saw the flag fall */
+    uint64_t start_ns;      /**< the poll that saw the flag fall (a short drop: the poll before) */
     uint64_t duration_ns;   /**< to the first poll of the lock stretch that closed it */
 };
 
@@ -56,6 +58,8 @@ struct lockbox_monitor_pid {
     uint32_t held;                  /**< hold flag at the last poll */
     uint32_t raw_locked;            /**< the FPGA flag as read at the last poll */
     uint32_t drop_open;             /**< a lock drop is in progress */
+    uint32_t fpga_unlocks;          /**< internal: the FPGA's unlock counter at the last poll */
+    uint32_t reserved;
     uint64_t state_since_ns;        /**< start of the current locked/unlocked stretch */
     uint64_t servo_since_ns;        /**< the last hold on->off edge; 0 = hold on */
     uint64_t unlock_count;          /**< lock drops since the monitor started */
@@ -69,7 +73,9 @@ struct lockbox_monitor_pid {
     uint64_t event_head;            /**< events pushed so far (= the next index) */
     uint64_t streak_since_ns;       /**< internal: first locked poll inside an open drop */
     uint64_t drop_base_ns;          /**< internal: unlocked_ns when the open drop began */
-    uint64_t reserved;
+    uint64_t short_drops;           /**< drops that fell between two polls, seen only by the
+                                         FPGA's counter; included in unlock_count */
+    uint64_t short_at_servo;        /**< short_drops at the last hold on->off edge */
     struct lockbox_monitor_event events[LOCKBOX_MONITOR_EVENTS]; /**< ring, index % EVENTS */
 };
 
@@ -92,6 +98,8 @@ struct lockbox_monitor {
     uint32_t layout;            /**< LOCKBOX_MONITOR_LAYOUT */
     uint32_t pid;               /**< the daemon's process id; 0 after a clean exit */
     uint32_t stats_enabled;     /**< the input statistics thread runs */
+    uint32_t fpga_counts;       /**< the FPGA counts unlocks: short drops are counted */
+    uint32_t reserved0;
     uint64_t start_ns;          /**< the daemon's first poll */
     uint64_t last_poll_ns;
     uint64_t poll_period_ns;
@@ -112,9 +120,9 @@ struct lockbox_monitor {
  * that run the daemon's tests; every 64-bit field sits at an 8-byte
  * offset by construction, so the sizes are the same on both. */
 #define LOCKBOX_MONITOR_EVENT_SIZE 24
-#define LOCKBOX_MONITOR_PID_SIZE (4*4 + 14*8 + LOCKBOX_MONITOR_EVENTS*LOCKBOX_MONITOR_EVENT_SIZE)
+#define LOCKBOX_MONITOR_PID_SIZE (6*4 + 15*8 + LOCKBOX_MONITOR_EVENTS*LOCKBOX_MONITOR_EVENT_SIZE)
 #define LOCKBOX_MONITOR_INPUT_SIZE (5*8 + 2*8 + 2*4)
-#define LOCKBOX_MONITOR_SIZE (4*4 + 8*8 + LOCKBOX_MONITOR_PIDS*LOCKBOX_MONITOR_PID_SIZE \
+#define LOCKBOX_MONITOR_SIZE (6*4 + 8*8 + LOCKBOX_MONITOR_PIDS*LOCKBOX_MONITOR_PID_SIZE \
                               + LOCKBOX_MONITOR_INPUTS*LOCKBOX_MONITOR_INPUT_SIZE + 2*4)
 
 #ifdef __cplusplus

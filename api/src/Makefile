@@ -48,6 +48,7 @@ OBJECTS =	common.o \
 		spec_dsp.o \
 		spec_fpga.o \
 		pid.o \
+		config.o \
 		limit.o \
 		lockbox.o \
 		monitor.o \
