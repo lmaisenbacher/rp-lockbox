@@ -216,7 +216,7 @@ int pid_CopyParams(rp_pid_t pid, rp_pidset_t from, rp_pidset_t to)
 {
     // The register values, so the copy is exact. Not the holdoff: each set's
     // holdoff belongs to the switch into that set.
-    static const uint32_t offsets[] = {
+    const uint32_t offsets[] = {
         PID_REG_SETPOINT, PID_REG_KP, PID_REG_KI, PID_REG_KD, PID_REG_RELOCK_MIN,
         PID_REG_RELOCK_MAX, PID_REG_KII, PID_REG_KG
     };
