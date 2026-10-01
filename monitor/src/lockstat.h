@@ -10,7 +10,7 @@
  * poll time. The rules (see the README's "Lockbox monitor"):
  *
  * - MODE is the hold flag: hold off = "servo on". A hold on->off edge
- *   (the web page's Lock press) records the servo-on time and resets the
+ *   (the web interface's Lock press) records the servo-on time and resets the
  *   "since servo on" counters.
  * - A DROP is a locked->unlocked edge of the flag while the servo is on.
  *   It stays open until the flag has read locked for `merge_ns` in a row,

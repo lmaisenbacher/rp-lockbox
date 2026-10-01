@@ -166,7 +166,7 @@ static int registers_differ(void)
     return differ;
 }
 
-// Every setting of the file, through the API, with values as typed on the web page
+// Every setting of the file, through the API, with values as typed on the web interface
 static void write_settings(void)
 {
     const rp_apin_t relock_inputs[4] = {RP_AIN0, RP_AIN3, RP_AIN1, RP_AIN2};

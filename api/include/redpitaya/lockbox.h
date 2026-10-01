@@ -379,7 +379,7 @@ typedef struct {
 typedef struct {
     bool locked;                  //!< Lock state, merged: unlocked from a drop's start to its close
     double lock_age_s;            //!< Time in the current locked/unlocked state
-    bool servo_on;                //!< Hold off (the Lock side of the web page's Toggle Lock/Scan)
+    bool servo_on;                //!< Hold off (the Lock side of the web interface's Toggle Lock/Scan)
     double servo_age_s;           //!< Time since the hold went off; -1 while the hold is on
     uint64_t unlocks_total;       //!< Lock drops since the monitor started
     double unlocked_total_s;      //!< Time spent in lock drops since the monitor started

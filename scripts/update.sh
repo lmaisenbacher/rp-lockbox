@@ -26,7 +26,7 @@
 # registers from the saved pid_settings.conf at its start: whatever was
 # changed since the last save is lost. So the script states what this run
 # will do and waits for a confirmation, leaving time to save the parameters
-# (web page, or LOCKbox:CONFig:SAVE) and start again; -y skips the question.
+# (web interface, or LOCKbox:CONFig:SAVE) and start again; -y skips the question.
 set -e
 cd "$(dirname "$0")/.."
 

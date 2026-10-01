@@ -188,7 +188,7 @@ static int parse_options(int argc, char *argv[], struct options *o)
         usage(argv[0]);
         return -1;
     }
-    /* The settings file holds what a web page or SCPI client selected */
+    /* The settings file holds what the web interface or an SCPI client selected */
     if (!decimation_given)
         load_conf(o);
     return 0;
