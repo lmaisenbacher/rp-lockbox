@@ -1015,7 +1015,7 @@
             if (holdoffs && !holdoffs[pset.active ? 1 : 0]) {
                 $("#pset_violated_" + code).val("no holdoff set");
             } else {
-                $("#pset_violated_" + code).val(pset.violated ? "input went outside the window" : "input stayed inside the window");
+                $("#pset_violated_" + code).val(pset.violated ? "monitor went outside" : "monitor stayed inside");
             }
             $("#col_set1_pid_" + code + ", #col_set1_mon_" + code).toggleClass("pset-active", !pset.active);
             $("#col_set2_pid_" + code + ", #col_set2_mon_" + code).toggleClass("pset-active", !!pset.active);
@@ -1268,11 +1268,11 @@
                             <td><output id="pset_switches_11">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Holdoffs with the input outside the window</a></td>
+                            <td><a>Monitor outside in holdoff</a></td>
                             <td><output id="pset_went_outside_11">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Holdoffs that ended outside the window</a></td>
+                            <td><a>Monitor outside after holdoff</a></td>
                             <td><output id="pset_ended_outside_11">-</output></td>
                         </tr>
                     </table>
@@ -1510,11 +1510,11 @@
                             <td><output id="pset_switches_21">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Holdoffs with the input outside the window</a></td>
+                            <td><a>Monitor outside in holdoff</a></td>
                             <td><output id="pset_went_outside_21">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Holdoffs that ended outside the window</a></td>
+                            <td><a>Monitor outside after holdoff</a></td>
                             <td><output id="pset_ended_outside_21">-</output></td>
                         </tr>
                     </table>
@@ -1766,11 +1766,11 @@
                             <td><output id="pset_switches_12">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Holdoffs with the input outside the window</a></td>
+                            <td><a>Monitor outside in holdoff</a></td>
                             <td><output id="pset_went_outside_12">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Holdoffs that ended outside the window</a></td>
+                            <td><a>Monitor outside after holdoff</a></td>
                             <td><output id="pset_ended_outside_12">-</output></td>
                         </tr>
                     </table>
@@ -2008,11 +2008,11 @@
                             <td><output id="pset_switches_22">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Holdoffs with the input outside the window</a></td>
+                            <td><a>Monitor outside in holdoff</a></td>
                             <td><output id="pset_went_outside_22">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Holdoffs that ended outside the window</a></td>
+                            <td><a>Monitor outside after holdoff</a></td>
                             <td><output id="pset_ended_outside_22">-</output></td>
                         </tr>
                     </table>
