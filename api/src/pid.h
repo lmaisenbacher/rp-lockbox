@@ -112,7 +112,7 @@ static const uint32_t PID_FEATURE_MAGIC = 0x5053;
 // The version in the lower half of feature_id from which the event counters exist
 static const uint32_t PID_FEATURE_COUNTERS = 2;
 // counters: the first index
-enum { PID_CNT_SWITCHES, PID_CNT_HOLDOFFS_LEFT, PID_CNT_HOLDOFFS_OUT, PID_CNT_UNLOCKS };
+enum { PID_CNT_SWITCHES, PID_CNT_HOLDOFFS_WENT_OUTSIDE, PID_CNT_HOLDOFFS_ENDED_OUTSIDE, PID_CNT_UNLOCKS };
 // pset_ctrl
 static const uint32_t PID_PSET_MODE_MASK = 0x3;
 static const uint32_t PID_PSET_INPUT_SHIFT = 4;

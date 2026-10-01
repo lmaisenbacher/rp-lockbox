@@ -110,6 +110,8 @@ int main(void)
     expect("PID:IN1:OUT2:PSET:INPut", "RP_PIDPSetInput", 0, 1, 2);
     expect("PID:IN1:OUT1:PSET:INP?", "RP_PIDPSetInputQ", 0, 1, 1);
     expect("PID:IN1:OUT1:PSET:ACTive?", "RP_PIDPSetActiveQ", 0, 1, 1);
+    expect("PID:IN2:OUT2:PSET:ACT?", "RP_PIDPSetActiveQ", 0, 2, 2);
+    expect("PID:IN2:OUT1:PSET:INP", "RP_PIDPSetInput", 0, 2, 1);
     expect("PID:IN1:OUT1:PSET:COPY", "RP_PIDPSetCopy", 0, 1, 1);
 
     // The commands around them are unchanged

@@ -229,3 +229,8 @@ set_false_path -from [get_clocks clk_fpga_0]  -to [get_clocks pdm_clk]
 set_false_path -from [get_clocks dac_clk_o] -to [get_clocks dac_clk_2x]
 set_false_path -from [get_clocks dac_clk_o] -to [get_clocks dac_clk_2p]
 
+# The coefficients of the scope's input filters change only when the bus
+# writes them, so the filter may take two clock cycles to see a new value
+set_multicycle_path -setup 2 -from [get_cells -hier -filter {NAME =~ i_scope/set_*_filt_*_reg*}]
+set_multicycle_path -hold  1 -from [get_cells -hier -filter {NAME =~ i_scope/set_*_filt_*_reg*}]
+

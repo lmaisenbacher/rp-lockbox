@@ -1,3 +1,6 @@
+// Reference for the testbench tbn/red_pitaya_dfilt1_tb.sv: rtl/red_pitaya_dfilt1.sv as of rp-lockbox
+// 1.4.0, before its recursive stages were restructured for timing, with the module renamed. Do
+// not edit.
 /**
  * $Id: red_pitaya_dfilt1.v 964 2014-01-24 12:58:17Z matej.oblak $
  *
@@ -19,7 +22,7 @@
  *
  */
 
-module red_pitaya_dfilt1 (
+module red_pitaya_dfilt1_ref (
    // ADC
    input                        adc_clk_i ,  // ADC clock
    input                        adc_rstn_i,  // ADC reset - active low
@@ -61,47 +64,43 @@ end
 //---------------------------------------------------------------------------------
 //  IIR 1
 
-// The recursion r3 <= ((r2 <<< 25) + (r3 <<< 25) - r3 * aa) >>> 25 on 49 bits.
-// The 23 bits r3 keeps depend only on the sum's low 48 bits, and for those
-// r2 + r3 can be taken on 23 bits: the subtraction of the product then happens
-// in the multiplier block, out of which r3 comes back directly.
-logic signed [23-1:0] r3_k   ;  // r2 + r3 on 23 bits
-logic signed [48-1:0] r3_acc ;  // the 49-bit sum on its low 48 bits
-logic signed [23-1:0] r3_reg ;
+logic signed [41-1:0] aa_mult;
+logic signed [49-1:0] r3_sum ; //24 + 25
+(* use_dsp="yes" *) logic signed [23-1:0] r3_reg_dsp1;
+(* use_dsp="yes" *) logic signed [23-1:0] r3_reg_dsp2;
+logic signed [23-1:0] r3_reg_dsp3;
 
-assign r3_k   = r2_reg + r3_reg;
-assign r3_acc = $signed({r3_k, 25'd0}) - r3_reg * cfg_aa_i;
+assign aa_mult = r3_reg_dsp1 * cfg_aa_i;
+assign r3_sum  = (r2_reg <<< 25) + (r3_reg_dsp2 <<< 25) - aa_mult;
 
 always_ff @(posedge adc_clk_i)
 if (~adc_rstn_i) begin
-   r3_reg <= '0;
+   r3_reg_dsp1 <= '0;
+   r3_reg_dsp2 <= '0;
+   r3_reg_dsp3 <= '0;
 end else begin
-   r3_reg <= r3_acc[48-1:25];
+   r3_reg_dsp1 <= r3_sum >>> 25;
+   r3_reg_dsp2 <= r3_sum >>> 25;
+   r3_reg_dsp3 <= r3_sum >>> 33;
 end
 
 //---------------------------------------------------------------------------------
 //  IIR 2
 
-// The recursion r4 <= r3_shr + (r4 * pp >>> 16), computed as
-// (r3_shr * 2^16 + r4 * pp) >>> 16, which is the same: the addition happens in
-// the multiplier block, out of which r4 comes back directly
 logic signed [40-1:0] pp_mult;
-logic signed [41-1:0] r4_acc ;  // r3_shr * 2^16 + pp_mult
 logic signed [16-1:0] r4_sum ;
 logic signed [15-1:0] r4_reg ;
 logic signed [15-1:0] r3_shr ;
 
 assign pp_mult = r4_reg * cfg_pp_i;
-assign r4_acc  = (r3_shr <<< 16) + pp_mult;
-assign r4_sum  = r4_acc >>> 16;
+assign r4_sum  = r3_shr + (pp_mult >>> 16);
 
 always_ff @(posedge adc_clk_i)
 if (~adc_rstn_i) begin
    r3_shr <= '0;
    r4_reg <= '0;
 end else begin
-   // The 49-bit sum >>> 33 on 15 bits: bits 22:8 of r3
-   r3_shr <= r3_reg >>> 8;
+   r3_shr <= r3_reg_dsp3;
    r4_reg <= r4_sum;
 end
 
@@ -126,4 +125,4 @@ end
 
 assign adc_dat_o = r5_reg;
 
-endmodule: red_pitaya_dfilt1
+endmodule: red_pitaya_dfilt1_ref

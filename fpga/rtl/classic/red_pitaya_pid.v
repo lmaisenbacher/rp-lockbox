@@ -109,6 +109,27 @@ localparam  RELOCK_STEPSR = 18;
 // (2: the event counters at 0x200)
 localparam  FEATURE_ID = 32'h5053_0002;
 
+// The reset and the bus, registered here, so that copies near the many
+// registers of this module drive them (a write lands, and a read and a write
+// are acknowledged, one clock cycle later than the request). The reset is
+// active high for the registers of this module, which then take it at their
+// reset pins directly, and active low for the submodules.
+(* max_fanout = 50 *) reg rst  = 1'b1;
+(* max_fanout = 50 *) reg rstn = 1'b0;
+reg                                     bus_wen  ;
+reg                                     bus_ren  ;
+(* max_fanout = 50 *) reg  [ 20-1: 0]  bus_addr ;
+(* max_fanout = 50 *) reg  [ 32-1: 0]  bus_wdata;
+
+always @(posedge clk_i) begin
+   rst       <= !rstn_i;
+   rstn      <= rstn_i;
+   bus_wen   <= sys_wen & rstn_i;
+   bus_ren   <= sys_ren & rstn_i;
+   bus_addr  <= sys_addr[19:0];
+   bus_wdata <= sys_wdata;
+end
+
 // Per-set registers are indexed with n = 4*set + PID; the set 1 registers sit
 // at the set 0 address + 0x100
 reg         [14-1: 0    ] set_sp               [7:0];
@@ -136,7 +157,7 @@ wire signed [14-1:0]      pid_ctr_val          [3:0];
 wire                      pid_hold             [3:0];
 wire        [1:0]         pid_railed_i         [3:0];
 wire        [1:0]         output_enabled       [3:0];
-wire        [3:0]         ext_reset                 ;
+reg         [3:0]         ext_reset                 ;  // registered
 reg         [2-1:0]       ext_reset_source     [3:0];
 
 wire signed [15-1:0]      pid_sum              [3:0];
@@ -148,6 +169,7 @@ reg         [RELOCK_STEP_BITS-1:0] relock_stepsize  [3:0];
 reg         [2-1:0]                relock_source    [3:0];
 wire                               relock_clear_o   [3:0];
 wire signed [14-1:0]               relock_signal_o  [3:0];
+reg  signed [14-1:0]               relock_signal_q  [3:0];
 wire                               relock_hold_o    [3:0];
 wire        [12-1:0]               relock_signal_i  [3:0];
 wire                               relock_hold_i    [3:0];
@@ -184,7 +206,7 @@ reg         [2-1:0]        dio_count            [6:0];
 genvar dio_index;
 generate for (dio_index = 0; dio_index < 7; dio_index = dio_index + 1) begin: g_dio
     always @(posedge clk_i) begin
-       if (rstn_i == 1'b0) begin
+       if (rst) begin
           dio_level[dio_index] <= 1'b0;
           dio_count[dio_index] <= 2'd0;
        end
@@ -213,14 +235,14 @@ reg         [3:0]          pset_d1                   ;  // gains
 wire        [3:0]          pset_switch               ;  // the set changes (at the next clock edge)
 reg         [3:0]          pset_switch_q             ;
 reg         [32-1:0]       holdoff_count        [3:0];
-wire        [3:0]          holdoff_on                ;
+reg         [3:0]          holdoff_on                ;  // holdoff_count != 0, registered
 reg         [3:0]          holdoff_on_q              ;
 reg         [3:0]          holdoff_violated          ;
 
 // Event counters (they wrap around)
 reg         [32-1:0]       cnt_switches         [3:0];  // parameter set switches
-reg         [32-1:0]       cnt_holdoff_left     [3:0];  // holdoffs with the window left
-reg         [32-1:0]       cnt_holdoff_out      [3:0];  // holdoffs that ended outside the window
+reg         [32-1:0]       cnt_holdoff_went_outside  [3:0];  // holdoffs with the relock input outside the window
+reg         [32-1:0]       cnt_holdoff_ended_outside [3:0];  // holdoffs that ended outside the window
 reg         [32-1:0]       cnt_unlocks          [3:0];  // locked -> unlocked while the hold is off
 reg         [3:0]          holdoff_violated_q        ;
 reg         [3:0]          lock_q                    ;
@@ -247,14 +269,14 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin: g_
                                || ((pset_mode[pid_index] == 2'd2) &&  dio_level_sel[pset_input[pid_index]])
                                || ((pset_mode[pid_index] == 2'd3) && !dio_level_sel[pset_input[pid_index]]);
     assign pset_switch[pid_index] = pset_d0[pid_index] != pset_d1[pid_index];
-    assign holdoff_on[pid_index] = holdoff_count[pid_index] != 32'd0;
 
     always @(posedge clk_i) begin
-       if (rstn_i == 1'b0) begin
+       if (rst) begin
           pset_d0[pid_index]          <= 1'b0;
           pset_d1[pid_index]          <= 1'b0;
           pset_switch_q[pid_index]    <= 1'b0;
           holdoff_count[pid_index]    <= 32'd0;
+          holdoff_on[pid_index]       <= 1'b0;
           holdoff_on_q[pid_index]     <= 1'b0;
           holdoff_violated[pid_index] <= 1'b0;
        end
@@ -262,10 +284,14 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin: g_
           pset_d0[pid_index] <= pset_next[pid_index];
           pset_d1[pid_index] <= pset_d0[pid_index];
           // The holdoff starts with the lock window of the new set
-          if (pset_switch[pid_index])
+          if (pset_switch[pid_index]) begin
              holdoff_count[pid_index] <= holdoff[4*pset_d0[pid_index]+pid_index];
-          else if (holdoff_on[pid_index])
+             holdoff_on[pid_index]    <= holdoff[4*pset_d0[pid_index]+pid_index] != 32'd0;
+          end
+          else if (holdoff_on[pid_index]) begin
              holdoff_count[pid_index] <= holdoff_count[pid_index] - 32'd1;
+             holdoff_on[pid_index]    <= holdoff_count[pid_index] != 32'd1;
+          end
           // Whether the lock window was left during the holdoff, until the next switch. The
           // window result lags the holdoff by one cycle, so the first result after a
           // switch still belongs to the old window.
@@ -293,7 +319,7 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin: g_
       .K_BITS  ( KP_BITS)
     ) i_kg_products (
       .clk_i   ( clk_i                ),
-      .rstn_i  ( rstn_i               ),
+      .rstn_i  ( rstn                 ),
       .kp0_i   ( set_kp[pid_index]    ),
       .ki0_i   ( set_ki[pid_index]    ),
       .kd0_i   ( set_kd[pid_index]    ),
@@ -310,9 +336,13 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin: g_
       .kdg1_o  ( kdg[4+pid_index]     )
     );
 
-    assign ext_reset[pid_index] = dio_sync_2[ext_reset_source[pid_index]] && set_ext_reset_enabled[pid_index];
+    // Registered, like the sweep signal of the relock, to cut the paths into the PID
+    always @(posedge clk_i) begin
+       ext_reset[pid_index]       <= dio_sync_2[ext_reset_source[pid_index]] && set_ext_reset_enabled[pid_index];
+       relock_signal_q[pid_index] <= relock_signal_o[pid_index];
+    end
     assign pid_hold[pid_index] = relock_hold_o[pid_index] || set_hold[pid_index] || ext_reset[pid_index];
-    assign pid_sum[pid_index] = pid_out[pid_index] + relock_signal_o[pid_index];
+    assign pid_sum[pid_index] = pid_out[pid_index] + relock_signal_q[pid_index];
     assign pid_sat[pid_index] = (^pid_sum[pid_index][15-1:15-2]) ?
                                 {pid_sum[pid_index][15-1], {13{~pid_sum[pid_index][15-1]}}} :
                                 pid_sum[pid_index][14-1:0];
@@ -329,7 +359,7 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin: g_
     ) i_pid (
        // data
       .clk_i         (  clk_i                  ),  // clock
-      .rstn_i        (  rstn_i                 ),  // reset - active low
+      .rstn_i        (  rstn                   ),  // reset - active low
       .railed_i      (  pid_railed_i[pid_index]),  // output railed
       .hold_i        (  pid_hold[pid_index]    ),  // PID internal state hold
       .dat_i         (  pid_in[pid_index]      ),  // input data
@@ -428,10 +458,10 @@ assign lock_status_o[3] = relock_lock_status[3] && set_lock_status_out_en[3];
 
 generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin: g_cnt
     always @(posedge clk_i) begin
-       if (rstn_i == 1'b0) begin
+       if (rst) begin
           cnt_switches[pid_index]       <= 32'd0;
-          cnt_holdoff_left[pid_index]   <= 32'd0;
-          cnt_holdoff_out[pid_index]    <= 32'd0;
+          cnt_holdoff_went_outside[pid_index]   <= 32'd0;
+          cnt_holdoff_ended_outside[pid_index]    <= 32'd0;
           cnt_unlocks[pid_index]        <= 32'd0;
           holdoff_violated_q[pid_index] <= 1'b0;
           lock_q[pid_index]             <= 1'b0;
@@ -442,11 +472,11 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin: g_
           // The flag rises once per holdoff
           holdoff_violated_q[pid_index] <= holdoff_violated[pid_index];
           if (holdoff_violated[pid_index] && !holdoff_violated_q[pid_index])
-             cnt_holdoff_left[pid_index] <= cnt_holdoff_left[pid_index] + 32'd1;
+             cnt_holdoff_went_outside[pid_index] <= cnt_holdoff_went_outside[pid_index] + 32'd1;
           // The holdoff has just ended (run out, or cut short by a switch into a set
           // without one) with the relock input outside the window: the lock drops
           if (holdoff_on_q[pid_index] && !holdoff_on[pid_index] && !relock_in_window[pid_index])
-             cnt_holdoff_out[pid_index] <= cnt_holdoff_out[pid_index] + 32'd1;
+             cnt_holdoff_ended_outside[pid_index] <= cnt_holdoff_ended_outside[pid_index] + 32'd1;
           // Every loss of lock while the hold is off (the lockbox monitor merges
           // them into lock drops)
           lock_q[pid_index] <= relock_lock_status[pid_index];
@@ -466,7 +496,7 @@ reg  [ 15-1: 0] out_2_sum   ;
 reg  [ 14-1: 0] out_2_sat   ;
 
 always @(posedge clk_i) begin
-   if (rstn_i == 1'b0) begin
+   if (rst) begin
       out_1_sat <= 14'd0 ;
       out_2_sat <= 14'd0 ;
    end
@@ -518,7 +548,7 @@ assign dat_b_o = out_2_sat ;
 genvar reg_index;
 generate for (reg_index = 0; reg_index < 8; reg_index = reg_index + 1) begin: g_set_reg
     always @(posedge clk_i) begin
-       if (rstn_i == 1'b0) begin
+       if (rst) begin
           set_sp[reg_index]          <= 14'd0 ;
           set_kp[reg_index]          <= {KP_BITS{1'b0}} ;
           set_ki[reg_index]          <= {KI_BITS{1'b0}} ;
@@ -530,25 +560,25 @@ generate for (reg_index = 0; reg_index < 8; reg_index = reg_index + 1) begin: g_
           holdoff[reg_index]         <= 32'd0;
        end
        else begin
-          if (sys_wen) begin
-             if (sys_addr[19:0]==('h010+'h100*(reg_index/4)+4*(reg_index%4)))
-                 set_sp[reg_index] <= sys_wdata[14-1:0];
-             if (sys_addr[19:0]==('h020+'h100*(reg_index/4)+4*(reg_index%4)))
-                 set_kp[reg_index] <= sys_wdata[KP_BITS-1:0];
-             if (sys_addr[19:0]==('h030+'h100*(reg_index/4)+4*(reg_index%4)))
-                 set_ki[reg_index] <= sys_wdata[KI_BITS-1:0];
-             if (sys_addr[19:0]==('h040+'h100*(reg_index/4)+4*(reg_index%4)))
-                 set_kd[reg_index] <= sys_wdata[KD_BITS-1:0];
-             if (sys_addr[19:0]==('h050+'h100*(reg_index/4)+4*(reg_index%4)))
-                 relock_minval[reg_index]  <= sys_wdata[12-1:0] ;
-             if (sys_addr[19:0]==('h060+'h100*(reg_index/4)+4*(reg_index%4)))
-                 relock_maxval[reg_index]  <= sys_wdata[12-1:0] ;
-             if (sys_addr[19:0]==('h090+'h100*(reg_index/4)+4*(reg_index%4)))
-                 set_kii[reg_index] <= sys_wdata[KI_BITS-1:0];
-             if (sys_addr[19:0]==('h0a0+'h100*(reg_index/4)+4*(reg_index%4)))
-                 set_kg[reg_index] <= sys_wdata[KP_BITS-1:0];
-             if (sys_addr[19:0]==('h0d0+'h100*(reg_index/4)+4*(reg_index%4)))
-                 holdoff[reg_index] <= sys_wdata;
+          if (bus_wen) begin
+             if (bus_addr==('h010+'h100*(reg_index/4)+4*(reg_index%4)))
+                 set_sp[reg_index] <= bus_wdata[14-1:0];
+             if (bus_addr==('h020+'h100*(reg_index/4)+4*(reg_index%4)))
+                 set_kp[reg_index] <= bus_wdata[KP_BITS-1:0];
+             if (bus_addr==('h030+'h100*(reg_index/4)+4*(reg_index%4)))
+                 set_ki[reg_index] <= bus_wdata[KI_BITS-1:0];
+             if (bus_addr==('h040+'h100*(reg_index/4)+4*(reg_index%4)))
+                 set_kd[reg_index] <= bus_wdata[KD_BITS-1:0];
+             if (bus_addr==('h050+'h100*(reg_index/4)+4*(reg_index%4)))
+                 relock_minval[reg_index]  <= bus_wdata[12-1:0] ;
+             if (bus_addr==('h060+'h100*(reg_index/4)+4*(reg_index%4)))
+                 relock_maxval[reg_index]  <= bus_wdata[12-1:0] ;
+             if (bus_addr==('h090+'h100*(reg_index/4)+4*(reg_index%4)))
+                 set_kii[reg_index] <= bus_wdata[KI_BITS-1:0];
+             if (bus_addr==('h0a0+'h100*(reg_index/4)+4*(reg_index%4)))
+                 set_kg[reg_index] <= bus_wdata[KP_BITS-1:0];
+             if (bus_addr==('h0d0+'h100*(reg_index/4)+4*(reg_index%4)))
+                 holdoff[reg_index] <= bus_wdata;
           end
        end
     end
@@ -558,7 +588,7 @@ endgenerate
 // Numerical parameters write, shared by both sets
 generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin: g_pid_reg
     always @(posedge clk_i) begin
-       if (rstn_i == 1'b0) begin
+       if (rst) begin
           relock_stepsize[pid_index] <= {RELOCK_STEP_BITS{1'b0}};
           relock_source[pid_index]   <= 2'd0;
           ext_reset_source[pid_index]<= 2'd0;
@@ -566,16 +596,16 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin: g_
           pset_input[pid_index]      <= 3'd2;  // DIO7_P
        end
        else begin
-          if (sys_wen) begin
-             if (sys_addr[19:0]==('h70+4*pid_index))
-                 relock_stepsize[pid_index]  <= sys_wdata[RELOCK_STEP_BITS-1:0] ;
-             if (sys_addr[19:0]==('h80+4*pid_index))
-                 relock_source[pid_index]  <= sys_wdata[2-1:0] ;
-             if (sys_addr[19:0]==('hb0+4*pid_index))
-                 ext_reset_source[pid_index]  <= sys_wdata[2-1:0] ;
-             if (sys_addr[19:0]==('hc0+4*pid_index)) begin
-                 pset_mode[pid_index]  <= sys_wdata[2-1:0] ;
-                 pset_input[pid_index] <= sys_wdata[7-1:4] ;
+          if (bus_wen) begin
+             if (bus_addr==('h70+4*pid_index))
+                 relock_stepsize[pid_index]  <= bus_wdata[RELOCK_STEP_BITS-1:0] ;
+             if (bus_addr==('h80+4*pid_index))
+                 relock_source[pid_index]  <= bus_wdata[2-1:0] ;
+             if (bus_addr==('hb0+4*pid_index))
+                 ext_reset_source[pid_index]  <= bus_wdata[2-1:0] ;
+             if (bus_addr==('hc0+4*pid_index)) begin
+                 pset_mode[pid_index]  <= bus_wdata[2-1:0] ;
+                 pset_input[pid_index] <= bus_wdata[7-1:4] ;
              end
           end
        end
@@ -585,7 +615,7 @@ endgenerate
 
 // Flags write
 always @(posedge clk_i) begin
-    if (rstn_i == 1'b0) begin
+    if (rst) begin
           set_ext_reset_enabled  <=  4'b0;
           set_lock_status_out_en <=  4'b1111;
           set_output_enabled     <=  4'b1111;
@@ -596,62 +626,59 @@ always @(posedge clk_i) begin
           set_irst               <=  4'b1111;
     end
     else begin
-        if (rstn_i & sys_wen & sys_addr[19:0]==20'h0) begin
+        if (bus_wen && bus_addr==20'h0) begin
             {set_output_enabled,
              relock_enabled,
              set_hold,
              set_irst_when_railed,
              pid_inverted,
              set_irst}
-            <= sys_wdata[24-1:0];
+            <= bus_wdata[24-1:0];
             {set_lock_status_out_en}
-            <= sys_wdata[32-1:28];
+            <= bus_wdata[32-1:28];
         end
-        if (rstn_i & sys_wen & sys_addr[19:0]==20'h4)
+        if (bus_wen && bus_addr==20'h4)
             {set_ext_reset_enabled}
-            <= sys_wdata[4-1:0];
+            <= bus_wdata[4-1:0];
     end
 end
 
 // Status of the parameter sets
 wire [32-1:0] pset_status = {9'h0, dio_level, holdoff_violated, relock_in_window, holdoff_on, pset_d1};
 
-wire sys_en;
-assign sys_en = sys_wen | sys_ren;
-
 // Read address: bit 8 = set, bits 7:4 = register, bits 3:2 = PID
-wire [3-1:0] rd_n = {sys_addr[8], sys_addr[3:2]};
-wire [2-1:0] rd_i = sys_addr[3:2];
+wire [3-1:0] rd_n = {bus_addr[8], bus_addr[3:2]};
+wire [2-1:0] rd_i = bus_addr[3:2];
 
 always @(posedge clk_i)
-if (rstn_i == 1'b0) begin
+if (rst) begin
    sys_err <= 1'b0 ;
    sys_ack <= 1'b0 ;
 end else begin
    sys_err <= 1'b0 ;
-   sys_ack <= sys_en;
+   sys_ack <= bus_wen | bus_ren;
 
-   if (sys_addr[19:10] != 10'h0)
+   if (bus_addr[19:10] != 10'h0)
       sys_rdata <= 32'h0;
-   else if (sys_addr[9]) begin
+   else if (bus_addr[9]) begin
       // The event counters at 0x200 + 0x10*k + 4*PID
-      if (sys_addr[8:6] != 3'b000)
+      if (bus_addr[8:6] != 3'b000)
          sys_rdata <= 32'h0;
       else
-         case (sys_addr[5:4])
+         case (bus_addr[5:4])
             2'd0: sys_rdata <= cnt_switches[rd_i];
-            2'd1: sys_rdata <= cnt_holdoff_left[rd_i];
-            2'd2: sys_rdata <= cnt_holdoff_out[rd_i];
+            2'd1: sys_rdata <= cnt_holdoff_went_outside[rd_i];
+            2'd2: sys_rdata <= cnt_holdoff_ended_outside[rd_i];
             default: sys_rdata <= cnt_unlocks[rd_i];
          endcase
    end
    else begin
-      case (sys_addr[7:4])
+      case (bus_addr[7:4])
          4'h0: begin
-            if (!sys_addr[8] && (rd_i == 2'd0))
+            if (!bus_addr[8] && (rd_i == 2'd0))
                sys_rdata <= {set_lock_status_out_en, relock_lock_status, set_output_enabled, relock_enabled,
                              set_hold, set_irst_when_railed, pid_inverted, set_irst};
-            else if (!sys_addr[8] && (rd_i == 2'd1))
+            else if (!bus_addr[8] && (rd_i == 2'd1))
                sys_rdata <= {{32-4{1'b0}}, set_ext_reset_enabled};
             else
                sys_rdata <= 32'h0;
@@ -662,17 +689,17 @@ end else begin
          4'h4: sys_rdata <= {{32-KD_BITS{1'b0}}, set_kd[rd_n]};
          4'h5: sys_rdata <= {{32-12{1'b0}}, relock_minval[rd_n]};
          4'h6: sys_rdata <= {{32-12{1'b0}}, relock_maxval[rd_n]};
-         4'h7: sys_rdata <= sys_addr[8] ? 32'h0 : {{32-RELOCK_STEP_BITS{1'b0}}, relock_stepsize[rd_i]};
-         4'h8: sys_rdata <= sys_addr[8] ? 32'h0 : {{32-2{1'b0}}, relock_source[rd_i]};
+         4'h7: sys_rdata <= bus_addr[8] ? 32'h0 : {{32-RELOCK_STEP_BITS{1'b0}}, relock_stepsize[rd_i]};
+         4'h8: sys_rdata <= bus_addr[8] ? 32'h0 : {{32-2{1'b0}}, relock_source[rd_i]};
          4'h9: sys_rdata <= {{32-KI_BITS{1'b0}}, set_kii[rd_n]};
          4'ha: sys_rdata <= {{32-KP_BITS{1'b0}}, set_kg[rd_n]};
-         4'hb: sys_rdata <= sys_addr[8] ? 32'h0 : {{32-2{1'b0}}, ext_reset_source[rd_i]};
-         4'hc: sys_rdata <= sys_addr[8] ? 32'h0 : {{32-7{1'b0}}, pset_input[rd_i], 2'b00, pset_mode[rd_i]};
+         4'hb: sys_rdata <= bus_addr[8] ? 32'h0 : {{32-2{1'b0}}, ext_reset_source[rd_i]};
+         4'hc: sys_rdata <= bus_addr[8] ? 32'h0 : {{32-7{1'b0}}, pset_input[rd_i], 2'b00, pset_mode[rd_i]};
          4'hd: sys_rdata <= holdoff[rd_n];
          4'hf: begin
-            if (!sys_addr[8] && (rd_i == 2'd0))
+            if (!bus_addr[8] && (rd_i == 2'd0))
                sys_rdata <= pset_status;
-            else if (!sys_addr[8] && (rd_i == 2'd3))
+            else if (!bus_addr[8] && (rd_i == 2'd3))
                sys_rdata <= FEATURE_ID;
             else
                sys_rdata <= 32'h0;

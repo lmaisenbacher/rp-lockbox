@@ -89,25 +89,30 @@ module red_pitaya_pid_block #(
 //---------------------------------------------------------------------------------
 //  Set point error and change of the input
 
+// The input is registered here first: the route from the ADC ends at this
+// register, and the subtractions start next to the multipliers, whose input
+// registers then hold the error and the change of the input
+reg signed [ 14-1: 0] dat_r        ;
 reg signed [ 15-1: 0] error        ;
 reg signed [ 15-1: 0] dmeas        ;  // change of the input, with the feedback sign
 reg signed [ 14-1: 0] dat_q        ;
 
 always @(posedge clk_i) begin
+   dat_r <= dat_i;
    if (rstn_i == 1'b0) begin
       error <= 15'h0 ;
       dmeas <= 15'h0 ;
       dat_q <= 14'h0 ;
    end
    else begin
-      dat_q <= dat_i;
+      dat_q <= dat_r;
       if (inverted_i == 1'b0) begin
-         error <= dat_i - set_sp_i;
-         dmeas <= dat_i - dat_q;
+         error <= dat_r - set_sp_i;
+         dmeas <= dat_r - dat_q;
       end
       else begin
-         error <= -(dat_i - set_sp_i);
-         dmeas <= -(dat_i - dat_q);
+         error <= -(dat_r - set_sp_i);
+         dmeas <= -(dat_r - dat_q);
       end
    end
 end
@@ -140,56 +145,77 @@ end
 // register stages: the integrator then lags the proportional part by one
 // more clock cycle than the output adds to it, as it did when KG was applied
 // to the sum.
-reg  signed [G_BITS+1+15-1: 0] ki_mult    ;
-reg  signed [G_BITS+1+15-1: 0] ki_mult_r  ;
-reg  signed [G_BITS+1+15-1: 0] ki_mult_q  ;
+localparam KI_MULT_BITS = G_BITS+1+15;  // width of the product
+localparam INT_BITS     = 15+ISR+GSR;   // width of the integrator
+localparam KC_BITS      = INT_BITS+2;   // width of the clamped product
+reg  signed [KI_MULT_BITS-1: 0] ki_mult    ;
+reg  signed [KI_MULT_BITS-1: 0] ki_mult_r  ;
+// The product clamped to KC_BITS: the integrator (INT_BITS) plus a product at
+// or beyond the clamp's limits lies beyond the integrator's range, so a clamped
+// product takes the integrator to the same limit as the full one. The
+// anti-windup takes its sign from the registers beside it.
+reg  signed [KC_BITS-1: 0]      ki_mult_q  ;
+reg                             ki_mult_neg;
+reg                             ki_mult_pos;
 // New integrator value, before saturation
-wire signed [G_BITS+1+15  : 0] int_sum    ;
-// Integrator, with GSR fractional bits more than the integrator gain
-reg  signed [15+ISR+GSR-1: 0]  int_reg    ;
+wire signed [KC_BITS: 0]        int_sum    ;
+// Integrator, with GSR fractional bits more than the integrator gain. Kept out
+// of the second integrator's multiplier, whose input register would otherwise
+// take a copy of it at the end of this addition.
+(* dont_touch = "true" *) reg signed [INT_BITS-1: 0] int_reg;
 // Most-significant 15 bits of the integrator, added to the output
-wire signed [15-1: 0]          int_shr    ;  // Twice the DAC range (14 bit) should be enough
+wire signed [15-1: 0]           int_shr    ;  // Twice the DAC range (14 bit) should be enough
+
+wire ki_mult_r_fits = ki_mult_r[KI_MULT_BITS-1:KC_BITS-1]
+                      == {(KI_MULT_BITS-KC_BITS+1){ki_mult_r[KI_MULT_BITS-1]}};
 
 always @(posedge clk_i) begin
-   ki_mult   <= error * kig_signed;
-   ki_mult_r <= ki_mult;
-   ki_mult_q <= ki_mult_r;
+   ki_mult     <= error * kig_signed;
+   ki_mult_r   <= ki_mult;
+   ki_mult_q   <= ki_mult_r_fits ? ki_mult_r[KC_BITS-1:0]
+                : {ki_mult_r[KI_MULT_BITS-1], {KC_BITS-1{~ki_mult_r[KI_MULT_BITS-1]}}};
+   ki_mult_neg <= ki_mult_r < 0;
+   ki_mult_pos <= ki_mult_r > 0;
 end
 
 assign int_sum = ki_mult_q + int_reg;
 
 // `int_sum` lies within the range of `int_reg` if its bits above the sign bit
 // of `int_reg` all equal its sign bit
-wire int_sum_pos = !int_sum[G_BITS+1+15] &&  (|int_sum[G_BITS+1+15-1:15+ISR+GSR-1]);
-wire int_sum_neg =  int_sum[G_BITS+1+15] && !(&int_sum[G_BITS+1+15-1:15+ISR+GSR-1]);
+wire int_sum_pos = !int_sum[KC_BITS] &&  (|int_sum[KC_BITS-1:INT_BITS-1]);
+wire int_sum_neg =  int_sum[KC_BITS] && !(&int_sum[KC_BITS-1:INT_BITS-1]);
 
 always @(posedge clk_i) begin
    if (rstn_i == 1'b0) begin
-      int_reg  <= {15+ISR+GSR{1'b0}};
+      int_reg  <= {INT_BITS{1'b0}};
    end
    else begin
       if (int_rst_i || int_ctr_rst_i)
-         int_reg <= {15+ISR+GSR{1'b0}}; // reset (the center reset sets the second integrator)
+         int_reg <= {INT_BITS{1'b0}}; // reset (the center reset sets the second integrator)
       else if (int_sum_pos) // positive saturation
-         int_reg <= {1'b0, {15+ISR+GSR-1{1'b1}}}; // max positive
+         int_reg <= {1'b0, {INT_BITS-1{1'b1}}}; // max positive
       else if (int_sum_neg) // negative saturation
-         int_reg <= {1'b1, {15+ISR+GSR-1{1'b0}}}; // max negative
-      else if ((railed_i[0] && (ki_mult_q < 0)) // anti-windup lower rail
-            || (railed_i[1] && (ki_mult_q > 0)) // anti-windup upper rail
+         int_reg <= {1'b1, {INT_BITS-1{1'b0}}}; // max negative
+      else if ((railed_i[0] && ki_mult_neg) // anti-windup lower rail
+            || (railed_i[1] && ki_mult_pos) // anti-windup upper rail
             || (hold_i)) // integrator hold
          int_reg <= int_reg;
       else
-         int_reg <= int_sum[15+ISR+GSR-1:0];
+         int_reg <= int_sum[INT_BITS-1:0];
    end
 end
 
-assign int_shr = int_reg[15+ISR+GSR-1:ISR+GSR];
+assign int_shr = int_reg[INT_BITS-1:ISR+GSR];
 
 //---------------------------------------------------------------------------------
 //  Second integrator
 
 // LM: Register holding current 1st integrator value multiplied with 2nd integrator gain
 reg signed  [KI_BITS+1+15-1: 0] kii_mult  ;
+// The sign of `kii_mult`, from the factors (the gain is never negative), so
+// that the anti-windup does not wait for the product
+reg                             kii_mult_neg;
+reg                             kii_mult_pos;
 // LM: Register holding new 2nd integrator value (44-bit)
 wire signed [15+ISR+1-1: 0]     iint_sum  ;
 // LM: Internal register holding 2nd integrator value (43-bit)
@@ -201,12 +227,16 @@ wire signed [KI_BITS+1-1: 0]    kii_signed = {1'b0, set_kii_i};
 always @(posedge clk_i) begin
    if (rstn_i == 1'b0) begin
       kii_mult  <= {KI_BITS+1+15{1'b0}};
+      kii_mult_neg <= 1'b0;
+      kii_mult_pos <= 1'b0;
       iint_reg  <= {15+ISR{1'b0}};
    end
    else begin
       // LM: Multiply 1st integrator output with (signed wire) 2nd integrator gain `kii_signed`
       // to get value to be added to 2nd integrator register
       kii_mult <= int_shr * kii_signed;
+      kii_mult_neg <= (int_shr < 0) && (set_kii_i != {KI_BITS{1'b0}});
+      kii_mult_pos <= (int_shr > 0) && (set_kii_i != {KI_BITS{1'b0}});
 
       if (int_rst_i)
          iint_reg <= {15+ISR{1'b0}}; // reset
@@ -216,8 +246,8 @@ always @(posedge clk_i) begin
          iint_reg <= {1'b0, {15+ISR-1{1'b1}}}; // max positive
       else if (iint_sum[15+ISR:15+ISR-1] == 2'b10) // negative saturation
          iint_reg <= {1'b1, {15+ISR-1{1'b0}}}; // max negative
-      else if ((railed_i[0] && (kii_mult < 0)) // anti-windup lower rail
-            || (railed_i[1] && (kii_mult > 0)) // anti-windup upper rail
+      else if ((railed_i[0] && kii_mult_neg) // anti-windup lower rail
+            || (railed_i[1] && kii_mult_pos) // anti-windup upper rail
             || (hold_i) // LM: integrator hold
             || (set_kg_zero_i)) // a zero KG freezes the first integrator, and with it the output
          iint_reg <= iint_reg;

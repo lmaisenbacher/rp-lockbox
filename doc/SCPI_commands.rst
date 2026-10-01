@@ -343,9 +343,10 @@ Parameter options:
 |                                                   |                              |   FPGA image without the counters.                        |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | ``PID:IN<n>:OUT<n>:COUNTers?``                    | ``rp_PIDGetCounters``        | | The FPGA's event counters since it was loaded:          |
-|                                                   |                              |   ``switches,holdoffs_left,holdoffs_out,unlocks`` -       |
-|                                                   |                              |   parameter set switches, holdoffs during which the relock|
-|                                                   |                              |   input left the window, holdoffs that ended with it      |
+|                                                   |                              |   ``switches,holdoffs_went_outside,``                     |
+|                                                   |                              |   ``holdoffs_ended_outside,unlocks`` - parameter set      |
+|                                                   |                              |   switches, holdoffs during which the relock input went   |
+|                                                   |                              |   outside the window, holdoffs that ended with it         |
 |                                                   |                              |   outside, and every change of the lock status from       |
 |                                                   |                              |   locked to unlocked while the hold is off. They wrap     |
 |                                                   |                              |   around at 2^32; loggers take differences. Works without |

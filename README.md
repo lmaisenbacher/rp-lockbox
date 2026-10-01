@@ -185,14 +185,15 @@ auxiliary analog inputs update about every 10 µs. The holdoff time is set per s
 after switch" under Lock monitoring on the web page (0 ms, the default, means no holdoff).
 
 The web page shows under "Last holdoff" what the monitored input did during the holdoff after the
-last switch. "Input stayed in the window": the switch would not have counted as a lock drop even
-without the holdoff. "Input left the window": the holdoff kept a lock drop from being counted. If
+last switch. "Input stayed inside the window": the switch would not have counted as a lock drop
+even without the holdoff. "Input went outside the window": the holdoff kept a lock drop from being
+counted. If
 the lock status then drops as the holdoff ends, the holdoff is too short (or the lock was lost).
 Every switch starts the holdoff again, so an input that switches more often than the holdoff lasts
 keeps lock-loss detection off altogether.
 
 The FPGA counts, per controller and since it was loaded, the switches of the parameter set, the
-holdoffs during which the input left the window, and the holdoffs that ended with it outside the
+holdoffs during which the input went outside the window, and the holdoffs that ended with it outside the
 window. The web page shows them in the Parameter set box, and `PID:IN<n>:OUT<n>:COUNTers?` returns
 them with the FPGA's unlock count, for loggers to take differences.
 

@@ -117,8 +117,8 @@ int main(void)
             regs[(0x200 + 0x10 * k + 4 * p) / 4] = 0x1000u * (k + 1) + p;
     pid_Init();
     CHECK(pid_GetCounters(RP_PID_21, &counters) == RP_OK, "counters with feature version 2");
-    CHECK(counters.switches == 0x1002 && counters.holdoffs_left == 0x2002
-          && counters.holdoffs_out == 0x3002 && counters.unlocks == 0x4002, "the counters of PID 21");
+    CHECK(counters.switches == 0x1002 && counters.holdoffs_went_outside == 0x2002
+          && counters.holdoffs_ended_outside == 0x3002 && counters.unlocks == 0x4002, "the counters of PID 21");
     CHECK(pid_GetUnlockCounts(unlocks) == RP_OK && unlocks[0] == 0x4000 && unlocks[3] == 0x4003,
           "the unlock counts of all four");
     CHECK(pid_GetCounters(4, &counters) == RP_EPN, "PID 4 refused");
@@ -202,7 +202,7 @@ int main(void)
     pid_SetParamSetInput(RP_PID_11, RP_DIO7_P);
     CHECK(((reg(0xC0) >> 4) & 0x7) == 2, "DIO7_P is input 2");
 
-    // Status: PID 12 on set 1 in its holdoff, its input (4) high, PID 11 window left
+    // Status: PID 12 on set 1 in its holdoff, its input (4) high, PID 11 went outside the window
     regs[0xF0 / 4] = (1u << 1) | (1u << (4 + 1)) | (1u << (12 + 0)) | (1u << (16 + 4));
     pid_GetParamSetState(RP_PID_12, &active, &holdoff, &level, &violated);
     CHECK(active == RP_PSET_2 && holdoff && level && !violated, "PID 12 state");

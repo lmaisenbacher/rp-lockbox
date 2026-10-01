@@ -9,9 +9,9 @@
  * writes; the reference ignores the registers it does not have.
  *
  * Checks:
- *   1. KG = 1, P + I + II: the new output equals the reference two clock
+ *   1. KG = 1, P + I + II: the new output equals the reference three clock
  *      cycles later, bit for bit.
- *   2. D only, KG = 1: within 1 LSB of the reference one clock cycle later
+ *   2. D only, KG = 1: within 1 LSB of the reference two clock cycles later
  *      (D on the measurement rounds once instead of twice, and its path got
  *      one register less than P).
  *   3. P only, KG != 1, static: exactly the products' arithmetic, within
@@ -25,7 +25,7 @@
  *      the holdoff.
  *   8. Register readback, reserved addresses, feature ID, external reset
  *      through the synchronizer.
- *   9. Event counters: set switches, holdoffs with the window left, holdoffs
+ *   9. Event counters: set switches, holdoffs with the input outside the window, holdoffs
  *      ending outside the window, unlocks (every one, none while held);
  *      their addresses.
  *
@@ -181,12 +181,20 @@ endtask
 task rd;
   input  [31:0] a;
   output [31:0] d;
+  integer k;
   begin
     @(negedge clk);
     sys_addr = a;
     sys_ren  = 1'b1;
     @(negedge clk);
     sys_ren  = 1'b0;
+    // The data is taken with the acknowledge, as the bus does
+    k = 0;
+    while (!dut_ack && (k < 8)) begin
+      @(negedge clk);
+      k = k + 1;
+    end
+    check(dut_ack, "bus: read acknowledged");
     d = dut_rdata;
   end
 endtask
@@ -272,21 +280,23 @@ always @(posedge clk) begin
   endcase
 end
 
-// Outputs one and two cycles back
-reg signed [14-1:0] ref_o_q  = 14'sd0;
-reg signed [14-1:0] ref_o_qq = 14'sd0;
+// Outputs one to three cycles back
+reg signed [14-1:0] ref_o_q   = 14'sd0;
+reg signed [14-1:0] ref_o_qq  = 14'sd0;
+reg signed [14-1:0] ref_o_qqq = 14'sd0;
 reg signed [14-1:0] dut_o_q  = 14'sd0;
 always @(posedge clk) begin
   ref_o_q  <= ref_o;
   ref_o_qq <= ref_o_q;
+  ref_o_qqq <= ref_o_qq;
   dut_o_q  <= dut_o;
 end
 
 //---------------------------------------------------------------------------------
 // Monitors, enabled by the tests
 
-reg     cmp_delay1 = 1'b0;   // check 1: dut_o == ref_o two cycles back
-reg     cmp_d      = 1'b0;   // check 2: |dut_o - ref_o one cycle back| <= 1
+reg     cmp_delay1 = 1'b0;   // check 1: dut_o == ref_o three cycles back
+reg     cmp_d      = 1'b0;   // check 2: |dut_o - ref_o two cycles back| <= 1
 reg     cmp_lock   = 1'b0;   // check 7: dut_lock == ref_lock
 reg     step_on    = 1'b0;   // largest output step, see max_step
 integer max_step   = 0;
@@ -297,14 +307,14 @@ integer d_out;
 always @(negedge clk) begin
   if (cmp_delay1 && ((dut_o > max_abs) || (-dut_o > max_abs)))
     max_abs = (dut_o > 0) ? dut_o : -dut_o;
-  if (cmp_delay1 && (dut_o !== ref_o_qq)) begin
+  if (cmp_delay1 && (dut_o !== ref_o_qqq)) begin
     if (mon_fail < 5)
-      $display("  delayed output differs: dut %0d ref %0d (t = %0t ns)", dut_o, ref_o_qq, $time);
+      $display("  delayed output differs: dut %0d ref %0d (t = %0t ns)", dut_o, ref_o_qqq, $time);
     mon_fail = mon_fail + 1;
   end
-  if (cmp_d && ((dut_o - ref_o_q > 1) || (ref_o_q - dut_o > 1))) begin
+  if (cmp_d && ((dut_o - ref_o_qq > 1) || (ref_o_qq - dut_o > 1))) begin
     if (mon_fail < 5)
-      $display("  D output differs: dut %0d ref %0d (t = %0t ns)", dut_o, ref_o_q, $time);
+      $display("  D output differs: dut %0d ref %0d (t = %0t ns)", dut_o, ref_o_qq, $time);
     mon_fail = mon_fail + 1;
   end
   if (cmp_lock && (dut_lock[0] !== ref_lock[0])) begin
@@ -320,6 +330,76 @@ always @(negedge clk) begin
       max_step = d_out;
   end
 end
+
+// Registers that stand in for a combinational result must equal it in every
+// cycle, in all PIDs: the sign of the second integrator's product (taken from
+// the factors) and the holdoff flag (holdoff_count != 0). The counts of the
+// cases met show that the tests reach them.
+integer inv_fail     = 0;
+integer n_kii_pos    = 0;
+integer n_kii_neg    = 0;
+integer n_kii_zero   = 0;  // the product is zero while the first integrator is not
+integer n_holdoff_on = 0;
+// The integrator adds its product clamped: with the integrator, the clamped
+// product must give the same saturation, or else the same sum, as the full one
+// (the full one is kept from the cycle before, when it was ki_mult_r), and the
+// anti-windup's sign registers must carry the full product's sign
+integer n_clamped    = 0;
+integer n_int_sat    = 0;
+localparam signed [64-1:0] INT_RANGE = 64'sd1 <<< 48;  // the integrator's range: +-2^48
+
+genvar gk;
+generate for (gk = 0; gk < 4; gk = gk + 1) begin: g_inv
+  reg signed [64-1:0] ki_full = 64'sd0;
+  reg signed [64-1:0] sum_full;
+  reg signed [64-1:0] sum_clamped;
+  integer             sat_full;
+  integer             sat_clamped;
+  always @(negedge clk) begin
+    if ((^dut.g_pid[gk].i_pid.ki_mult_q !== 1'bx) && (^ki_full !== 1'bx)) begin
+      sum_full    = ki_full + dut.g_pid[gk].i_pid.int_reg;
+      sum_clamped = dut.g_pid[gk].i_pid.ki_mult_q + dut.g_pid[gk].i_pid.int_reg;
+      sat_full    = (sum_full >= INT_RANGE) ? 1 : ((sum_full < -INT_RANGE) ? -1 : 0);
+      sat_clamped = (sum_clamped >= INT_RANGE) ? 1 : ((sum_clamped < -INT_RANGE) ? -1 : 0);
+      if ((sat_full != sat_clamped) || ((sat_full == 0) && (sum_full != sum_clamped))
+       || (dut.g_pid[gk].i_pid.int_sum_pos !== (sat_clamped == 1))
+       || (dut.g_pid[gk].i_pid.int_sum_neg !== (sat_clamped == -1))
+       || (dut.g_pid[gk].i_pid.ki_mult_neg !== (ki_full < 0))
+       || (dut.g_pid[gk].i_pid.ki_mult_pos !== (ki_full > 0))) begin
+        if (inv_fail < 5)
+          $display("  PID %0d: clamped integrator product differs (t = %0t ns)", gk, $time);
+        inv_fail = inv_fail + 1;
+      end
+      if (ki_full != dut.g_pid[gk].i_pid.ki_mult_q)
+        n_clamped = n_clamped + 1;
+      if (sat_full != 0)
+        n_int_sat = n_int_sat + 1;
+    end
+    ki_full = dut.g_pid[gk].i_pid.ki_mult_r;
+  end
+  always @(negedge clk) begin
+    if ((dut.g_pid[gk].i_pid.kii_mult_pos !== (dut.g_pid[gk].i_pid.kii_mult > 0))
+     || (dut.g_pid[gk].i_pid.kii_mult_neg !== (dut.g_pid[gk].i_pid.kii_mult < 0))) begin
+      if (inv_fail < 5)
+        $display("  PID %0d: product sign differs (t = %0t ns)", gk, $time);
+      inv_fail = inv_fail + 1;
+    end
+    if (dut.holdoff_on[gk] !== (dut.holdoff_count[gk] != 32'd0)) begin
+      if (inv_fail < 5)
+        $display("  PID %0d: holdoff flag differs from the count (t = %0t ns)", gk, $time);
+      inv_fail = inv_fail + 1;
+    end
+    if (dut.g_pid[gk].i_pid.kii_mult > 0)
+      n_kii_pos = n_kii_pos + 1;
+    if (dut.g_pid[gk].i_pid.kii_mult < 0)
+      n_kii_neg = n_kii_neg + 1;
+    if ((dut.g_pid[gk].i_pid.kii_mult == 0) && (dut.g_pid[gk].i_pid.int_shr != 0))
+      n_kii_zero = n_kii_zero + 1;
+    if (dut.holdoff_on[gk])
+      n_holdoff_on = n_holdoff_on + 1;
+  end
+end
+endgenerate
 
 //---------------------------------------------------------------------------------
 // Tests
@@ -358,7 +438,7 @@ initial begin
   cycles(10);
 
   //-------------------------------------------------------------------------------
-  $display("1. KG = 1, P + I + II: equal to the reference two cycles later");
+  $display("1. KG = 1, P + I + II: equal to the reference three cycles later");
   // A triangle with an offset: the integrators drift into saturation, the
   // output saturates on the peaks
   set_gains(0, 0, 8192, 1 << 23, 0, 1 << 14, 4096);
@@ -371,7 +451,7 @@ initial begin
   cmp_delay1 = 1'b1;
   cycles(40000);
   cmp_delay1 = 1'b0;
-  check(mon_fail == 0, "1: output equals the reference two cycles later");
+  check(mon_fail == 0, "1: output equals the reference three cycles later");
   check(max_abs >= 8191, "1: the output reaches saturation");
   $display("   largest output %0d, I %0d, II %0d", max_abs,
            dut.g_pid[0].i_pid.int_shr, dut.g_pid[0].i_pid.iint_shr);
@@ -380,7 +460,7 @@ initial begin
   cval = 0;
 
   //-------------------------------------------------------------------------------
-  $display("2. D only, KG = 1: within 1 LSB of the reference one cycle later");
+  $display("2. D only, KG = 1: within 1 LSB of the reference two cycles later");
   set_gains(0, 0, 0, 0, 3200, 0, 4096);
   restart(0);
   tri_amp = 300; tri_per = 2000; noise_on = 1;
@@ -603,7 +683,7 @@ initial begin
   check(hold_seen == 0, "7: no relock hold during the holdoff");
   rd(A_STATUS, r);
   check(r[1] == 1'b0 && r[0] == 1'b1, "7: set 1 active");
-  check(r[12] == 1'b1, "7: window left during the holdoff flagged");
+  check(r[12] == 1'b1, "7: input outside the window during the holdoff flagged");
   check(r[8] == 1'b1, "7: raw window result");
   // back to set 0 with the signal outside its window: drop when the holdoff ends
   @(negedge clk);
@@ -706,8 +786,8 @@ initial begin
     rd(A_CNT + 4*i, r);
     case (i / 4)
       0: e = dut.cnt_switches[i % 4];
-      1: e = dut.cnt_holdoff_left[i % 4];
-      2: e = dut.cnt_holdoff_out[i % 4];
+      1: e = dut.cnt_holdoff_went_outside[i % 4];
+      2: e = dut.cnt_holdoff_ended_outside[i % 4];
       default: e = dut.cnt_unlocks[i % 4];
     endcase
     check(r == e, "9: counter register reads its counter");
@@ -740,7 +820,7 @@ initial begin
   rd(A_CNT + 'h30, r);
   check(r - cnt_base[3] == 3, "9: three unlocks (every one counts, none while held)");
   // Into set 1 with the input outside its window, inside it before the holdoff
-  // ends: a switch, a holdoff with the window left, no unlock
+  // ends: a switch, a holdoff with the input outside the window, no unlock
   wr(A_PSET, 32'h0000_0022);
   dio_p[7] = 1'b1;
   cycles(500);
@@ -748,7 +828,7 @@ initial begin
   cycles(1000);
   check(dut_lock[0] == 1'b1, "9: locked in set 1");
   // Back into set 0 with the input outside its window: a switch, a holdoff
-  // with the window left that ends outside it, an unlock
+  // with the input outside the window that ends outside it, an unlock
   dio_p[7] = 1'b0;
   cycles(500);
   check(dut_lock[0] == 1'b0, "9: unlocked when the holdoff ended");
@@ -761,10 +841,34 @@ initial begin
   dio_p[7] = 1'b0;
   cycles(500);
   rd(A_CNT,         r); check(r - cnt_base[0] == 4, "9: four set switches");
-  rd(A_CNT + 'h10,  r); check(r - cnt_base[1] == 2, "9: two holdoffs with the window left");
-  rd(A_CNT + 'h20,  r); check(r - cnt_base[2] == 1, "9: one holdoff ended outside the window");
+  rd(A_CNT + 'h10,  r); check(r - cnt_base[1] == 2, "9: two holdoffs with the input outside the window");
+  rd(A_CNT + 'h20,  r); check(r - cnt_base[2] == 1, "9: one holdoff that ended outside the window");
   rd(A_CNT + 'h30,  r); check(r - cnt_base[3] == 4, "9: four unlocks");
   wr(A_PSET, 32'h0000_0020);
+
+  //-------------------------------------------------------------------------------
+  $display("10. Registered stand-ins for combinational results");
+  // Integrator products beyond the clamp: the largest KI and KG with a large
+  // error of either sign, and a positive product while the hold is on and the
+  // integrator sits at its negative limit (saturation acts despite the hold)
+  set_gains(0, 0, 0, (1 << 24) - 1, 0, 0, (1 << 24) - 1);
+  restart(0);
+  cval = 8000;
+  cycles(200);
+  cval = -8000;
+  cycles(200);
+  wr(A_CONF, CONF_BASE | 32'h0000_1000);
+  cval = 8000;
+  cycles(100);
+  wr(A_CONF, CONF_BASE);
+  cycles(100);
+  cval = 0;
+  $display("   cycles x PIDs: product > 0 %0d, < 0 %0d, zero with the integrator not %0d, holdoff %0d",
+           n_kii_pos, n_kii_neg, n_kii_zero, n_holdoff_on);
+  $display("   integrator product clamped %0d, integrator saturating %0d", n_clamped, n_int_sat);
+  check(inv_fail == 0, "10: registered stand-ins equal their definitions");
+  check((n_kii_pos > 0) && (n_kii_neg > 0) && (n_kii_zero > 0) && (n_holdoff_on > 0)
+        && (n_clamped > 0) && (n_int_sat > 0), "10: every case met");
 
   //-------------------------------------------------------------------------------
   if (errors == 0)

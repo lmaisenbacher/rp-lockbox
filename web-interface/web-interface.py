@@ -130,8 +130,8 @@ class PIDCounters(ctypes.Structure):
     """`rp_pid_counters_t` of lockbox.h: one PID's event counters in the FPGA."""
     _fields_ = [
         ("switches", ctypes.c_uint32),
-        ("holdoffs_left", ctypes.c_uint32),
-        ("holdoffs_out", ctypes.c_uint32),
+        ("holdoffs_went_outside", ctypes.c_uint32),
+        ("holdoffs_ended_outside", ctypes.c_uint32),
         ("unlocks", ctypes.c_uint32),
     ]
 
@@ -310,8 +310,8 @@ def pset_state(pid):
     if retval == 0:
         state["counters"] = {
             "switches": counters.switches,
-            "holdoffs_left": counters.holdoffs_left,
-            "holdoffs_out": counters.holdoffs_out,
+            "holdoffs_went_outside": counters.holdoffs_went_outside,
+            "holdoffs_ended_outside": counters.holdoffs_ended_outside,
         }
     elif retval != RP_EUF:
         LOG.error("Failed to get the counters of PID %d. Error code: %s", pid, error_text(retval))
@@ -1256,8 +1256,8 @@ class MockRPLib():
     def rp_PIDGetCounters(self, pid, counters):
         c = counters._obj
         c.switches = 1234 if pid == 0 else 0
-        c.holdoffs_left = 56 if pid == 0 else 0
-        c.holdoffs_out = 2 if pid == 0 else 0
+        c.holdoffs_went_outside = 56 if pid == 0 else 0
+        c.holdoffs_ended_outside = 2 if pid == 0 else 0
         c.unlocks = 19 + pid
         return 0
 

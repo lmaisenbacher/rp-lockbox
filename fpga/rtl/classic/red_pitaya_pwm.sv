@@ -28,11 +28,13 @@ reg  [ 4-1: 0] bcnt  ;
 reg  [16-1: 0] b     ;
 reg  [ 8-1: 0] vcnt, vcnt_r;
 reg  [ 8-1: 0] v   , v_r   ;
+reg            pwm_c ;
 
 always_ff @(posedge clk)
 if (~rstn) begin
    vcnt <=  8'h0 ;
    bcnt <=  4'h0 ;
+   pwm_c    <=  1'b0 ;
    pwm_o    <=  1'b0 ;
 end else begin
    vcnt   <= (vcnt == FULL) ? 8'h1 : (vcnt + 8'd1) ;
@@ -43,8 +45,10 @@ end else begin
       v    <= (bcnt == 4'hF) ? cfg[24-1:16] : v ; // new value on 16*FULL
       b    <= (bcnt == 4'hF) ? cfg[16-1:0] : {1'b0,b[15:1]} ; // shift right
    end
-   // make PWM duty cycle
-   pwm_o <= (vcnt_r <= v_r) ;
+   // make PWM duty cycle; the comparison is registered once before the
+   // output register, which sits in the output pin
+   pwm_c <= (vcnt_r <= v_r) ;
+   pwm_o <= pwm_c ;
 end
 
 assign pwm_s = (bcnt == 4'hF) && (vcnt == (FULL-1)) ; // latch one before

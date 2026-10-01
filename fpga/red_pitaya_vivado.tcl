@@ -96,7 +96,6 @@ report_power             -file    $path_out/post_synth_power.rpt
 ################################################################################
 
 opt_design
-power_opt_design
 place_design
 phys_opt_design
 write_checkpoint         -force   $path_out/post_place
@@ -111,6 +110,10 @@ report_timing_summary    -file    $path_out/post_place_timing_summary.rpt
 ################################################################################
 
 route_design
+# a routed design that misses setup timing gets one more physical optimization
+if {[get_property SLACK [get_timing_paths -setup -max_paths 1 -nworst 1]] < 0} {
+  phys_opt_design -directive AggressiveExplore
+}
 write_checkpoint         -force   $path_out/post_route
 report_timing_summary    -file    $path_out/post_route_timing_summary.rpt
 report_timing            -file    $path_out/post_route_timing.rpt -sort_by group -max_paths 100 -path_type summary

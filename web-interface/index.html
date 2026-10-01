@@ -993,7 +993,7 @@
         // without the parameter sets): the readouts and the highlighted
         // column headers
         function show_pset(code, pset) {
-            var counts = "#pset_switches_" + code + ", #pset_left_" + code + ", #pset_out_" + code;
+            var counts = "#pset_switches_" + code + ", #pset_went_outside_" + code + ", #pset_ended_outside_" + code;
             if (!pset) {
                 $("#pset_active_" + code + ", #pset_level_" + code + ", #pset_violated_" + code).val("-");
                 $(counts).val("-");
@@ -1003,8 +1003,8 @@
             // The FPGA's counts since it was loaded
             if (pset.counters) {
                 $("#pset_switches_" + code).val(pset.counters.switches);
-                $("#pset_left_" + code).val(pset.counters.holdoffs_left);
-                $("#pset_out_" + code).val(pset.counters.holdoffs_out);
+                $("#pset_went_outside_" + code).val(pset.counters.holdoffs_went_outside);
+                $("#pset_ended_outside_" + code).val(pset.counters.holdoffs_ended_outside);
             } else {
                 $(counts).val("-");
             }
@@ -1015,7 +1015,7 @@
             if (holdoffs && !holdoffs[pset.active ? 1 : 0]) {
                 $("#pset_violated_" + code).val("no holdoff set");
             } else {
-                $("#pset_violated_" + code).val(pset.violated ? "input left the window" : "input stayed in the window");
+                $("#pset_violated_" + code).val(pset.violated ? "input went outside the window" : "input stayed inside the window");
             }
             $("#col_set1_pid_" + code + ", #col_set1_mon_" + code).toggleClass("pset-active", !pset.active);
             $("#col_set2_pid_" + code + ", #col_set2_mon_" + code).toggleClass("pset-active", !!pset.active);
@@ -1268,12 +1268,12 @@
                             <td><output id="pset_switches_11">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Window left in holdoff</a></td>
-                            <td><output id="pset_left_11">-</output></td>
+                            <td><a>Holdoffs with the input outside the window</a></td>
+                            <td><output id="pset_went_outside_11">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Holdoff ended outside</a></td>
-                            <td><output id="pset_out_11">-</output></td>
+                            <td><a>Holdoffs that ended outside the window</a></td>
+                            <td><output id="pset_ended_outside_11">-</output></td>
                         </tr>
                     </table>
                     <button id="button_copy_11_set1" class="button copy-button">Copy param. set 1 &rarr; 2</button>
@@ -1510,12 +1510,12 @@
                             <td><output id="pset_switches_21">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Window left in holdoff</a></td>
-                            <td><output id="pset_left_21">-</output></td>
+                            <td><a>Holdoffs with the input outside the window</a></td>
+                            <td><output id="pset_went_outside_21">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Holdoff ended outside</a></td>
-                            <td><output id="pset_out_21">-</output></td>
+                            <td><a>Holdoffs that ended outside the window</a></td>
+                            <td><output id="pset_ended_outside_21">-</output></td>
                         </tr>
                     </table>
                     <button id="button_copy_21_set1" class="button copy-button">Copy param. set 1 &rarr; 2</button>
@@ -1766,12 +1766,12 @@
                             <td><output id="pset_switches_12">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Window left in holdoff</a></td>
-                            <td><output id="pset_left_12">-</output></td>
+                            <td><a>Holdoffs with the input outside the window</a></td>
+                            <td><output id="pset_went_outside_12">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Holdoff ended outside</a></td>
-                            <td><output id="pset_out_12">-</output></td>
+                            <td><a>Holdoffs that ended outside the window</a></td>
+                            <td><output id="pset_ended_outside_12">-</output></td>
                         </tr>
                     </table>
                     <button id="button_copy_12_set1" class="button copy-button">Copy param. set 1 &rarr; 2</button>
@@ -2008,12 +2008,12 @@
                             <td><output id="pset_switches_22">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Window left in holdoff</a></td>
-                            <td><output id="pset_left_22">-</output></td>
+                            <td><a>Holdoffs with the input outside the window</a></td>
+                            <td><output id="pset_went_outside_22">-</output></td>
                         </tr>
                         <tr>
-                            <td><a>Holdoff ended outside</a></td>
-                            <td><output id="pset_out_22">-</output></td>
+                            <td><a>Holdoffs that ended outside the window</a></td>
+                            <td><output id="pset_ended_outside_22">-</output></td>
                         </tr>
                     </table>
                     <button id="button_copy_22_set1" class="button copy-button">Copy param. set 1 &rarr; 2</button>

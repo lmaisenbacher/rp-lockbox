@@ -675,7 +675,7 @@ offset, parameter set 2 at the offset + 0x100. Offsets not listed read 0.
 |             | | Input levels after synchronization and           | 22:16| R   |
 |             | | filter (bit 16 + input number of 0xC0)           |      |     |
 +-------------+----------------------------------------------------+------+-----+
-|             | | Relock input left the window during the          | 15:12| R   |
+|             | | Relock input went outside the window during the  | 15:12| R   |
 |             | | holdoff after the last switch (bit 12 + i)       |      |     |
 +-------------+----------------------------------------------------+------+-----+
 |             | | Relock input inside the window, not held by      | 11:8 | R   |
@@ -696,12 +696,12 @@ offset, parameter set 2 at the offset + 0x100. Offsets not listed read 0.
 +-------------+----------------------------------------------------+------+-----+
 |             | Count since the FPGA was loaded (wraps around)     | 31:0 | R   |
 +-------------+----------------------------------------------------+------+-----+
-| **0x210+4i**| **Holdoffs with the window left**                  |      |     |
+| **0x210+4i**| **Holdoffs with the input outside the window**     |      |     |
 +-------------+----------------------------------------------------+------+-----+
-|             | | Holdoffs during which the relock input left the  | 31:0 | R   |
-|             | | window (count, wraps around)                     |      |     |
+|             | | Holdoffs during which the relock input went      | 31:0 | R   |
+|             | | outside the window (count, wraps around)         |      |     |
 +-------------+----------------------------------------------------+------+-----+
-| **0x220+4i**| **Holdoffs ended outside the window**              |      |     |
+| **0x220+4i**| **Holdoffs that ended outside the window**         |      |     |
 +-------------+----------------------------------------------------+------+-----+
 |             | | Holdoffs that ended with the relock input outside| 31:0 | R   |
 |             | | the window (count, wraps around)                 |      |     |

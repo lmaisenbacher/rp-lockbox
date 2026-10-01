@@ -156,6 +156,10 @@ logic                 pwm_rstn;
 // ADC clock/reset
 logic                 adc_clk;
 logic                 adc_rstn;
+// The ADC reset once more for each module that takes it, and for the system
+// bus: each copy can sit near the registers it resets
+logic                 adc_rstn_bus, adc_rstn_ams, adc_rstn_hk, adc_rstn_scope,
+                      adc_rstn_asg, adc_rstn_pid, adc_rstn_limit;
 
 // stream bus type
 localparam type SBA_T = logic signed [14-1:0];  // acquire
@@ -192,8 +196,8 @@ SBA_T [2-1:0]            pid_dat;
 logic                    digital_loop;
 
 // system bus
-sys_bus_if   ps_sys      (.clk (adc_clk), .rstn (adc_rstn));
-sys_bus_if   sys [8-1:0] (.clk (adc_clk), .rstn (adc_rstn));
+sys_bus_if   ps_sys      (.clk (adc_clk), .rstn (adc_rstn_bus));
+sys_bus_if   sys [8-1:0] (.clk (adc_clk), .rstn (adc_rstn_bus));
 
 // GPIO interface with 24 bit data width
 gpio_if #(.DW (24)) gpio ();
@@ -230,6 +234,16 @@ BUFG bufg_pwm_clk    (.O (pwm_clk   ), .I (pll_pwm_clk   ));
 // ADC reset (active low)
 always @(posedge adc_clk)
 adc_rstn <=  frstn[0] &  pll_locked;
+
+always @(posedge adc_clk) begin
+  adc_rstn_bus   <= adc_rstn;
+  adc_rstn_ams   <= adc_rstn;
+  adc_rstn_hk    <= adc_rstn;
+  adc_rstn_scope <= adc_rstn;
+  adc_rstn_asg   <= adc_rstn;
+  adc_rstn_pid   <= adc_rstn;
+  adc_rstn_limit <= adc_rstn;
+end
 
 // DAC reset (active high)
 always @(posedge dac_clk_1x)
@@ -319,7 +333,7 @@ logic [4-1:0] [24-1:0] pwm_cfg;
 red_pitaya_ams i_ams (
   // power test
   .clk_i           (adc_clk ),  // clock
-  .rstn_i          (adc_rstn),  // reset - active low
+  .rstn_i          (adc_rstn_ams),  // reset - active low
   // ADC analog inputs
   .vinp_i          (  vinp_i                     ),  // voltages p
   .vinn_i          (  vinn_i                     ),  // voltages n
@@ -435,7 +449,7 @@ assign exp_p_dir = 8'b00011110;
 red_pitaya_hk i_hk (
   // system signals
   .clk_i           (adc_clk ),  // clock
-  .rstn_i          (adc_rstn),  // reset - active low
+  .rstn_i          (adc_rstn_hk),  // reset - active low
   // LED
   // .led_o           (  led_o                      ),  // LED output
   // global configuration
@@ -482,7 +496,7 @@ red_pitaya_scope i_scope (
   .adc_a_i       (adc_dat[0]  ),  // CH 1
   .adc_b_i       (adc_dat[1]  ),  // CH 2
   .adc_clk_i     (adc_clk     ),  // clock
-  .adc_rstn_i    (adc_rstn    ),  // reset - active low
+  .adc_rstn_i    (adc_rstn_scope),  // reset - active low
   .trig_ext_i    (gpio.i[8]   ),  // external trigger
   .trig_asg_i    (trig_asg_out),  // ASG trigger
   // AXI0 master                 // AXI1 master
@@ -516,7 +530,7 @@ red_pitaya_asg i_asg (
   .dac_a_o         (asg_dat[0]  ),  // CH 1
   .dac_b_o         (asg_dat[1]  ),  // CH 2
   .dac_clk_i       (adc_clk     ),  // clock
-  .dac_rstn_i      (adc_rstn    ),  // reset - active low
+  .dac_rstn_i      (adc_rstn_asg),  // reset - active low
   .trig_a_i        (gpio.i[8]   ),
   .trig_b_i        (gpio.i[8]   ),
   .trig_out_o      (trig_asg_out),
@@ -541,7 +555,7 @@ assign exp_p_out[4:1] = ~pid_lock_status;
 red_pitaya_pid i_pid (
    // Input signals
   .clk_i           (adc_clk     ), // clock
-  .rstn_i          (adc_rstn    ), // reset - active low
+  .rstn_i          (adc_rstn_pid), // reset - active low
   .dat_a_i         (adc_dat[0]  ), // in 1
   .dat_b_i         (adc_dat[1]  ), // in 2
   .railed_a_i      (dac_a_railed), // out 1 railed
@@ -576,7 +590,7 @@ red_pitaya_pid i_pid (
 red_pitaya_limit i_limit (
   // Input signals
   .clk_i          (adc_clk     ), // clock
-  .rstn_i         (adc_rstn    ), // reset - active low
+  .rstn_i         (adc_rstn_limit), // reset - active low
   .dat_a_i        (dac_a_lim_i ), // in 1
   .dat_b_i        (dac_b_lim_i ), // in 2
   // Output signals

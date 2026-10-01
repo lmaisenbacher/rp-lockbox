@@ -497,8 +497,8 @@ int pid_GetCounters(rp_pid_t pid, rp_pid_counters_t *counters) {
     if(!pid_counters)
         return RP_EUF;
     counters->switches = pid_reg->counters[PID_CNT_SWITCHES][pid];
-    counters->holdoffs_left = pid_reg->counters[PID_CNT_HOLDOFFS_LEFT][pid];
-    counters->holdoffs_out = pid_reg->counters[PID_CNT_HOLDOFFS_OUT][pid];
+    counters->holdoffs_went_outside = pid_reg->counters[PID_CNT_HOLDOFFS_WENT_OUTSIDE][pid];
+    counters->holdoffs_ended_outside = pid_reg->counters[PID_CNT_HOLDOFFS_ENDED_OUTSIDE][pid];
     counters->unlocks = pid_reg->counters[PID_CNT_UNLOCKS][pid];
     return RP_OK;
 }

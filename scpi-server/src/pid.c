@@ -1064,10 +1064,10 @@ scpi_result_t RP_PIDCountersQ(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    /* switches,holdoffs_left,holdoffs_out,unlocks */
+    /* switches,holdoffs_went_outside,holdoffs_ended_outside,unlocks */
     SCPI_ResultUInt32Base(context, c.switches, 10);
-    SCPI_ResultUInt32Base(context, c.holdoffs_left, 10);
-    SCPI_ResultUInt32Base(context, c.holdoffs_out, 10);
+    SCPI_ResultUInt32Base(context, c.holdoffs_went_outside, 10);
+    SCPI_ResultUInt32Base(context, c.holdoffs_ended_outside, 10);
     SCPI_ResultUInt32Base(context, c.unlocks, 10);
 
     RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:COUNTers? Successfully returned the counters.");

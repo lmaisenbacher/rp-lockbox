@@ -292,8 +292,8 @@ typedef enum {
  */
 typedef struct {
     uint32_t switches;       //!< Parameter set switches
-    uint32_t holdoffs_left;  //!< Holdoffs during which the relock input left the window
-    uint32_t holdoffs_out;   //!< Holdoffs that ended with the relock input outside the window
+    uint32_t holdoffs_went_outside;   //!< Holdoffs during which the relock input went outside the window
+    uint32_t holdoffs_ended_outside;  //!< Holdoffs that ended with the relock input outside the window
     uint32_t unlocks;        //!< Changes of the lock status from locked to unlocked while
                              //!< the hold is off (every one; the lockbox monitor merges
                              //!< them into lock drops)
