@@ -26,6 +26,7 @@ scpi-server/test/test_commands
 scpi-server/test/commands.inc
 fpga/sim/**/*.vvp
 fpga/sim/**/xsim.dir/
+fpga/sim/**/pid_netlist.v
 *.swp
 **/prj/**/sdk
 build/

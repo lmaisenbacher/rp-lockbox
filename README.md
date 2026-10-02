@@ -297,9 +297,11 @@ the settings through the whole library against register blocks in memory (`make 
 SCPI command table (`make scpi-test`). The gateware's PID module has a self-checking simulation that
 compares it with the module before the parameter sets (`tbn/ref/`):
 `make -C fpga/sim/red_pitaya_pid_sets` with Icarus Verilog, or with `SIM=xsim` in a Vivado
-environment. The relock sweep has one too, `make -C fpga/sim/red_pitaya_relock`: below 1907 V/s it
-equals the earlier module cycle by cycle, and above it sweeps the full range at every slew rate the
-register holds.
+environment. Its port-level test of the four PIDs' independence also runs on the synthesized module
+(`make -C fpga/sim/red_pitaya_pid_sets netlist`, Vivado), which catches synthesis errors that no
+RTL simulation can see. The relock sweep has a self-checking simulation too,
+`make -C fpga/sim/red_pitaya_relock`: below 1907 V/s it equals the earlier module cycle by cycle,
+and above it sweeps the full range at every slew rate the register holds.
 
 `make clean` leaves the FPGA project alone, since its output directory holds the committed bitfile
 and synthesis reports; `make clean-fpga` cleans it, and `git checkout -- fpga/prj/lockbox/out/`

@@ -157,7 +157,7 @@ wire signed [14-1:0]      pid_ctr_val          [3:0];
 wire                      pid_hold             [3:0];
 wire        [1:0]         pid_railed_i         [3:0];
 wire        [1:0]         output_enabled       [3:0];
-reg         [3:0]         ext_reset                 ;  // registered
+wire        [3:0]         ext_reset                 ;  // registered in g_pid
 reg         [2-1:0]       ext_reset_source     [3:0];
 
 wire signed [15-1:0]      pid_sum              [3:0];
@@ -169,7 +169,7 @@ reg         [RELOCK_STEP_BITS-1:0] relock_stepsize  [3:0];
 reg         [2-1:0]                relock_source    [3:0];
 wire                               relock_clear_o   [3:0];
 wire signed [14-1:0]               relock_signal_o  [3:0];
-reg  signed [14-1:0]               relock_signal_q  [3:0];
+wire signed [14-1:0]               relock_signal_q  [3:0];  // registered in g_pid
 wire                               relock_hold_o    [3:0];
 wire        [12-1:0]               relock_signal_i  [3:0];
 wire                               relock_hold_i    [3:0];
@@ -197,28 +197,38 @@ always @(posedge clk_i) begin
    dio_sync_2 <= dio_sync_1;
 end
 
+// Vivado 2017.2 can mis-synthesize a register whose bits are written from
+// different iterations of a generate loop, driving every bit from one
+// iteration's logic; the RTL simulation does not show it (the port-level test
+// tbn/red_pitaya_pid_ports_tb.v on the synthesized netlist does). The
+// per-input and per-PID state is therefore held in registers local to the
+// generate blocks, which reach the vectors and arrays here through continuous
+// assignments.
+
 // Levels for the parameter set selection: a level is taken over once the
 // synchronized input has shown it for 4 consecutive clock cycles, which
 // rejects glitches and the chatter of a slow edge
-reg         [7-1:0]        dio_level;
-reg         [2-1:0]        dio_count            [6:0];
+wire        [7-1:0]        dio_level;
 
 genvar dio_index;
 generate for (dio_index = 0; dio_index < 7; dio_index = dio_index + 1) begin: g_dio
+    reg         level;
+    reg [2-1:0] count;
     always @(posedge clk_i) begin
        if (rst) begin
-          dio_level[dio_index] <= 1'b0;
-          dio_count[dio_index] <= 2'd0;
+          level <= 1'b0;
+          count <= 2'd0;
        end
-       else if (dio_sync_2[dio_index] == dio_level[dio_index])
-          dio_count[dio_index] <= 2'd0;
-       else if (dio_count[dio_index] == 2'd3) begin
-          dio_level[dio_index] <= dio_sync_2[dio_index];
-          dio_count[dio_index] <= 2'd0;
+       else if (dio_sync_2[dio_index] == level)
+          count <= 2'd0;
+       else if (count == 2'd3) begin
+          level <= dio_sync_2[dio_index];
+          count <= 2'd0;
        end
        else
-          dio_count[dio_index] <= dio_count[dio_index] + 2'd1;
+          count <= count + 2'd1;
     end
+    assign dio_level[dio_index] = level;
 end
 endgenerate
 
@@ -230,32 +240,30 @@ wire        [8-1:0]        dio_level_sel = {1'b0, dio_level};
 reg         [2-1:0]        pset_mode            [3:0];
 reg         [3-1:0]        pset_input           [3:0];
 wire        [3:0]          pset_next                 ;
-reg         [3:0]          pset_d0                   ;  // set point, lock window, holdoff
-reg         [3:0]          pset_d1                   ;  // gains
+wire        [3:0]          pset_d0                   ;  // set point, lock window, holdoff
+wire        [3:0]          pset_d1                   ;  // gains
 wire        [3:0]          pset_switch               ;  // the set changes (at the next clock edge)
-reg         [3:0]          pset_switch_q             ;
-reg         [32-1:0]       holdoff_count        [3:0];
-reg         [3:0]          holdoff_on                ;  // holdoff_count != 0, registered
-reg         [3:0]          holdoff_on_q              ;
-reg         [3:0]          holdoff_violated          ;
+wire        [3:0]          pset_switch_q             ;
+wire        [32-1:0]       holdoff_count        [3:0];
+wire        [3:0]          holdoff_on                ;  // holdoff_count != 0, registered
+wire        [3:0]          holdoff_on_q              ;
+wire        [3:0]          holdoff_violated          ;
 
 // Event counters (they wrap around)
-reg         [32-1:0]       cnt_switches         [3:0];  // parameter set switches
-reg         [32-1:0]       cnt_holdoff_went_outside  [3:0];  // holdoffs with the relock input outside the window
-reg         [32-1:0]       cnt_holdoff_ended_outside [3:0];  // holdoffs that ended outside the window
-reg         [32-1:0]       cnt_unlocks          [3:0];  // locked -> unlocked while the hold is off
-reg         [3:0]          holdoff_violated_q        ;
-reg         [3:0]          lock_q                    ;
+wire        [32-1:0]       cnt_switches              [3:0];  // parameter set switches
+wire        [32-1:0]       cnt_holdoff_went_outside  [3:0];  // holdoffs with the relock input outside the window
+wire        [32-1:0]       cnt_holdoff_ended_outside [3:0];  // holdoffs that ended outside the window
+wire        [32-1:0]       cnt_unlocks               [3:0];  // locked -> unlocked while the hold is off
 
 // Active parameters
-reg         [14-1:0]       act_sp               [3:0];
-reg         [12-1:0]       act_minval           [3:0];
-reg         [12-1:0]       act_maxval           [3:0];
-reg         [G_BITS-1:0]   act_kpg              [3:0];
-reg         [G_BITS-1:0]   act_kig              [3:0];
-reg         [G_BITS-1:0]   act_kdg              [3:0];
-reg         [KI_BITS-1:0]  act_kii              [3:0];
-reg         [3:0]          act_kg_zero               ;
+wire        [14-1:0]       act_sp               [3:0];
+wire        [12-1:0]       act_minval           [3:0];
+wire        [12-1:0]       act_maxval           [3:0];
+wire        [G_BITS-1:0]   act_kpg              [3:0];
+wire        [G_BITS-1:0]   act_kig              [3:0];
+wire        [G_BITS-1:0]   act_kdg              [3:0];
+wire        [KI_BITS-1:0]  act_kii              [3:0];
+wire        [3:0]          act_kg_zero               ;
 
 // Products with KG, of both sets
 wire        [G_BITS-1:0]   kpg                  [7:0];
@@ -265,55 +273,88 @@ wire        [G_BITS-1:0]   kdg                  [7:0];
 genvar pid_index;
 
 generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin: g_pid
-    assign pset_next[pid_index] = (pset_mode[pid_index] == 2'd1)
-                               || ((pset_mode[pid_index] == 2'd2) &&  dio_level_sel[pset_input[pid_index]])
-                               || ((pset_mode[pid_index] == 2'd3) && !dio_level_sel[pset_input[pid_index]]);
-    assign pset_switch[pid_index] = pset_d0[pid_index] != pset_d1[pid_index];
+    // This PID's selection
+    wire [2-1:0] mode      = pset_mode[pid_index];
+    wire [3-1:0] sel_input = pset_input[pid_index];
+    wire         level     = dio_level_sel[sel_input];
+    assign pset_next[pid_index] = (mode == 2'd1) || ((mode == 2'd2) && level)
+                               || ((mode == 2'd3) && !level);
+
+    reg           d0, d1, sw_q, h_on, h_on_q, h_violated;
+    reg  [32-1:0] h_count;
+    wire          sw    = d0 != d1;
+    wire [32-1:0] h_new = d0 ? holdoff[4+pid_index] : holdoff[pid_index];
 
     always @(posedge clk_i) begin
        if (rst) begin
-          pset_d0[pid_index]          <= 1'b0;
-          pset_d1[pid_index]          <= 1'b0;
-          pset_switch_q[pid_index]    <= 1'b0;
-          holdoff_count[pid_index]    <= 32'd0;
-          holdoff_on[pid_index]       <= 1'b0;
-          holdoff_on_q[pid_index]     <= 1'b0;
-          holdoff_violated[pid_index] <= 1'b0;
+          d0         <= 1'b0;
+          d1         <= 1'b0;
+          sw_q       <= 1'b0;
+          h_count    <= 32'd0;
+          h_on       <= 1'b0;
+          h_on_q     <= 1'b0;
+          h_violated <= 1'b0;
        end
        else begin
-          pset_d0[pid_index] <= pset_next[pid_index];
-          pset_d1[pid_index] <= pset_d0[pid_index];
+          d0 <= pset_next[pid_index];
+          d1 <= d0;
           // The holdoff starts with the lock window of the new set
-          if (pset_switch[pid_index]) begin
-             holdoff_count[pid_index] <= holdoff[4*pset_d0[pid_index]+pid_index];
-             holdoff_on[pid_index]    <= holdoff[4*pset_d0[pid_index]+pid_index] != 32'd0;
+          if (sw) begin
+             h_count <= h_new;
+             h_on    <= h_new != 32'd0;
           end
-          else if (holdoff_on[pid_index]) begin
-             holdoff_count[pid_index] <= holdoff_count[pid_index] - 32'd1;
-             holdoff_on[pid_index]    <= holdoff_count[pid_index] != 32'd1;
+          else if (h_on) begin
+             h_count <= h_count - 32'd1;
+             h_on    <= h_count != 32'd1;
           end
           // Whether the lock window was left during the holdoff, until the next switch. The
           // window result lags the holdoff by one cycle, so the first result after a
           // switch still belongs to the old window.
-          holdoff_on_q[pid_index]  <= holdoff_on[pid_index];
-          pset_switch_q[pid_index] <= pset_switch[pid_index];
-          if (pset_switch[pid_index] || pset_switch_q[pid_index])
-             holdoff_violated[pid_index] <= 1'b0;
-          else if (holdoff_on_q[pid_index] && !relock_in_window[pid_index])
-             holdoff_violated[pid_index] <= 1'b1;
+          h_on_q <= h_on;
+          sw_q   <= sw;
+          if (sw || sw_q)
+             h_violated <= 1'b0;
+          else if (h_on_q && !relock_in_window[pid_index])
+             h_violated <= 1'b1;
        end
     end
 
+    assign pset_d0[pid_index]          = d0;
+    assign pset_d1[pid_index]          = d1;
+    assign pset_switch[pid_index]      = sw;
+    assign pset_switch_q[pid_index]    = sw_q;
+    assign holdoff_count[pid_index]    = h_count;
+    assign holdoff_on[pid_index]       = h_on;
+    assign holdoff_on_q[pid_index]     = h_on_q;
+    assign holdoff_violated[pid_index] = h_violated;
+
+    // The parameters in use, each from its set at the stage where it enters
+    reg [14-1:0]      a_sp;
+    reg [12-1:0]      a_minval;
+    reg [12-1:0]      a_maxval;
+    reg [G_BITS-1:0]  a_kpg;
+    reg [G_BITS-1:0]  a_kig;
+    reg [G_BITS-1:0]  a_kdg;
+    reg [KI_BITS-1:0] a_kii;
+    reg               a_kg_zero;
     always @(posedge clk_i) begin
-       act_sp[pid_index]      <= set_sp[4*pset_d0[pid_index]+pid_index];
-       act_minval[pid_index]  <= relock_minval[4*pset_d0[pid_index]+pid_index];
-       act_maxval[pid_index]  <= relock_maxval[4*pset_d0[pid_index]+pid_index];
-       act_kpg[pid_index]     <= kpg[4*pset_d1[pid_index]+pid_index];
-       act_kig[pid_index]     <= kig[4*pset_d1[pid_index]+pid_index];
-       act_kdg[pid_index]     <= kdg[4*pset_d1[pid_index]+pid_index];
-       act_kii[pid_index]     <= set_kii[4*pset_d1[pid_index]+pid_index];
-       act_kg_zero[pid_index] <= set_kg[4*pset_d1[pid_index]+pid_index] == {KP_BITS{1'b0}};
+       a_sp      <= d0 ? set_sp[4+pid_index]        : set_sp[pid_index];
+       a_minval  <= d0 ? relock_minval[4+pid_index] : relock_minval[pid_index];
+       a_maxval  <= d0 ? relock_maxval[4+pid_index] : relock_maxval[pid_index];
+       a_kpg     <= d1 ? kpg[4+pid_index]           : kpg[pid_index];
+       a_kig     <= d1 ? kig[4+pid_index]           : kig[pid_index];
+       a_kdg     <= d1 ? kdg[4+pid_index]           : kdg[pid_index];
+       a_kii     <= d1 ? set_kii[4+pid_index]       : set_kii[pid_index];
+       a_kg_zero <= (d1 ? set_kg[4+pid_index] : set_kg[pid_index]) == {KP_BITS{1'b0}};
     end
+    assign act_sp[pid_index]      = a_sp;
+    assign act_minval[pid_index]  = a_minval;
+    assign act_maxval[pid_index]  = a_maxval;
+    assign act_kpg[pid_index]     = a_kpg;
+    assign act_kig[pid_index]     = a_kig;
+    assign act_kdg[pid_index]     = a_kdg;
+    assign act_kii[pid_index]     = a_kii;
+    assign act_kg_zero[pid_index] = a_kg_zero;
 
     pid_kg_products #(
       .K_BITS  ( KP_BITS)
@@ -337,10 +378,14 @@ generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin: g_
     );
 
     // Registered, like the sweep signal of the relock, to cut the paths into the PID
+    reg                 ext_rst;
+    reg signed [14-1:0] signal_q;
     always @(posedge clk_i) begin
-       ext_reset[pid_index]       <= dio_sync_2[ext_reset_source[pid_index]] && set_ext_reset_enabled[pid_index];
-       relock_signal_q[pid_index] <= relock_signal_o[pid_index];
+       ext_rst  <= dio_sync_2[ext_reset_source[pid_index]] && set_ext_reset_enabled[pid_index];
+       signal_q <= relock_signal_o[pid_index];
     end
+    assign ext_reset[pid_index]       = ext_rst;
+    assign relock_signal_q[pid_index] = signal_q;
     assign pid_hold[pid_index] = relock_hold_o[pid_index] || set_hold[pid_index] || ext_reset[pid_index];
     assign pid_sum[pid_index] = pid_out[pid_index] + relock_signal_q[pid_index];
     assign pid_sat[pid_index] = (^pid_sum[pid_index][15-1:15-2]) ?
@@ -457,33 +502,39 @@ assign lock_status_o[3] = relock_lock_status[3] && set_lock_status_out_en[3];
 //  Event counters
 
 generate for (pid_index = 0; pid_index < 4; pid_index = pid_index + 1) begin: g_cnt
+    reg [32-1:0] n_switches, n_went_outside, n_ended_outside, n_unlocks;
+    reg          violated_q, lock_q;
     always @(posedge clk_i) begin
        if (rst) begin
-          cnt_switches[pid_index]       <= 32'd0;
-          cnt_holdoff_went_outside[pid_index]   <= 32'd0;
-          cnt_holdoff_ended_outside[pid_index]    <= 32'd0;
-          cnt_unlocks[pid_index]        <= 32'd0;
-          holdoff_violated_q[pid_index] <= 1'b0;
-          lock_q[pid_index]             <= 1'b0;
+          n_switches      <= 32'd0;
+          n_went_outside  <= 32'd0;
+          n_ended_outside <= 32'd0;
+          n_unlocks       <= 32'd0;
+          violated_q      <= 1'b0;
+          lock_q          <= 1'b0;
        end
        else begin
           if (pset_switch[pid_index])
-             cnt_switches[pid_index] <= cnt_switches[pid_index] + 32'd1;
+             n_switches <= n_switches + 32'd1;
           // The flag rises once per holdoff
-          holdoff_violated_q[pid_index] <= holdoff_violated[pid_index];
-          if (holdoff_violated[pid_index] && !holdoff_violated_q[pid_index])
-             cnt_holdoff_went_outside[pid_index] <= cnt_holdoff_went_outside[pid_index] + 32'd1;
+          violated_q <= holdoff_violated[pid_index];
+          if (holdoff_violated[pid_index] && !violated_q)
+             n_went_outside <= n_went_outside + 32'd1;
           // The holdoff has just ended (run out, or cut short by a switch into a set
           // without one) with the relock input outside the window: the lock drops
           if (holdoff_on_q[pid_index] && !holdoff_on[pid_index] && !relock_in_window[pid_index])
-             cnt_holdoff_ended_outside[pid_index] <= cnt_holdoff_ended_outside[pid_index] + 32'd1;
+             n_ended_outside <= n_ended_outside + 32'd1;
           // Every loss of lock while the hold is off (the lockbox monitor merges
           // them into lock drops)
-          lock_q[pid_index] <= relock_lock_status[pid_index];
-          if (!set_hold[pid_index] && lock_q[pid_index] && !relock_lock_status[pid_index])
-             cnt_unlocks[pid_index] <= cnt_unlocks[pid_index] + 32'd1;
+          lock_q <= relock_lock_status[pid_index];
+          if (!set_hold[pid_index] && lock_q && !relock_lock_status[pid_index])
+             n_unlocks <= n_unlocks + 32'd1;
        end
     end
+    assign cnt_switches[pid_index]              = n_switches;
+    assign cnt_holdoff_went_outside[pid_index]  = n_went_outside;
+    assign cnt_holdoff_ended_outside[pid_index] = n_ended_outside;
+    assign cnt_unlocks[pid_index]               = n_unlocks;
 end
 endgenerate
 
