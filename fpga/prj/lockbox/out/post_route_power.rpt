@@ -1,7 +1,7 @@
 Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2017.2 (lin64) Build 1909853 Thu Jun 15 18:39:10 MDT 2017
-| Date             : Thu Oct  1 16:20:07 2026
+| Date             : Fri Oct  2 08:17:01 2026
 | Host             : X1Gen13 running 64-bit Ubuntu 16.04.7 LTS
 | Command          : report_power -file out/post_route_power.rpt
 | Design           : red_pitaya_top
@@ -30,12 +30,12 @@ Table of Contents
 ----------
 
 +--------------------------+-------+
-| Total On-Chip Power (W)  | 2.080 |
-| Dynamic (W)              | 1.937 |
+| Total On-Chip Power (W)  | 2.076 |
+| Dynamic (W)              | 1.933 |
 | Device Static (W)        | 0.143 |
 | Effective TJA (C/W)      | 11.5  |
-| Max Ambient (C)          | 61.0  |
-| Junction Temperature (C) | 49.0  |
+| Max Ambient (C)          | 61.1  |
+| Junction Temperature (C) | 48.9  |
 | Confidence Level         | Low   |
 | Setting File             | ---   |
 | Simulation Activity File | ---   |
@@ -49,24 +49,24 @@ Table of Contents
 +--------------------------+-----------+----------+-----------+-----------------+
 | On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
 +--------------------------+-----------+----------+-----------+-----------------+
-| Clocks                   |     0.045 |       14 |       --- |             --- |
-| Slice Logic              |     0.051 |    23617 |       --- |             --- |
-|   LUT as Logic           |     0.042 |     9100 |     17600 |           51.70 |
+| Clocks                   |     0.046 |       14 |       --- |             --- |
+| Slice Logic              |     0.051 |    23639 |       --- |             --- |
+|   LUT as Logic           |     0.042 |     9003 |     17600 |           51.15 |
 |   CARRY4                 |     0.005 |     1127 |      4400 |           25.61 |
-|   Register               |     0.003 |    10446 |     35200 |           29.68 |
+|   Register               |     0.003 |    10444 |     35200 |           29.67 |
 |   LUT as Distributed RAM |    <0.001 |      160 |      6000 |            2.67 |
 |   LUT as Shift Register  |    <0.001 |       13 |      6000 |            0.22 |
-|   F7/F8 Muxes            |    <0.001 |      349 |     17600 |            1.98 |
+|   F7/F8 Muxes            |    <0.001 |      341 |     17600 |            1.94 |
 |   Others                 |     0.000 |      243 |       --- |             --- |
-| Signals                  |     0.086 |    19635 |       --- |             --- |
+| Signals                  |     0.082 |    19579 |       --- |             --- |
 | Block RAM                |     0.051 |       30 |        60 |           50.00 |
 | PLL                      |     0.097 |        1 |         2 |           50.00 |
-| DSPs                     |     0.061 |       58 |        80 |           72.50 |
+| DSPs                     |     0.062 |       58 |        80 |           72.50 |
 | I/O                      |     0.250 |       91 |       100 |           91.00 |
 | XADC                     |     0.002 |        1 |       --- |             --- |
 | PS7                      |     1.292 |        1 |       --- |             --- |
 | Static Power             |     0.143 |          |           |                 |
-| Total                    |     2.080 |          |           |                 |
+| Total                    |     2.076 |          |           |                 |
 +--------------------------+-----------+----------+-----------+-----------------+
 
 
@@ -76,9 +76,9 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) |
 +-----------+-------------+-----------+-------------+------------+
-| Vccint    |       1.000 |     0.309 |       0.300 |      0.010 |
+| Vccint    |       1.000 |     0.306 |       0.296 |      0.009 |
 | Vccaux    |       1.800 |     0.068 |       0.056 |      0.012 |
-| Vcco33    |       3.300 |     0.073 |       0.072 |      0.001 |
+| Vcco33    |       3.300 |     0.072 |       0.071 |      0.001 |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |
 | Vcco18    |       1.800 |     0.002 |       0.001 |      0.001 |
 | Vcco15    |       1.500 |     0.000 |       0.000 |      0.000 |
@@ -159,7 +159,7 @@ Table of Contents
 +---------------------------------+-----------+
 | Name                            | Power (W) |
 +---------------------------------+-----------+
-| red_pitaya_top                  |     1.937 |
+| red_pitaya_top                  |     1.933 |
 |   i_ams                         |     0.004 |
 |   i_asg                         |     0.055 |
 |     ch[0]                       |     0.026 |
@@ -181,10 +181,10 @@ Table of Contents
 |   i_iobufp[5]                   |     0.000 |
 |   i_iobufp[6]                   |     0.000 |
 |   i_iobufp[7]                   |     0.000 |
-|   i_limit                       |     0.004 |
+|   i_limit                       |     0.003 |
 |     limit_a                     |     0.001 |
 |     limit_b                     |     0.001 |
-|   i_pid                         |     0.161 |
+|   i_pid                         |     0.157 |
 |     g_pid[0].i_kg_products      |     0.007 |
 |     g_pid[0].i_pid              |     0.023 |
 |     g_pid[0].i_relock           |    <0.001 |
@@ -192,12 +192,12 @@ Table of Contents
 |     g_pid[1].i_pid              |     0.023 |
 |     g_pid[1].i_relock           |    <0.001 |
 |     g_pid[2].i_kg_products      |     0.007 |
-|     g_pid[2].i_pid              |     0.023 |
+|     g_pid[2].i_pid              |     0.022 |
 |     g_pid[2].i_relock           |    <0.001 |
 |     g_pid[3].i_kg_products      |     0.008 |
 |     g_pid[3].i_pid              |     0.023 |
 |     g_pid[3].i_relock           |    <0.001 |
-|   i_scope                       |     0.052 |
+|   i_scope                       |     0.053 |
 |     i_dfilt1_cha                |     0.009 |
 |     i_dfilt1_chb                |     0.009 |
 |     i_wr0                       |     0.005 |
@@ -246,7 +246,7 @@ Table of Contents
 |       axi_wfifo_reg_0_15_66_71  |    <0.001 |
 |       axi_wfifo_reg_0_15_6_11   |    <0.001 |
 |       axi_wfifo_reg_0_15_72_72  |    <0.001 |
-|     axi_slave_gp0               |    <0.001 |
+|     axi_slave_gp0               |     0.001 |
 |     system_i                    |     1.293 |
 |       processing_system7        |     1.293 |
 |         inst                    |     1.293 |
