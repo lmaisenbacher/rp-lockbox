@@ -331,8 +331,8 @@ Parameter options:
 | | ``1,4321.2,1,5000.1,17,3.2,3,0.9,``             |                              | | ``unlocks_since_servo,unlocked_since_servo_s,``         |
 | | ``0.4,0,1500.2,0.4,20``                         |                              | | ``longest_since_servo_s,drop_open,``                    |
 |                                                   |                              | | ``last_unlock_age_s,last_unlock_s,raw_unlock_edges``    |
-|                                                   |                              | | (1/0 for the flags; ages -1 = never). See the           |
-|                                                   |                              | | README's "Lockbox monitor".                             |
+|                                                   |                              | | (1/0 for the flags; times in s to the microsecond;      |
+|                                                   |                              | | ages -1 = never). See the README's "Lockbox monitor".   |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | ``PID:IN<n>:OUT<n>:UNLock:COUNt?``                | ``rp_PIDGetUnlockCount``     | | Lock drops since the lockbox monitor started            |
 |                                                   |                              | | (monotonic; loggers take the difference).               |
@@ -353,12 +353,13 @@ Parameter options:
 |                                                   |                              |   the lockbox monitor.                                    |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | ``PID:IN<n>:OUT<n>:UNLock:TIME?``                 | ``rp_PIDGetUnlockedTime``    | | Time in s spent in lock drops since the lockbox         |
-|                                                   |                              | | monitor started (monotonic, the open drop included).    |
+|                                                   |                              | | monitor started (monotonic, the open drop included),    |
+|                                                   |                              | | to the microsecond.                                     |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 | | ``PID:IN<n>:OUT<n>:UNLock:EVENts? [<after>]``   | ``rp_PIDGetUnlockEvents``    | | The drops with an index above ``<after>`` (default      |
 | | Example:                                        |                              | | 0) from the monitor's ring of the last 64 drops,        |
 | | ``PID:IN1:OUT1:UNL:EVEN? 5`` >                  |                              | | oldest first: ``n``, then ``index,age_s,duration_s``    |
-| | ``2,6,120.5,0.003,7,30.1,0.010``                |                              | | per drop.                                               |
+| | ``2,6,120.5,0.003,7,30.1,0.01``                 |                              | | per drop, the times in s to the microsecond.            |
 +---------------------------------------------------+------------------------------+-----------------------------------------------------------+
 
 ==============

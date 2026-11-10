@@ -1029,17 +1029,17 @@ scpi_result_t RP_PIDMonitorQ(scpi_t *context) {
      * unlocks_since_servo,unlocked_since_servo_s,longest_since_servo_s,
      * drop_open,last_unlock_age_s,last_unlock_s,raw_unlock_edges */
     SCPI_ResultBool(context, m.locked);
-    SCPI_ResultDouble(context, m.lock_age_s);
+    RP_ResultSeconds(context, m.lock_age_s);
     SCPI_ResultBool(context, m.servo_on);
-    SCPI_ResultDouble(context, m.servo_age_s);
+    RP_ResultSeconds(context, m.servo_age_s);
     SCPI_ResultUInt64Base(context, m.unlocks_total, 10);
-    SCPI_ResultDouble(context, m.unlocked_total_s);
+    RP_ResultSeconds(context, m.unlocked_total_s);
     SCPI_ResultUInt64Base(context, m.unlocks_since_servo, 10);
-    SCPI_ResultDouble(context, m.unlocked_since_servo_s);
-    SCPI_ResultDouble(context, m.longest_since_servo_s);
+    RP_ResultSeconds(context, m.unlocked_since_servo_s);
+    RP_ResultSeconds(context, m.longest_since_servo_s);
     SCPI_ResultBool(context, m.drop_open);
-    SCPI_ResultDouble(context, m.last_unlock_age_s);
-    SCPI_ResultDouble(context, m.last_unlock_s);
+    RP_ResultSeconds(context, m.last_unlock_age_s);
+    RP_ResultSeconds(context, m.last_unlock_s);
     SCPI_ResultUInt64Base(context, m.raw_unlock_edges, 10);
 
     RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:MONitor? Successfully returned the lock monitoring.");
@@ -1143,7 +1143,7 @@ scpi_result_t RP_PIDUnlockTimeQ(scpi_t *context) {
         return SCPI_RES_ERR;
     }
 
-    SCPI_ResultDouble(context, seconds);
+    RP_ResultSeconds(context, seconds);
 
     RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:UNLock:TIME? Successfully returned the unlocked time.");
     return SCPI_RES_OK;
@@ -1178,8 +1178,8 @@ scpi_result_t RP_PIDUnlockEventsQ(scpi_t *context) {
     SCPI_ResultUInt32Base(context, n, 10);
     for(uint32_t i = 0; i < n; i++) {
         SCPI_ResultUInt32Base(context, events[i].index, 10);
-        SCPI_ResultDouble(context, events[i].age_s);
-        SCPI_ResultDouble(context, events[i].duration_s);
+        RP_ResultSeconds(context, events[i].age_s);
+        RP_ResultSeconds(context, events[i].duration_s);
     }
 
     RP_LOG(LOG_DEBUG, "*PID:IN#:OUT#:UNLock:EVENts? Successfully returned the lock drops.");
@@ -1200,7 +1200,7 @@ scpi_result_t RP_LockboxMonitorQ(scpi_t *context) {
     /* alive,uptime_s,period_ms,max_gap_ms,late_polls,merge_ms - a monitor
      * that is not running answers 0,-1,0,0,0,0 instead of an error */
     SCPI_ResultBool(context, alive);
-    SCPI_ResultDouble(context, uptime_s);
+    RP_ResultSeconds(context, uptime_s);
     SCPI_ResultDouble(context, period_ms);
     SCPI_ResultDouble(context, max_gap_ms);
     SCPI_ResultUInt64Base(context, late_polls, 10);

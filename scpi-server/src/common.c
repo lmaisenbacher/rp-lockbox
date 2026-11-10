@@ -15,6 +15,7 @@
 #include <stdio.h>
 
 #include "common.h"
+#include "format.h"
 
 /* Parse channel */
 int RP_ParseChArgv(scpi_t *context, rp_channel_t *channel){
@@ -26,6 +27,14 @@ int RP_ParseChArgv(scpi_t *context, rp_channel_t *channel){
         return RP_EOOR;
     }
     *channel = ch_usr[0] - 1;
-    
+
     return RP_OK;
+}
+
+size_t RP_ResultSeconds(scpi_t *context, double seconds) {
+    char buffer[32];
+    size_t len = RP_FormatSeconds(seconds, buffer, sizeof(buffer));
+    if (len >= sizeof(buffer))
+        len = sizeof(buffer) - 1;
+    return SCPI_ResultCharacters(context, buffer, len);
 }

@@ -32,4 +32,9 @@
 
 int RP_ParseChArgv(scpi_t *context, rp_channel_t *channel);
 
+/* A time in seconds as a result, in fixed point to the microsecond
+ * (RP_FormatSeconds in format.h; SCPI_ResultDouble keeps six significant
+ * digits) */
+size_t RP_ResultSeconds(scpi_t *context, double seconds);
+
 #endif /* COMMON_H_ */
