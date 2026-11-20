@@ -77,12 +77,18 @@ systemctl enable redpitaya_nginx
 Note that starting `lockbox` loads the FPGA configuration, which resets the lockbox: a running lock
 is lost whenever the service (re)starts.
 
+Restart the services with `scripts/update.sh`, not by hand: started together while the FPGA was
+reprogrammed, they once left a board unreachable until it rebooted itself (cause assumed: a
+register poll during the reprogramming). Red Pitaya OS 1.04 keeps its journal in RAM only, so
+nothing of a session survives a reboot.
+
 ## Usage
 The lockbox can be configured using the included web interface which runs on the default HTTP port
 (80). Just navigate with your browser to the host name or IP address of the Red Pitaya.
 
 It is also possible to remote control the lockbox by sending SCPI commands via a TCP/IP connection
-on port 5000. See the
+on port 5000. The SCPI server forks a process per client, so several clients (a logger, a control
+server) can stay connected at once. See the
 [official documentation](https://redpitaya.readthedocs.io/en/latest/appsFeatures/remoteControl/remoteControl.html)
 for examples how to do this in various programming languages.
 
@@ -184,10 +190,11 @@ the lock reset input is asserted high. In addition, the internal integrator regi
 that is, the integrators are reset. When the lock reset input is asserted low, controller operation
 proceeds as if the lock had just been engaged. The digital input (3.3 V logic) can be DIO5_P,
 DIO6_P, DIO7_P or DIO0_N, all of which are located on the GPIO pins of extension connector E1. These
-inputs have pull-down resistors, so an unconnected input reads low. By connecting the lock status
-output of one of the PID controllers (e.g., PID11) to the lock reset input of another PID controller
-(e.g., PID22), the controllers can be cascaded: e.g., PID22 is only active when PID11 is asserted
-locked.
+inputs have pull-down resistors, so an unconnected input reads low. The lock reset input acts
+immediately on a single clock cycle (8 ns), i.e., there is no glitch filter. By connecting the lock
+status output of one of the PID controllers (e.g., PID11) to the lock reset input of another PID
+controller (e.g., PID22), the controllers can be cascaded: e.g., PID22 is only active when PID11
+is asserted locked.
 
 ### Input and output configuration
 The table below shows the input and output configuration for each of the four PID controllers:
@@ -245,6 +252,10 @@ necessary.
 
 If compiling on another platform:
 * The ARMv7 (armhf) cross compiler toolchain (gcc-arm-linux-gnueabihf in Debian)
+
+The board builds with gcc 5.4 (Red Pitaya OS 1.04, Ubuntu 16.04), which refuses some C that newer
+compilers accept (e.g. a static array initialized from static const variables): build on the
+board or with that compiler before pushing.
 
 ### Build process
 
