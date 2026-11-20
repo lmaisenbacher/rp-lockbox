@@ -10,7 +10,7 @@ Test SCPI commands.
 import rp_lockbox
 
 # IP address or host name of Red Pitaya
-rp_address = '192.168.50.37'
+rp_address = '192.0.2.37'  # the lockbox's address (a placeholder)
 # Timeout (s)
 timeout = 5
 
